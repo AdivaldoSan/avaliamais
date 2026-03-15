@@ -1,5 +1,5 @@
 const API =
-  "https://script.google.com/macros/s/AKfycbzIogNB7wDe97AKAGrp5x1WT3QlngGFhlOXkX7HAWLve8aOK9g-0Ljk0ZndZCFuAdcM/exec"
+  "https://script.google.com/macros/s/AKfycbxCkP76NczekS1b7nGPF4YGh9CESJS8Y-In4uAlsKSXxHRMsE4aHIL_yw-eYpd9-E1dIw/exec"
 
 // ===============================
 function normalizarChave(s){

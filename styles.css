@@ -1671,11 +1671,7 @@ label {
     border-bottom:1px solid #ddd;
 }
 
-#modalResultados .tabela-scroll{
-    max-height:320px;   /* cerca de 10 alunos */
-    overflow-y:auto;
-    margin-top:10px;
-}
+
 
 #modalResultados thead th{
     position:sticky;

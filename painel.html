@@ -22,7 +22,7 @@ function iniciarPagina(){
     criarLayout();
 
     document.getElementById("conteudo").innerHTML = `
-        <h2 style="margin-bottom:20px;">📊 Painel de Aplicações...</h2>
+        <h2 style="margin-bottom:20px;">📊 Painel de Aplicações.</h2>
         <div id="listaAplicacoes" class="card">
             Carregando aplicações...
         </div>
@@ -675,22 +675,54 @@ function montarAbasTurmas(dados){
     turmas.forEach((t,i)=>{
 
         html += `
-        <button onclick="mostrarTurma('${t}')"
-                class="abaTurma"
-                ${i===0 ? 'style="background:#1976d2;color:white;"' : ""}>
-            ${t}
-        </button>
+            <button class="abaTurma"
+                data-turma="${t}"
+                style="
+                    padding:6px 12px;
+                    border:1px solid #ccc;
+                    border-radius:4px;
+                    cursor:pointer;
+                    ${i===0 ? "background:#1976d2;color:white;" : ""}
+                ">
+                ${t}
+            </button>
         `;
-
     });
 
     html += `</div>`;
 
     document.getElementById("abasTurmas").innerHTML = html;
 
-    mostrarTurma(turmas[0]);
-}  
+    const botoes = document.querySelectorAll(".abaTurma");
 
+    botoes.forEach(btn=>{
+
+        btn.addEventListener("click",()=>{
+
+            // remove destaque de todas
+            botoes.forEach(b=>{
+                b.style.background="";
+                b.style.color="";
+            });
+
+            // destaca a selecionada
+            btn.style.background="#1976d2";
+            btn.style.color="white";
+
+            mostrarTurma(btn.dataset.turma);
+
+        });
+
+    });
+
+    // abre primeira turma automaticamente
+    if(turmas.length > 0){
+        mostrarTurma(turmas[0]);
+    }
+
+}
+
+    
 function mostrarTurma(turma){
 
     const lista = window.resultadosCache[turma] || [];

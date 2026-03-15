@@ -1,9 +1,8 @@
-// ===== API dinâmica (funciona mesmo se config.js carregar depois)
-Object.defineProperty(window, "API", {
-    get(){
-        return window.API_URL || "";
-    }
-});
+let API = "";
+
+setTimeout(()=>{
+    API = window.API_URL || "";
+},0);
 
 // ===============================
 function normalizarChave(s){

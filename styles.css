@@ -1712,6 +1712,20 @@ label {
     word-break:break-word;
 }
 
+#modalResultados .numero{
+    width:50px;
+    text-align:center;
+}
+
+#modalResultados .aluno{
+    text-align:left;
+}
+
+#modalResultados .acertos,
+#modalResultados .percentual{
+    text-align:center;
+}
+
 
 /* LOADING GLOBAL */
 

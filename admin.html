@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Avalia+ | Painel Administrativo</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="alternate icon" href="favicon.ico">
+</head>
+
+<body>
+
+<script src="js/conexao.js"></script>
+<script src="js/layout.js"></script>
+
+<script>
+
+
+
+function iniciarPagina(){
+  criarLayout();
+
+  document.getElementById("conteudo").innerHTML = `
+      <h2 style="margin-bottom:20px;">👨‍💼 Painel Administrativo</h2>
+      <div id="adminConteudo" class="card">
+        Carregando professores...
+      </div>
+  `;
+
+  validarAdmin();
+}
+
+window.onload = iniciarPagina;
+
+
+// =============================
+// VALIDAÇÃO
+// =============================
+const token = localStorage.getItem("TOKEN");
+
+if(!token){
+  window.location.href = "index.html";
+}
+
+
+// =============================
+// BUSCAR PROFESSORES
+// =============================
+async function validarAdmin(){
+
+  const resposta = await fetch(API + "?tipo=listarProfessores&token=" + token);
+  const dados = await resposta.json();
+
+  if(dados.erro){
+    window.location.href = "index.html";
+    return;
+  }
+
+  montarTabela(dados);
+}
+
+
+// =============================
+// MONTAR TABELA MODERNA
+// =============================
+function montarTabela(dados){
+
+  const container = document.getElementById("adminConteudo");
+
+  let html = `
+     <div class="table-wrapper">
+     <table class="tabela">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>NOME</th>
+          <th>EMAIL</th>
+          <th>ESCOLA</th>
+          <th>CIDADE</th>
+          <th>ESTADO</th>
+          <th>DISCIPLINA</th>
+          <th>PERFIL</th>
+          <th>STATUS</th>
+          <th>DATA</th>
+          <th>AÇÕES</th>
+        </tr>
+      </thead>
+      <tbody>
+  `;
+
+  const cab = dados[0];
+
+  const idxID = cab.indexOf("ID");
+  const idxNome = cab.indexOf("NOME");
+  const idxEmail = cab.indexOf("EMAIL");
+  const idxPerfil = cab.indexOf("PERFIL");
+  const idxStatus = cab.indexOf("STATUS");
+  const idxData = cab.indexOf("DATA_CADASTRO");
+  const idxEscola = cab.indexOf("ESCOLA");
+  const idxCidade = cab.indexOf("CIDADE");
+  const idxEstado = cab.indexOf("ESTADO");
+  const idxDisciplina = cab.indexOf("DISCIPLINA");
+
+  for(let i=1;i<dados.length;i++){
+
+    const id = dados[i][idxID];
+    const nome = dados[i][idxNome];
+    const email = dados[i][idxEmail];
+    const escola = dados[i][idxEscola];
+    const cidade = dados[i][idxCidade];
+    const estado = dados[i][idxEstado];
+    const disciplina = dados[i][idxDisciplina];
+    const perfil = dados[i][idxPerfil];
+    const status = dados[i][idxStatus];
+    const data = dados[i][idxData];
+
+    html += `
+      <tr>
+        <td>${id}</td>
+        <td>${nome}</td>
+        <td>${email}</td>
+        <td>${escola || ""}</td>
+        <td>${cidade || ""}</td>
+        <td>${estado || ""}</td>
+        <td>${disciplina || ""}</td>
+        <td>${perfil}</td>
+        <td>${status}</td>
+        <td>${formatarData(data)}</td>
+        <td>
+          ${gerarBotaoAcao(email, status)}
+        </td>
+      </tr>
+    `;
+  }
+
+  html += "</tbody></table></div>";
+
+  container.innerHTML = html;
+}
+
+
+// =============================
+// GERAR BOTÃO DE AÇÃO
+// =============================
+function gerarBotaoAcao(email, status){
+
+  if(status === "PENDENTE"){
+    return `<button class="btn-acao"
+              onclick="alterarStatus('${email}','APROVADO', this)">
+              Aprovar
+            </button>`;
+  }
+
+  if(status === "APROVADO"){
+    return `<button class="btn-acao"
+              onclick="alterarStatus('${email}','BLOQUEADO', this)">
+              Bloquear
+            </button>`;
+  }
+
+  if(status === "BLOQUEADO"){
+    return `<button class="btn-acao"
+              onclick="alterarStatus('${email}','APROVADO', this)">
+              Reativar
+            </button>`;
+  }
+
+  return "";
+}
+
+
+// =============================
+// ALTERAR STATUS
+// =============================
+async function alterarStatus(email, novoStatus, botao){
+
+  const resposta = await fetch(API, {
+    method:"POST",
+    body: JSON.stringify({
+      tipo:"alterarStatusProfessor",
+      token:token,
+      emailProfessor:email,
+      novoStatus:novoStatus
+    })
+  });
+
+  const dados = await resposta.json();
+
+  if(dados.mensagem){
+
+    validarAdmin(); // recarrega tabela inteira
+
+  }else{
+    alert("Erro ao atualizar.");
+  }
+}
+
+function formatarData(dataISO){
+  const d = new Date(dataISO);
+  return d.toLocaleDateString("pt-BR") + " " +
+         d.toLocaleTimeString("pt-BR");
+}  
+</script>
+
+</body>
+</html>

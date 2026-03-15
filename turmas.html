@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Avalia+ | Minhas Turmas</title>
+<link rel="stylesheet" href="styles.css">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="alternate icon" href="favicon.ico">
+</head>
+
+<body>
+
+<script src="./js/conexao.js"></script>
+<script src="./js/layout.js"></script>
+
+<script>
+
+function iniciarPagina(){
+    criarLayout();
+
+    document.getElementById("conteudo").innerHTML = `
+        <h2 style="margin-bottom:20px;">📚 Minhas Turmas</h2>
+
+        <div class="card">
+
+            <div class="turma-form">
+                <input id="novaTurma"
+                       placeholder="Ex: 3º A">
+                <button class="btn-primary"
+                        onclick="adicionar()">
+                        Adicionar
+                </button>
+            </div>
+
+            <hr style="margin:20px 0;">
+
+            <div id="listaTurmas">
+                Carregando...
+            </div>
+
+        </div>
+    `;
+
+    carregar();
+}
+
+window.onload = iniciarPagina;
+
+
+// =============================
+// CARREGAR TURMAS
+// =============================
+async function carregar(){
+
+    const token = localStorage.getItem("TOKEN");
+
+    if(!token){
+        window.location.href = "index.html";
+        return;
+    }
+
+    const dados =
+    await fetchProtegido(API + "?tipo=turmas&token=" + token);
+
+        if(!dados) return;
+
+    const div = document.getElementById("listaTurmas");
+    div.innerHTML = "";
+
+    if(dados.erro){
+        div.innerHTML = "Erro ao carregar turmas.";
+        return;
+    }
+
+    if(dados.length <= 1){
+        div.innerHTML = "Nenhuma turma cadastrada.";
+        return;
+    }
+
+    dados.slice(1).forEach(l=>{
+
+        const nome = l[2];
+
+        div.innerHTML += `
+            <div class="turma-item">
+                <span>${nome}</span>
+
+                <button class="btn-danger"
+                        title="Desativar turma"
+                        onclick="excluir('${nome}')">
+                        Desativar
+                </button>
+            </div>
+        `;
+    });
+}
+
+
+// =============================
+// ADICIONAR TURMA
+// =============================
+async function adicionar(){
+
+    const token = localStorage.getItem("TOKEN");
+    const nome = document.getElementById("novaTurma").value.trim();
+
+    if(!nome){
+        alert("Digite o nome da turma.");
+        return;
+    }
+
+    const resp = await fetchProtegido(API,{
+    method:"POST",
+    body:JSON.stringify({
+        tipo:"addTurma",
+        token: token,
+        nomeTurma: nome
+        })
+    });
+
+    if(!resp) return;
+
+    if(resp.erro){
+        alert(resp.erro);
+        return;
+    }
+
+    document.getElementById("novaTurma").value="";
+    carregar();
+}
+
+
+// =============================
+// DESATIVAR TURMA
+// =============================
+async function excluir(nome){
+
+    const token = localStorage.getItem("TOKEN");
+
+    if(!confirm("Deseja desativar esta turma?")) return;
+
+    const resp = await fetchProtegido(API,{
+    method:"POST",
+    body:JSON.stringify({
+        tipo:"excluirTurma",
+        token: token,
+        nomeTurma: nome
+    })
+});
+
+if(!resp) return;
+
+    if(resp.erro){
+        alert(resp.erro);
+        return;
+    }
+
+    carregar();
+}
+
+</script>
+
+</body>
+</html>

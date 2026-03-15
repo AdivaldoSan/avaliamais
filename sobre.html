@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Avalia+ | Sobre</title>
+<link rel="stylesheet" href="styles.css">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="alternate icon" href="favicon.ico">
+</head>
+
+<body>
+
+<script src="./js/layout.js"></script>
+
+<script>
+
+
+
+criarLayout();
+
+// ===============================
+// CONTEÚDO DA PÁGINA
+// ===============================
+document.getElementById("conteudo").innerHTML = `
+<div class="sobre-container">
+
+<h1 class="sobre-titulo">Sobre o Avalia+</h1>
+
+<div class="card sobre-card">
+<h3>Apresentação</h3>
+<p>
+O <strong>Avalia+</strong> é uma plataforma digital de avaliação educacional
+desenvolvida para apoiar professores na criação, aplicação e análise
+de atividades avaliativas. Seu objetivo é fortalecer o diagnóstico
+da aprendizagem e favorecer intervenções pedagógicas mais precisas.
+</p>
+</div>
+
+<div class="card sobre-card">
+<h3>Objetivo Pedagógico</h3>
+<p>
+A plataforma permite organizar avaliações por habilidades e descritores,
+possibilitando acompanhamento contínuo do desempenho dos estudantes.
+</p>
+<p>
+O Avalia+ foi estruturado para contribuir com a melhoria dos indicadores
+educacionais, especialmente no contexto das avaliações externas,
+com foco estratégico no SAERO 2026.
+</p>
+</div>
+
+<div class="card sobre-card">
+<h3>Contribuição Educacional</h3>
+<p>
+Por meio de relatórios automatizados e organização por turma,
+o sistema facilita a análise de resultados, identificação de lacunas
+e planejamento de ações de recomposição de aprendizagem.
+</p>
+<p>
+O projeto tem caráter educacional e independente,
+não possuindo vínculo institucional formal com órgãos oficiais.
+</p>
+</div>
+
+<div class="card sobre-card destaque">
+<h3>💙 Apoie o Projeto</h3>
+<p>
+O Avalia+ é um projeto educacional independente.
+Contribuições voluntárias ajudam na manutenção da infraestrutura,
+hospedagem e evolução contínua da plataforma.
+</p>
+
+<button class="btn-doar" onclick="toggleDoacao()">
+🤝 Quero apoiar o projeto
+</button>
+
+<div id="areaDoacao" class="area-doacao">
+
+    <div class="paypal-box">
+        <h4>Pagamento via PayPal</h4>
+
+        <a href="https://www.paypal.com/donate/?business=57SMXPTDG7724&no_recurring=0&item_name=Contribui%C3%A7%C3%A3o+volunt%C3%A1ria+para+manuten%C3%A7%C3%A3o+e+melhorias+da+plataforma+Avalia%2B%2C+projeto+educacional+independente.&currency_code=BRL"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="btn-paypal">
+           💳 Doar
+        </a>
+
+    </div>
+
+</div>
+</div>
+
+<div class="card sobre-card">
+<h3>📩 Contato</h3>
+<p>Dúvidas, sugestões ou suporte:</p>
+<p><strong>Email:</strong> suporteavaliamais@gmail.com</p>
+<p>
+Desenvolvido por <strong>Adivaldo Santos</strong><br>
+Professor de Matemática e Tecnologia Educacional
+</p>
+<p class="versao">Versão 1.0 — 2026</p>
+</div>
+
+</div>
+`;
+
+
+// ===============================
+// TOGGLE DOAÇÃO
+// ===============================
+function toggleDoacao(){
+    const area = document.getElementById("areaDoacao");
+    area.classList.toggle("mostrar");
+}
+
+</script>
+
+</body>
+</html>

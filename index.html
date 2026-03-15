@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Avalia+ | Login</title>
+
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="alternate icon" href="favicon.ico">
+
+  <!-- Open Graph (preview) -->
+  <meta property="og:title" content="Avalia+ | Plataforma de Avaliação Digital">
+  <meta property="og:description" content="Sistema online para aplicação e análise de avaliações escolares.">
+  <meta property="og:image" content="https://avaliamaisedu.com.br/preview.png">
+  <meta property="og:url" content="https://avaliamaisedu.com.br">
+  <meta property="og:type" content="website">
+
+</head>
+
+
+<body class="login-page">
+
+  <div class="login-box">
+
+   <div class="login-header horizontal">
+    <img src="favicon.svg" alt="Avalia+" class="login-logo">
+    <h2>               </h2>
+    </div>
+
+    <div class="form-group">
+      <input type="email" id="email" placeholder="Email">
+    </div>
+
+    <div class="form-group">
+      <input type="password" id="senha" placeholder="Senha">
+    </div>
+
+    <button class="btn-login" id="btnLogin" onclick="fazerLogin()">
+      Entrar
+    </button>
+
+    <a href="cadastro.html" class="link">Primeiro acesso</a>
+
+    <div id="msg" class="msg-error"></div>
+
+  </div>
+
+  <script src="./js/conexao.js"></script>
+
+  <script>
+  async function fazerLogin(){
+
+    const email = document.getElementById("email").value.trim();
+    const senha = document.getElementById("senha").value.trim();
+    const msg = document.getElementById("msg");
+    const btn = document.getElementById("btnLogin");
+
+    msg.style.display = "none";
+
+    if(!email || !senha){
+      msg.innerText = "Preencha todos os campos.";
+      msg.style.display = "block";
+      return;
+    }
+
+    // loading visual
+    btn.innerHTML = '<div class="loader"></div>';
+    btn.disabled = true;
+
+    const resposta = await fetch(API, {
+      method: "POST",
+      body: JSON.stringify({
+        tipo:"login",
+        email:email,
+        senha:senha
+      })
+    });
+
+    const dados = await resposta.json();
+
+    if(dados.autorizado){
+
+      localStorage.setItem("TOKEN", dados.token);
+      localStorage.setItem("NOME", dados.nome);
+      localStorage.setItem("PERFIL", dados.perfil);
+
+      if(dados.perfil === "ADMIN"){
+        window.location.href = "admin.html";
+      }else{
+        window.location.href = "painel.html";
+      }
+
+    }else{
+
+      btn.innerHTML = "Entrar";
+      btn.disabled = false;
+
+      if(dados.erro === "usuario_pendente"){
+        msg.innerText = "Cadastro aguardando aprovação.";
+      }
+      else if(dados.erro === "usuario_bloqueado"){
+        msg.innerText = "Usuário bloqueado.";
+      }
+      else{
+        msg.innerText = "Email ou senha incorretos.";
+      }
+
+      msg.style.display = "block";
+    }
+  }
+  </script>
+
+</body>
+</html>

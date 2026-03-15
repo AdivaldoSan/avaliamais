@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Responder Simulado</title>
+<link rel="stylesheet" href="styles.css">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="alternate icon" href="favicon.ico">
+</head>
+
+<body class="quiz-page">
+
+<div class="quiz-header">
+    <div>
+        <div class="quiz-titulo" id="tituloQuiz"></div>
+        <div class="quiz-info" id="infoAluno"></div>
+    </div>
+
+    <img src="favicon.svg" class="quiz-logo-direita" alt="Avalia+">
+</div>
+
+<div class="quiz-container">
+
+    <div class="barra-progresso">
+        <div class="barra-preenchimento" id="barra"></div>
+    </div>
+    
+    <div id="alertaQuiz" class="alerta" style="display:none;"></div>
+    
+    <div id="areaQuestao" class="card questao-card"></div>
+
+    <div class="quiz-rodape">
+        <div id="contador" class="contador-questao"></div>
+
+        <button id="btnAvancar"
+                class="btn-avancar"
+                onclick="avancar()"
+                style="display:none;">
+            Avançar
+        </button>
+    </div>
+
+</div>
+
+<script src="./js/conexao.js"></script>
+
+<script>
+
+// ===========================
+// A INTERNO
+// ===========================
+function mostrarAlerta(mensagem, tipo = "normal"){
+
+    const box = document.getElementById("alertaQuiz");
+    box.innerText = mensagem;
+
+    box.classList.remove("alerta-erro");
+
+    if(tipo === "erro"){
+        box.classList.add("alerta-erro");
+    }
+
+    box.style.display = "block";
+
+    setTimeout(()=>{
+        box.style.display = "none";
+    }, 3000);
+}
+
+
+// ===========================
+// EMBARALHAR
+// ===========================
+function embaralharArray(arr){
+    for(let i = arr.length-1; i>0; i--){
+        let j = Math.floor(Math.random()*(i+1));
+        [arr[i],arr[j]]=[arr[j],arr[i]];
+    }
+    return arr;
+}
+
+
+// ===========================
+// RECUPERA QUIZ
+// ===========================
+let quiz = JSON.parse(localStorage.getItem("quizAtual"));
+
+if(!quiz){
+    document.getElementById("tituloQuiz").innerText = "Plataforma de Avaliação Digital | Avalia+";
+    
+    document.querySelector(".quiz-container").innerHTML = `
+    <div class="final-card">
+        <h2>Atividade indisponível</h2>
+        <p>
+            Esta atividade já foi finalizada ou o link não é mais válido.
+        </p>
+        <p>
+            Se acredita que isso é um erro, procure seu professor.
+        </p>
+    </div>
+`;
+    throw new Error("Quiz não encontrado");
+}
+
+quiz.alunoNome = quiz.alunoNome || "";
+quiz.alunoTurma = quiz.alunoTurma || "";
+
+
+// ===========================
+// EMBARALHA QUESTÕES
+// ===========================
+if(!quiz.embaralhado){
+    quiz.questoes = embaralharArray(quiz.questoes);
+    quiz.embaralhado = true;
+    localStorage.setItem("quizAtual", JSON.stringify(quiz));
+}
+
+
+// ===========================
+let enviando = false;
+let atual = quiz.atual || 0;
+let respostas = quiz.respostas || [];
+
+document.getElementById("tituloQuiz").innerText = quiz.nome;
+
+iniciarIdentificacao();
+
+
+// ===========================
+// MOSTRAR QUESTÃO
+// ===========================
+function mostrarQuestao(){
+
+    atualizarCabecalho();
+
+    const q = quiz.questoes[atual];
+
+    document.getElementById("contador").innerHTML =
+        `Questão <b>${atual+1}</b> de <b>${quiz.questoes.length}</b>`;
+
+    document.getElementById("btnAvancar").style.display = "inline-block";
+
+    atualizarBarra();
+
+    let alternativas;
+
+    if(!q.ordemExibida){
+
+        alternativas = [
+            {letra:"A", texto:q.ALT_A},
+            {letra:"B", texto:q.ALT_B},
+            {letra:"C", texto:q.ALT_C},
+            {letra:"D", texto:q.ALT_D}
+        ];
+
+        alternativas = embaralharArray(alternativas);
+        q.ordemExibida = alternativas;
+        localStorage.setItem("quizAtual", JSON.stringify(quiz));
+
+    }else{
+        alternativas = q.ordemExibida;
+    }
+
+    document.getElementById("areaQuestao").innerHTML = `
+        <div class="enunciado">
+            <div class="questao-numero">
+                Questão ${atual+1}
+            </div>
+            <div class="questao-texto">
+                ${q.ENUNCIADO}
+            </div>
+        </div>
+
+        <div class="alternativas">
+            ${alternativas.map((alt,i)=>`
+                <label class="alt-item">
+                    <input type="radio" name="resp" value="${alt.letra}">
+                    <span>${String.fromCharCode(97+i)}) ${alt.texto}</span>
+                </label>
+            `).join("")}
+        </div>
+    `;
+
+    const respAnterior = respostas.find(r => r.questao === q.ID);
+    if(respAnterior){
+        const radio = document.querySelector(
+            `input[name="resp"][value="${respAnterior.marcada}"]`
+        );
+        if(radio) radio.checked = true;
+    }
+
+    if(atual === quiz.questoes.length-1){
+        document.getElementById("btnAvancar").innerText = "Finalizar";
+    }
+}
+
+
+// ===========================
+function atualizarBarra(){
+    const perc = ((atual) / quiz.questoes.length) * 100;
+    document.getElementById("barra").style.width = perc + "%";
+}
+
+
+// ===========================
+function atualizarCabecalho(){
+    document.getElementById("infoAluno").innerHTML =
+        `${quiz.alunoNome} • Nº ${quiz.alunoNumero} • ${quiz.alunoTurma}`;
+}
+
+
+// ===========================
+function avancar(){
+
+    const marcada = document.querySelector('input[name="resp"]:checked');
+
+    if(!marcada){
+        mostrarAlerta("Selecione uma alternativa para continuar.");
+        return;
+    }
+
+    respostas.push({
+        questao: quiz.questoes[atual].ID,
+        marcada: marcada.value,
+        correta: quiz.questoes[atual].GABARITO
+    });
+
+    atual++;
+
+    quiz.atual = atual;
+    quiz.respostas = respostas;
+    localStorage.setItem("quizAtual", JSON.stringify(quiz));
+
+    if(atual >= quiz.questoes.length){
+        finalizar();
+        return;
+    }
+
+    mostrarQuestao();
+}
+
+
+// ===========================
+// FINALIZAR
+// ===========================
+async function finalizar(){
+
+    document.getElementById("btnAvancar").style.display = "none";
+
+    if(enviando) return;
+    enviando = true;
+
+    mostrarOverlayEnvio();
+
+    const acertos = respostas.filter(r => r.marcada === r.correta).length;
+
+    // ==============================
+    // NOVO FORMATO DE ENVIO (1 registro)
+    // ==============================
+
+    const envio = {
+        aplicacao: quiz.id,
+        nomeQuiz: quiz.nome,
+        aluno: quiz.alunoNome,
+        numero: quiz.alunoNumero,
+        turma: quiz.alunoTurma,
+        respostas: respostas
+    };
+
+    try {
+
+        await fetch(API,{
+            method:"POST",
+            body: JSON.stringify({
+                tipo:"respostas",
+                payload: envio
+            })
+        });
+
+        // remove overlay
+        const overlay = document.getElementById("overlayEnvio");
+        if(overlay) overlay.remove();
+
+        // limpa localStorage
+        localStorage.removeItem("quizAtual");
+
+        // mantém header e substitui só o container
+        document.querySelector(".quiz-container").innerHTML = `
+            <div class="final-card">
+                <h2>🎉 Atividade Concluída!</h2>
+                <p>Você acertou <b>${acertos}</b> de <b>${respostas.length}</b> questões.</p>
+                <p>Suas respostas foram registradas com sucesso.</p>
+            </div>
+        `;
+
+    } catch(e){
+        enviando = false;
+        mostrarAlerta("Erro ao enviar respostas. Verifique sua conexão.");
+    }
+}
+
+// ===========================
+// IDENTIFICAÇÃO
+// ===========================
+function iniciarIdentificacao(){
+
+    if(quiz.alunoNome){
+        mostrarQuestao();
+        return;
+    }
+
+    const turmasPermitidas = quiz.turmas || [];
+
+    document.body.innerHTML = `
+    <div class="ident-page">
+
+        <div class="ident-card">
+
+            <div class="ident-header">
+                <img src="favicon.svg" class="ident-logo" alt="Avalia+">
+                <h1 class="ident-titulo">${quiz.nome}</h1>
+            </div>
+
+            <p class="ident-sub">
+                Informe seus dados para iniciar a atividade.
+            </p>
+
+            <div id="alertaQuiz" class="a" style="display:none;"></div>
+
+            <div class="ident-campo">
+                <input id="nomeAluno"
+                       placeholder="Nome Completo">
+            </div>
+
+            <div class="ident-linha">
+
+                <div class="ident-campo metade">
+                    <input type="number"
+                           id="numeroAluno"
+                           placeholder="Número na chamada">
+                </div>
+
+                <div class="ident-campo metade">
+                    <select id="turmaAluno">
+                        ${
+                            turmasPermitidas.length === 0
+                            ? `<option value="">Turma não definida</option>`
+                            : turmasPermitidas
+                                .map(t=>`<option value="${t}">${t}</option>`)
+                                .join("")
+                        }
+                    </select>
+                </div>
+
+            </div>
+
+            <button id="btnIniciar"
+                class="btn-iniciar"
+                onclick="confirmarAluno()">
+               Iniciar Atividade
+            </button>
+
+        </div>
+
+    </div>
+`;
+}
+
+async function confirmarAluno(){
+
+    const btn = document.getElementById("btnIniciar");
+    const textoOriginal = btn.innerText;
+
+    btn.classList.add("btn-loading");
+    btn.disabled = true;
+    btn.innerText = "Iniciando...";
+
+    const nome = document.getElementById("nomeAluno").value.trim();
+    const numero = document.getElementById("numeroAluno").value.trim();
+    const turma = document.getElementById("turmaAluno").value;
+
+    if(!nome){
+        mostrarAlerta("Informe seu Nome Completo.", "erro");
+        btn.classList.remove("btn-loading");
+        btn.disabled = false;
+        btn.innerText = textoOriginal;
+        return;
+    }
+
+    if(!numero){
+        mostrarAlerta("Informe seu número na chamada.", "erro");
+        btn.classList.remove("btn-loading");
+        btn.disabled = false;
+        btn.innerText = textoOriginal;
+        return;
+    }
+
+    if(!turma){
+        mostrarAlerta("Selecione sua turma.", "erro");
+        btn.classList.remove("btn-loading");
+        btn.disabled = false;
+        btn.innerText = textoOriginal;
+        return;
+    }
+
+    try{
+
+        const resp = await fetch(API,{
+            method:"POST",
+            body: JSON.stringify({
+                tipo:"verificarTentativa",
+                aplicacao: quiz.id,
+                turma: turma,
+                numero: numero
+            })
+        });
+
+        const retorno = await resp.json();
+
+     
+        if(retorno.jaRespondeu){
+            mostrarAlerta("Você já respondeu esta atividade.");
+              btn.classList.remove("btn-loading");
+                btn.disabled = false;
+                btn.innerText = textoOriginal;
+            return;
+        }
+
+        // Se não respondeu, continua normalmente
+        quiz.alunoNome = nome;
+        quiz.alunoNumero = numero;
+        quiz.alunoTurma = turma;
+
+        localStorage.setItem("quizAtual", JSON.stringify(quiz));
+        location.reload();
+
+    }catch(e){
+           btn.classList.remove("btn-loading");
+            btn.disabled = false;
+            btn.innerText = textoOriginal;
+
+        mostrarAlerta("Erro ao iniciar atividade.", "erro");
+    }
+}
+
+function mostrarOverlayEnvio(){
+
+  const overlay = document.createElement("div");
+  overlay.className = "overlay-envio";
+  overlay.id = "overlayEnvio";
+
+  overlay.innerHTML = `
+    <div class="overlay-box">
+      <div class="overlay-spinner"></div>
+      <h3>Registrando suas respostas...</h3>
+      <p>Aguarde enquanto salvamos sua atividade.</p>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+}    
+
+</script>
+</body>
+</html>

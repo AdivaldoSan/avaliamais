@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Carregando Atividade</title>
+<link rel="stylesheet" href="styles.css">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="alternate icon" href="favicon.ico">
+</head>
+
+<body class="aluno-page">
+
+<div class="aluno-header">
+    <div class="aluno-header-left">
+        Avalia+ | Plataforma de Avaliação Digital
+    </div>
+
+    <img src="favicon.svg" class="aluno-logo-direita" alt="Avalia+">
+</div>
+    
+
+<div class="aluno-container">
+
+    <div class="aluno-card" id="areaMensagem">
+
+        <div class="loader-grande"></div>
+
+        <h2>Preparando sua atividade...</h2>
+
+        <p>
+            Aguarde alguns instantes enquanto organizamos
+            sua avaliação.
+        </p>
+
+    </div>
+
+</div>
+
+<script src="./js/conexao.js"></script>
+
+<script>
+
+// =============================
+// CAPTURA ID DA URL
+// =============================
+const params = new URLSearchParams(window.location.search);
+const id = params.get("id");
+
+if(!id){
+    mostrarErro(
+        "Link inválido.",
+        "Verifique se o endereço foi copiado corretamente ou solicite novamente ao professor."
+    );
+    throw new Error("ID não informado");
+}
+
+// =============================
+// BUSCA APLICAÇÃO
+// =============================
+fetch(API + "?tipo=abrirAplicacao&id=" + id)
+.then(r => r.json())
+.then(d => {
+
+    if(d.erro){
+        mostrarErro(
+            "Atividade indisponível.",
+            "Esta atividade pode ter sido desativada ou o link não é mais válido. Procure seu professor."
+        );
+        return;
+    }
+
+    // salva para quiz.html
+    localStorage.setItem("quizAtual", JSON.stringify(d));
+
+    // pequeno delay só para UX visual
+    setTimeout(()=>{
+        window.location.href = "quiz.html";
+    }, 800);
+
+})
+.catch(()=>{
+    mostrarErro(
+        "Erro ao carregar atividade.",
+        "Verifique sua conexão com a internet e tente novamente."
+    );
+});
+
+
+// =============================
+// FUNÇÃO DE ERRO PEDAGÓGICO
+// =============================
+function mostrarErro(titulo, mensagem){
+
+    document.getElementById("areaMensagem").innerHTML = `
+        <div class="erro-icone">⚠</div>
+        <h2>${titulo}</h2>
+        <p>${mensagem}</p>
+    `;
+}
+
+</script>
+
+</body>
+</html>

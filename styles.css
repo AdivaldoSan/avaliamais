@@ -1579,6 +1579,30 @@ label {
     padding: 6px;
 }
 
+/*MODAL RESULTADOS*/
+/* MODAL RESULTADOS */
+
+#modalResultados {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+}
+
+#modalResultados .modal-box {
+    width: 90%;
+    max-width: 900px;
+    max-height: 80vh;
+
+    background: white;
+    margin: 5% auto;
+    padding: 20px;
+
+    border-radius: 8px;
+
+    overflow-y: auto;
+}
+
+
 /* ===== LOGIN HEADER COM LOGO ===== */
 
 .login-header {

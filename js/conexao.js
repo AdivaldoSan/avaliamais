@@ -1,5 +1,8 @@
-const API = CONFIG.API; //=====Busca link da API no config.js
+//=====Busca link da API no config.js
 
+const API =
+  window.API_URL ||
+  "https://script.google.com/macros/s/AKfycbxCkP76NczekS1b7nGPF4YGh9CESJS8Y-In4uAlsKSXxHRMsE4aHIL_yw-eYpd9-E1dIw/exec";
 // ===============================
 function normalizarChave(s){
   return String(s || "")

@@ -1686,6 +1686,24 @@ label {
     white-space:nowrap;
 }
 
+#modalResultados #tabelaResultados{
+    max-height:320px;
+    overflow-y:auto;
+    overflow-x:hidden;
+}
+
+#modalResultados table{
+    width:100%;
+    border-collapse:collapse;
+    table-layout:auto;
+}
+
+#modalResultados th,
+#modalResultados td{
+    white-space:nowrap;
+}
+
+
 /* ===== LOGIN HEADER COM LOGO ===== */
 
 .login-header {

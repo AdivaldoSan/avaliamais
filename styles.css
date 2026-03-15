@@ -1712,6 +1712,39 @@ label {
     word-break:break-word;
 }
 
+
+/* LOADING GLOBAL */
+
+#loadingOverlay{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.35);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
+    z-index:20000;
+}
+
+.spinner{
+    width:45px;
+    height:45px;
+    border:5px solid #ddd;
+    border-top:5px solid #1976d2;
+    border-radius:50%;
+    animation:girar 0.8s linear infinite;
+}
+
+@keyframes girar{
+    to{ transform:rotate(360deg); }
+}
+
+.loading-text{
+    margin-top:12px;
+    color:#fff;
+    font-size:15px;
+}
+
 /* ===== LOGIN HEADER COM LOGO ===== */
 
 .login-header {

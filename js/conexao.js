@@ -1,18 +1,9 @@
-let API = window.API_URL || "";
-
-// se config.js ainda não carregou, aguarda
-if(!API){
-
-    Object.defineProperty(window,"API_URL",{
-        set:function(v){
-            API = v;
-        },
-        get:function(){
-            return API;
-        }
-    });
-
-}
+// ===== API dinâmica (funciona mesmo se config.js carregar depois)
+Object.defineProperty(window, "API", {
+    get(){
+        return window.API_URL || "";
+    }
+});
 
 // ===============================
 function normalizarChave(s){

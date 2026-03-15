@@ -141,7 +141,7 @@ function montarTabela(dados, contagem){
                             totalRespostas > 0
                             ? `<button class="btn-acao"
                                        title="Relatório"
-                                       onclick="abrirRelatorio('${id}','${linkRelatorio || ""}')">
+                                       onclick="abrirResultados('${id}')">
                                        📊
                                </button>`
                             : "—"
@@ -620,7 +620,142 @@ function mostrarToast(mensagem){
         setTimeout(() => toast.remove(), 300);
     }, 3000);
 }
-    
+
+// =============================
+// RESULTADOS EM MODAL
+// =============================
+async function abrirResultados(id){
+
+    const token = localStorage.getItem("TOKEN");
+
+    const dados = await fetchProtegido(
+        API + "?tipo=obterResultados&id=" + id + "&token=" + token
+    );
+
+    if(!dados) return;
+
+    const modal = document.createElement("div");
+    modal.id = "modalResultados";
+
+    modal.innerHTML = `
+    <div class="modal-bg" onclick="fecharResultados()"></div>
+
+    <div class="modal-box" style="max-width:1000px;">
+
+        <h3 style="margin-bottom:15px;">Resultados da Aplicação</h3>
+
+        <div id="abasTurmas"></div>
+
+        <div id="tabelaResultados" style="margin-top:15px;"></div>
+
+        <div style="margin-top:20px;text-align:right;">
+            <button onclick="exportarExcel()">Baixar Excel</button>
+            <button onclick="fecharResultados()">Fechar</button>
+        </div>
+
+    </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    montarAbasTurmas(dados);
+} 
+
+function montarAbasTurmas(dados){
+
+    const turmas = Object.keys(dados);
+
+    let html = `<div style="display:flex;gap:8px;flex-wrap:wrap;">`;
+
+    turmas.forEach((t,i)=>{
+
+        html += `
+        <button onclick="mostrarTurma('${t}')"
+                class="abaTurma"
+                ${i===0 ? 'style="background:#1976d2;color:white;"' : ""}>
+            ${t}
+        </button>
+        `;
+
+    });
+
+    html += `</div>`;
+
+    document.getElementById("abasTurmas").innerHTML = html;
+
+    window.resultadosCache = dados;
+
+    mostrarTurma(turmas[0]);
+}   
+
+function mostrarTurma(turma){
+
+    const dados = window.resultadosCache[turma];
+
+    dados.sort((a,b)=>a.nome.localeCompare(b.nome));
+
+    let html = `
+    <div class="table-wrapper">
+    <table class="tabela">
+    <thead>
+        <tr>
+            <th>Aluno</th>
+            <th class="text-center">Acertos</th>
+            <th class="text-center">%</th>
+        </tr>
+    </thead>
+    <tbody>
+    `;
+
+    dados.forEach(a=>{
+
+        html += `
+        <tr>
+            <td>${a.nome}</td>
+            <td class="text-center">${a.acertos}</td>
+            <td class="text-center">${a.percentual}%</td>
+        </tr>
+        `;
+
+    });
+
+    html += `</tbody></table></div>`;
+
+    document.getElementById("tabelaResultados").innerHTML = html;
+}    
+
+function fecharResultados(){
+    const modal = document.getElementById("modalResultados");
+    if(modal) modal.remove();
+}
+
+function exportarExcel(){
+
+    const tabela = document.querySelector("#tabelaResultados table");
+
+    if(!tabela) return;
+
+    let csv = [];
+
+    for(let linha of tabela.rows){
+
+        let row = [];
+
+        for(let cell of linha.cells){
+            row.push(cell.innerText);
+        }
+
+        csv.push(row.join(";"));
+    }
+
+    const blob = new Blob([csv.join("\n")], {type:"text/csv"});
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "resultados.csv";
+    a.click();
+}    
 carregarAplicacoes();
 
 </script>

@@ -1,6 +1,18 @@
-//=====Busca link da API no config.js
+let API = window.API_URL || "";
 
-const API =  window.API_URL 
+// se config.js ainda não carregou, aguarda
+if(!API){
+
+    Object.defineProperty(window,"API_URL",{
+        set:function(v){
+            API = v;
+        },
+        get:function(){
+            return API;
+        }
+    });
+
+}
 
 // ===============================
 function normalizarChave(s){

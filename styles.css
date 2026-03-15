@@ -1593,11 +1593,34 @@ label {
     background:rgba(0,0,0,0.45);
 }
 
+#modalResultados table{
+    width:100%;
+    border-collapse:collapse;
+    table-layout:fixed;
+}
+
+#modalResultados th:nth-child(1),
+#modalResultados td:nth-child(1){
+    width:40%;
+}
+
+#modalResultados th:nth-child(2),
+#modalResultados td:nth-child(2){
+    width:30%;
+    text-align:center;
+}
+
+#modalResultados th:nth-child(3),
+#modalResultados td:nth-child(3){
+    width:30%;
+    text-align:center;
+}
+
 /* JANELA DO MODAL */
 #modalResultados .modal-box{
 
     position:absolute;
-    top:50%;
+    top:45%;
     left:50%;
     transform:translate(-50%,-50%);
 

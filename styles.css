@@ -1615,6 +1615,22 @@ label {
     overflow-y:auto;
 }
 
+#modalResultados table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+#modalResultados th{
+    background:#eef1f4;
+    padding:10px;
+    text-align:left;
+}
+
+#modalResultados td{
+    padding:8px;
+    border-bottom:1px solid #ddd;
+}
+
 /* ===== LOGIN HEADER COM LOGO ===== */
 
 .login-header {

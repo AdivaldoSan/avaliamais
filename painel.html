@@ -632,6 +632,8 @@ async function abrirResultados(id){
         API + "?tipo=obterResultados&id=" + id + "&token=" + token
     );
 
+                   console.log("RETORNO API:", dados);
+
     if(!dados) return;
 
     const modal = document.createElement("div");

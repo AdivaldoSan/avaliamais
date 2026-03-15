@@ -1703,6 +1703,14 @@ label {
     white-space:nowrap;
 }
 
+#modalResultados #tabelaResultados{
+    margin-top:10px;
+    border-radius:6px;
+}
+
+#modalResultados td:first-child{
+    word-break:break-word;
+}
 
 /* ===== LOGIN HEADER COM LOGO ===== */
 

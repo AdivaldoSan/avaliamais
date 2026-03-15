@@ -626,14 +626,16 @@ function mostrarToast(mensagem){
 // RESULTADOS EM MODAL
 // =============================
 async function abrirResultados(id){
-
+    
+    mostrarLoading("Carregando resultados da aplicação...");
+    
     const token = localStorage.getItem("TOKEN");
 
     const dados = await fetchProtegido(
         API + "?tipo=obterResultados&id=" + id + "&token=" + token
     );
 
-                   console.log("RETORNO API:", dados);
+    esconderLoading();
 
     if(!dados) return;
 
@@ -790,6 +792,25 @@ function exportarExcel(){
     a.href = url;
     a.download = "resultados.csv";
     a.click();
+}
+
+function mostrarLoading(msg="Carregando dados..."){
+
+    const overlay = document.createElement("div");
+    overlay.id = "loadingOverlay";
+
+    overlay.innerHTML = `
+        <div class="spinner"></div>
+        <div class="loading-text">${msg}</div>
+    `;
+
+    document.body.appendChild(overlay);
+}  
+
+function esconderLoading(){
+
+    const el = document.getElementById("loadingOverlay");
+    if(el) el.remove();
 }    
 
 </script>

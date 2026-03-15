@@ -729,18 +729,21 @@ function mostrarTurma(turma){
 
     const lista = window.resultadosCache[turma] || [];
 
-    lista.sort((a,b)=>a.nome.localeCompare(b.nome));
+    // ordenar por número da chamada
+    lista.sort((a,b)=> (a.numero || 999) - (b.numero || 999));
 
     let html = `
-    <div class="table-wrapper">
     <table class="tabela">
+
     <thead>
         <tr>
+            <th>Nº</th>
             <th>Aluno</th>
-            <th class="text-center">Acertos</th>
-            <th class="text-center">%</th>
+            <th>Acertos</th>
+            <th>%</th>
         </tr>
     </thead>
+
     <tbody>
     `;
 
@@ -748,15 +751,19 @@ function mostrarTurma(turma){
 
         html += `
         <tr>
-            <td>${a.nome}</td>
-            <td class="text-center">${a.acertos}</td>
-            <td class="text-center">${a.percentual}%</td>
+            <td class="numero">${a.numero || "-"}</td>
+            <td class="aluno">${a.nome}</td>
+            <td class="acertos">${a.acertos}</td>
+            <td class="percentual">${a.percentual}%</td>
         </tr>
         `;
 
     });
 
-    html += `</tbody></table></div>`;
+    html += `
+    </tbody>
+    </table>
+    `;
 
     document.getElementById("tabelaResultados").innerHTML = html;
 }

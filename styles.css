@@ -1580,10 +1580,27 @@ label {
 }
 
 /* CONTAINER DO MODAL RESULTADOS */
+
 #modalResultados{
     position:fixed;
     inset:0;
     z-index:10000;
+}
+
+#modalResultados .modal-box{
+    position:absolute;
+    top:48%;
+    left:50%;
+    transform:translate(-50%,-50%);
+
+    width:80%;
+    max-width:900px;
+
+    background:white;
+    padding:25px;
+    border-radius:10px;
+
+    box-shadow:0 15px 40px rgba(0,0,0,0.25);
 }
 
 /* FUNDO ESCURO */
@@ -1597,23 +1614,44 @@ label {
     width:100%;
     border-collapse:collapse;
     table-layout:fixed;
+    font-size:14px;
 }
 
+/* CABEÇALHO */
+#modalResultados th{
+    background:#eef1f4;
+    padding:8px;
+    font-weight:600;
+}
+
+/* CÉLULAS */
+#modalResultados td{
+    padding:6px 8px;
+}
+
+/* ALUNO - alinhado à esquerda */
 #modalResultados th:nth-child(1),
 #modalResultados td:nth-child(1){
-    width:40%;
+    width:55%;
+    text-align:left;
 }
 
+/* ACERTOS */
 #modalResultados th:nth-child(2),
 #modalResultados td:nth-child(2){
-    width:30%;
+    width:20%;
     text-align:center;
 }
 
+/* PERCENTUAL */
 #modalResultados th:nth-child(3),
 #modalResultados td:nth-child(3){
-    width:30%;
+    width:25%;
     text-align:center;
+}
+
+#modalResultados tr:nth-child(even){
+    background:#f8f9fb;
 }
 
 /* JANELA DO MODAL */
@@ -1652,6 +1690,12 @@ label {
 #modalResultados td{
     padding:8px;
     border-bottom:1px solid #ddd;
+}
+
+#modalResultados .tabela-scroll{
+    max-height:320px;   /* cerca de 10 alunos */
+    overflow-y:auto;
+    margin-top:10px;
 }
 
 /* ===== LOGIN HEADER COM LOGO ===== */

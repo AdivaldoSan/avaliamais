@@ -1,8 +1,4 @@
-let API = "";
-
-setTimeout(()=>{
-    API = window.API_URL || "";
-},0);
+const API = window.API_URL;
 
 // ===============================
 function normalizarChave(s){

@@ -1585,22 +1585,10 @@ label {
     position:fixed;
     inset:0;
     z-index:10000;
-}
 
-#modalResultados .modal-box{
-    position:absolute;
-    top:48%;
-    left:50%;
-    transform:translate(-50%,-50%);
-
-    width:80%;
-    max-width:900px;
-
-    background:white;
-    padding:25px;
-    border-radius:10px;
-
-    box-shadow:0 15px 40px rgba(0,0,0,0.25);
+    display:flex;
+    align-items:center;   /* centraliza vertical */
+    justify-content:center; /* centraliza horizontal */
 }
 
 /* FUNDO ESCURO */
@@ -1656,12 +1644,6 @@ label {
 
 /* JANELA DO MODAL */
 #modalResultados .modal-box{
-
-    position:absolute;
-    top:45%;
-    left:50%;
-    transform:translate(-50%,-50%);
-
     width:80%;
     max-width:900px;
     max-height:80vh;

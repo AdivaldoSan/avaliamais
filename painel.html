@@ -627,37 +627,17 @@ function mostrarToast(mensagem){
 // =============================
 async function abrirResultados(id){
     
- mostrarLoading("Carregando resultados...");
+    mostrarLoading("Carregando resultados da aplicação...");
 
-    try{
+    const token = localStorage.getItem("TOKEN");
 
-        const token = localStorage.getItem("TOKEN");
+    const dados = await fetchProtegido(
+        API + "?tipo=obterResultados&id=" + id + "&token=" + token
+    );
 
-        const dados = await fetchProtegido(
-            API + "?tipo=obterResultados&id=" + id + "&token=" + token
-        );
+    esconderLoading();
 
-        if(!dados){
-            mostrarToast("Não foi possível carregar os resultados.");
-            return;
-        }
-
-        abrirModalResultados(dados);
-
-    }catch(e){
-
-        console.error(e);
-
-        mostrarToast("Erro ao carregar resultados.");
-
-    }finally{
-
-        esconderLoading();
-
-    }
-}
-
-    //if(!dados) return;
+    if(!dados) return;
 
     const modal = document.createElement("div");
     modal.id = "modalResultados";

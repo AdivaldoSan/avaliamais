@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Avalia+ | Painel do Professor</title>
 <link rel="stylesheet" href="styles.css">
-<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="faviconF.svg" type="image/svg+xml">
 <link rel="alternate icon" href="favicon.ico">
 </head>
 
@@ -667,6 +667,8 @@ function montarAbasTurmas(dados){
 
     const turmas = Object.keys(dados);
 
+    window.resultadosCache = dados;
+
     let html = `<div style="display:flex;gap:8px;flex-wrap:wrap;">`;
 
     turmas.forEach((t,i)=>{
@@ -685,16 +687,14 @@ function montarAbasTurmas(dados){
 
     document.getElementById("abasTurmas").innerHTML = html;
 
-    window.resultadosCache = dados;
-
     mostrarTurma(turmas[0]);
-}   
+}  
 
 function mostrarTurma(turma){
 
-    const dados = window.resultadosCache[turma];
+    const lista = window.resultadosCache[turma] || [];
 
-    dados.sort((a,b)=>a.nome.localeCompare(b.nome));
+    lista.sort((a,b)=>a.nome.localeCompare(b.nome));
 
     let html = `
     <div class="table-wrapper">
@@ -709,7 +709,7 @@ function mostrarTurma(turma){
     <tbody>
     `;
 
-    dados.forEach(a=>{
+    lista.forEach(a=>{
 
         html += `
         <tr>
@@ -724,7 +724,7 @@ function mostrarTurma(turma){
     html += `</tbody></table></div>`;
 
     document.getElementById("tabelaResultados").innerHTML = html;
-}    
+}
 
 function fecharResultados(){
     const modal = document.getElementById("modalResultados");

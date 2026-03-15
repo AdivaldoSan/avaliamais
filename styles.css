@@ -1601,8 +1601,7 @@ label {
 #modalResultados table{
     width:100%;
     border-collapse:collapse;
-    table-layout:fixed;
-    font-size:14px;
+    table-layout:auto;   /* deixa navegador ajustar largura */
 }
 
 /* CABEÇALHO */
@@ -1617,24 +1616,22 @@ label {
     padding:6px 8px;
 }
 
-/* ALUNO - alinhado à esquerda */
+
+/* ALUNO */
 #modalResultados th:nth-child(1),
 #modalResultados td:nth-child(1){
-    width:55%;
     text-align:left;
 }
 
 /* ACERTOS */
 #modalResultados th:nth-child(2),
 #modalResultados td:nth-child(2){
-    width:20%;
     text-align:center;
 }
 
-/* PERCENTUAL */
+/* % */
 #modalResultados th:nth-child(3),
 #modalResultados td:nth-child(3){
-    width:25%;
     text-align:center;
 }
 
@@ -1685,6 +1682,12 @@ label {
     top:0;
     background:#eef1f4;
     z-index:2;
+}
+
+#modalResultados .tabela-scroll{
+    max-height:320px;
+    overflow-y:auto;
+    overflow-x:hidden;
 }
 
 /* ===== LOGIN HEADER COM LOGO ===== */

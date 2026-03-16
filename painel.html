@@ -22,7 +22,7 @@ function iniciarPagina(){
     criarLayout();
 
     document.getElementById("conteudo").innerHTML = `
-        <h2 style="margin-bottom:20px;">📊 Painel de Aplicações...</h2>
+        <h2 style="margin-bottom:20px;">📊 Painel de Aplicações.</h2>
         <div id="listaAplicacoes" class="card">
             Carregando aplicações...
         </div>
@@ -736,7 +736,6 @@ function mostrarTurma(turma){
 
     const totalQuestoes = lista[0].questoes.length;
 
-    // mapa por numero da chamada
     const mapa = {};
     let maxNumero = 0;
 
@@ -745,9 +744,10 @@ function mostrarTurma(turma){
         if(a.numero > maxNumero) maxNumero = a.numero;
     });
 
-    let html = `<table class="tabela">`;
+    let html = `<div class="tabela-scroll">`;
 
-    // CABEÇALHO
+    html += `<table>`;
+
     html += `<thead><tr>`;
     html += `<th>Nº</th>`;
     html += `<th>Aluno</th>`;
@@ -758,8 +758,8 @@ function mostrarTurma(turma){
 
     html += `<th>Acertos</th>`;
     html += `<th>%</th>`;
-    html += `</tr></thead><tbody>`;
 
+    html += `</tr></thead><tbody>`;
 
     for(let i=1;i<=maxNumero;i++){
 
@@ -767,11 +767,11 @@ function mostrarTurma(turma){
 
         html += `<tr>`;
 
-        html += `<td class="numero">${i}</td>`;
+        html += `<td>${i}</td>`;
 
         if(aluno){
 
-            html += `<td class="aluno">${aluno.nome}</td>`;
+            html += `<td>${aluno.nome}</td>`;
 
             aluno.questoes.forEach(q=>{
 
@@ -787,8 +787,8 @@ function mostrarTurma(turma){
 
             });
 
-            html += `<td class="acertos">${aluno.acertos}</td>`;
-            html += `<td class="percentual">${aluno.percentual}%</td>`;
+            html += `<td>${aluno.acertos}</td>`;
+            html += `<td>${aluno.percentual}%</td>`;
 
         }else{
 
@@ -804,9 +804,10 @@ function mostrarTurma(turma){
         }
 
         html += `</tr>`;
+
     }
 
-    html += `</tbody></table>`;
+    html += `</tbody></table></div>`;
 
     document.getElementById("tabelaResultados").innerHTML = html;
 }

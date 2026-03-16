@@ -1758,6 +1758,36 @@ label {
     color:#000;
 }
 
+/* BOTÃO EXCEL */
+
+.btn-excel{
+
+    background:#2e7d32;
+    color:white;
+
+    border:none;
+
+    padding:8px 14px;
+
+    border-radius:6px;
+
+    font-size:14px;
+
+    cursor:pointer;
+
+    transition:all .15s ease;
+
+}
+
+.btn-excel:hover{
+    background:#1b5e20;
+}
+
+.btn-excel:active{
+    transform:scale(.97);
+}
+
+
 /* LOADING GLOBAL */
 
 #loadingOverlay{

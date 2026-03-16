@@ -646,6 +646,7 @@ async function abrirResultados(id){
     <div class="modal-bg" onclick="fecharResultados()"></div>
 
     <div class="modal-box resultados-box">
+        <button class="modal-fechar" onclick="fecharResultados()">✕</button>
 
         <h3 style="margin-bottom:15px;">Resultados da Aplicação</h3>
 
@@ -655,7 +656,6 @@ async function abrirResultados(id){
 
         <div style="margin-top:20px;text-align:right;">
             <button onclick="exportarExcel()">Baixar Excel</button>
-            <button onclick="fecharResultados()">Fechar</button>
         </div>
 
     </div>
@@ -811,11 +811,27 @@ function mostrarTurma(turma){
 
     document.getElementById("tabelaResultados").innerHTML = html;
 }
+    
 
 function fecharResultados(){
     const modal = document.getElementById("modalResultados");
     if(modal) modal.remove();
 }
+
+// fechar modal com ESC
+document.addEventListener("keydown", function(e){
+
+    if(e.key === "Escape"){
+
+        const modal = document.getElementById("modalResultados");
+
+        if(modal){
+            fecharResultados();
+        }
+
+    }
+
+});    
 
 function exportarExcel(){
 

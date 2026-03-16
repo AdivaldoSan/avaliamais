@@ -768,25 +768,25 @@ function mostrarTurma(turma){
 
             if(!r){
 
-                html += `
-                <td>
-                    <div class="resposta-circulo resposta-vazio">-</div>
-                </td>`;
+    html += `
+    <td>
+        <div class="resposta-circulo resposta-vazio">-</div>
+    </td>`;
 
-            }else{
+}else{
 
-                const classe =
-                    r.marcada === r.correta
-                    ? "resposta-acerto"
-                    : "resposta-erro";
+    const classe =
+        r.marcada === r.correta
+        ? "resposta-acerto"
+        : "resposta-erro";
 
-                html += `
-                <td>
-                    <div class="resposta-circulo ${classe}">
-                        ${r.marcada}
-                    </div>
-                </td>`;
-            }
+    html += `
+    <td>
+        <div class="resposta-circulo ${classe}">
+            ${r.marcada}
+        </div>
+    </td>`;
+}
 
         });
 

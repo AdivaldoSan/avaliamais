@@ -1678,7 +1678,7 @@ label {
 #modalResultados th:nth-child(2),
 #modalResultados td:nth-child(2){
     text-align:left;
-    min-width:180px;
+    white-space:nowrap;
 }
 
 /* QUESTÕES */
@@ -1735,6 +1735,28 @@ label {
     max-height:55vh;
 }
 
+
+/*FECHAR MODAL*/
+.modal-fechar{
+
+    position:absolute;
+
+    top:12px;
+    right:15px;
+
+    border:none;
+    background:none;
+
+    font-size:20px;
+
+    cursor:pointer;
+
+    color:#666;
+}
+
+.modal-fechar:hover{
+    color:#000;
+}
 
 /* LOADING GLOBAL */
 

@@ -1584,6 +1584,10 @@ label {
     position:fixed;
     inset:0;
     z-index:10000;
+
+    display:flex;
+    align-items:center;     /* centraliza vertical */
+    justify-content:center; /* centraliza horizontal */
 }
 
 /* FUNDO ESCURO */
@@ -1596,10 +1600,7 @@ label {
 /* CAIXA DO MODAL */
 #modalResultados .modal-box{
 
-    position:absolute;
-    top:50%;
-    left:50%;
-    transform:translate(-50%,-50%);
+    position:relative;
 
     width:90%;
     max-width:1200px;
@@ -1616,6 +1617,8 @@ label {
 
     display:flex;
     flex-direction:column;
+
+    overflow:hidden;
 }
 
 /* ÁREA DA TABELA */

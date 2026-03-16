@@ -1708,26 +1708,38 @@ label {
     background:#f8f9fb;
 }
 
-/* ACERTO */
+.resposta-circulo{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
 
-#modalResultados .acerto{
-    background:#d4edda;
-    color:#155724;
-    font-weight:bold;
+    width:26px;
+    height:26px;
+
+    border-radius:50%;
+
+    font-size:13px;
+    font-weight:600;
+
+    margin:auto;
 }
 
-/* ERRO */
-
-#modalResultados .erro{
-    background:#f8d7da;
-    color:#721c24;
-    font-weight:bold;
+/* acerto */
+.resposta-acerto{
+    background:#c8e6c9;
+    color:#1b5e20;
 }
 
-/* SEM RESPOSTA */
+/* erro */
+.resposta-erro{
+    background:#ffcdd2;
+    color:#b71c1c;
+}
 
-#modalResultados .vazio{
-    color:#999;
+/* vazio */
+.resposta-vazio{
+    background:#eceff1;
+    color:#546e7a;
 }
 
 #modalResultados .tabela-scroll{
@@ -1735,6 +1747,13 @@ label {
     max-height:55vh;
 }
 
+#modalResultados td{
+    text-align:center;
+}
+
+#modalResultados td:nth-child(2){
+    text-align:left;
+}
 
 /*FECHAR MODAL*/
 .modal-fechar{

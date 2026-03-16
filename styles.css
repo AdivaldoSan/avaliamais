@@ -1726,6 +1726,34 @@ label {
     text-align:center;
 }
 
+#modalResultados .acerto{
+    background:#d4edda;
+    color:#155724;
+    font-weight:bold;
+    text-align:center;
+}
+
+#modalResultados .erro{
+    background:#f8d7da;
+    color:#721c24;
+    font-weight:bold;
+    text-align:center;
+}
+
+#modalResultados .vazio{
+    color:#999;
+    text-align:center;
+}
+
+#modalResultados .numero{
+    width:50px;
+    text-align:center;
+}
+
+#modalResultados .aluno{
+    text-align:left;
+}
+
 
 /* LOADING GLOBAL */
 

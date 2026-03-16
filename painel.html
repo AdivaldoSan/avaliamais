@@ -23,7 +23,7 @@ function iniciarPagina(){
     criarLayout();
 
     document.getElementById("conteudo").innerHTML = `
-        <h2 style="margin-bottom:20px;">📊 Painel de Aplicações...</h2>
+        <h2 style="margin-bottom:20px;">📊 Painel de Aplicações.</h2>
         <div id="listaAplicacoes" class="card">
             Carregando aplicações...
         </div>
@@ -730,83 +730,74 @@ function montarAbasTurmas(dados){
     
 function mostrarTurma(turma){
 
-    const lista = window.resultadosCache[turma] || [];
+    const dados = window.resultadosCache[turma];
+    const ordemQuestoes = window.ordemQuestoes;
 
-    if(lista.length === 0){
-        document.getElementById("tabelaResultados").innerHTML = "Sem dados.";
-        return;
-    }
+    let html = `
+    <div class="tabela-scroll">
+    <table class="tabela">
+    <thead>
+        <tr>
+            <th>Nº</th>
+            <th>Aluno</th>
+    `;
 
-    const totalQuestoes = lista[0].questoes.length;
-
-    const mapa = {};
-    let maxNumero = 0;
-
-    lista.forEach(a=>{
-        mapa[a.numero] = a;
-        if(a.numero > maxNumero) maxNumero = a.numero;
+    ordemQuestoes.forEach((q,i)=>{
+        html += `<th>Q${i+1}</th>`;
     });
 
-    let html = `<div class="tabela-scroll"><table>`;
+    html += `
+            <th>Acertos</th>
+            <th>%</th>
+        </tr>
+    </thead>
+    <tbody>
+    `;
 
-    html += `<thead><tr>`;
-    html += `<th>Nº</th>`;
-    html += `<th>Aluno</th>`;
+    dados.forEach(aluno=>{
 
-    for(let q=1;q<=totalQuestoes;q++){
-        html += `<th>Q${q}</th>`;
-    }
+        html += `
+        <tr>
+            <td>${aluno.numero}</td>
+            <td>${aluno.nome || "-"}</td>
+        `;
 
-    html += `<th>Acertos</th>`;
-    html += `<th>%</th>`;
-    html += `</tr></thead><tbody>`;
+        ordemQuestoes.forEach((q)=>{
 
-    for(let i=1;i<=maxNumero;i++){
+            const r = aluno.respostas[q];
 
-        const aluno = mapa[i];
+            if(!r){
 
-        html += `<tr>`;
-        html += `<td>${i}</td>`;
+                html += `
+                <td>
+                    <div class="resposta-circulo resposta-vazio">-</div>
+                </td>`;
 
-        if(aluno){
+            }else{
 
-            html += `<td>${aluno.nome}</td>`;
+                const classe =
+                    r.marcada === r.correta
+                    ? "resposta-acerto"
+                    : "resposta-erro";
 
-            aluno.questoes.forEach(q=>{
-
-                if(!q){
-                    html += `<td>-</td>`;
-                }
-                else if(q.marcada === q.correta){
-                    html += `<td class="acerto">${q.marcada}</td>`;
-                }
-                else{
-                    html += `<td class="erro">${q.marcada}</td>`;
-                }
-
-            });
-
-            html += `<td>${aluno.acertos}</td>`;
-            html += `<td>${aluno.percentual}%</td>`;
-
-        }else{
-
-            html += `<td>-</td>`;
-
-            for(let q=0;q<totalQuestoes;q++){
-                html += `<td>-</td>`;
+                html += `
+                <td>
+                    <div class="resposta-circulo ${classe}">
+                        ${r.marcada}
+                    </div>
+                </td>`;
             }
 
-            html += `<td>-</td>`;
-            html += `<td>-</td>`;
+        });
 
-        }
+        html += `
+            <td>${aluno.acertos}</td>
+            <td>${aluno.percentual}%</td>
+        </tr>
+        `;
+    });
 
-        html += `</tr>`;
-
-    }
-
-    html += `</tbody></table></div>`;
+    html += "</tbody></table></div>";
 
     document.getElementById("tabelaResultados").innerHTML = html;
 }

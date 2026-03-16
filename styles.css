@@ -1579,16 +1579,11 @@ label {
     padding: 6px;
 }
 
-/* CONTAINER DO MODAL RESULTADOS */
-
+/* CONTAINER DO MODAL */
 #modalResultados{
     position:fixed;
     inset:0;
     z-index:10000;
-
-    display:flex;
-    align-items:center;   /* centraliza vertical */
-    justify-content:center; /* centraliza horizontal */
 }
 
 /* FUNDO ESCURO */
@@ -1598,160 +1593,138 @@ label {
     background:rgba(0,0,0,0.45);
 }
 
-#modalResultados table{
-    width:100%;
-    border-collapse:collapse;
-    table-layout:auto;   /* deixa navegador ajustar largura */
-}
-
-/* CABEÇALHO */
-#modalResultados th{
-    background:#eef1f4;
-    padding:8px;
-    font-weight:600;
-}
-
-/* CÉLULAS */
-#modalResultados td{
-    padding:6px 8px;
-}
-
-
-/* ALUNO */
-#modalResultados th:nth-child(1),
-#modalResultados td:nth-child(1){
-    text-align:left;
-}
-
-/* ACERTOS */
-#modalResultados th:nth-child(2),
-#modalResultados td:nth-child(2){
-    text-align:center;
-}
-
-/* % */
-#modalResultados th:nth-child(3),
-#modalResultados td:nth-child(3){
-    text-align:center;
-}
-
-#modalResultados tr:nth-child(even){
-    background:#f8f9fb;
-}
-
-/* JANELA DO MODAL */
+/* CAIXA DO MODAL */
 #modalResultados .modal-box{
-    width:80%;
-    max-width:900px;
-    max-height:80vh;
+
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+
+    width:90%;
+    max-width:1200px;
+
+    max-height:85vh;
 
     background:white;
+
     padding:25px;
 
     border-radius:10px;
 
     box-shadow:0 15px 40px rgba(0,0,0,0.25);
 
-    overflow-y:auto;
+    display:flex;
+    flex-direction:column;
 }
 
-#modalResultados th{
-    background:#eef1f4;
-    padding:10px;
-    text-align:left;
-}
-
-#modalResultados td{
-    padding:8px;
-    border-bottom:1px solid #ddd;
-}
-
-
-
-#modalResultados thead th{
-    position:sticky;
-    top:0;
-    background:#eef1f4;
-    z-index:2;
-}
-
+/* ÁREA DA TABELA */
 #modalResultados .tabela-scroll{
-    max-height:320px;
-    overflow-y:auto;
-    overflow-x:hidden;
+
+    overflow:auto;
+
+    margin-top:15px;
+
 }
 
-#modalResultados th,
-#modalResultados td{
-    white-space:nowrap;
-}
-
-#modalResultados #tabelaResultados{
-    max-height:320px;
-    overflow-y:auto;
-    overflow-x:hidden;
-}
+/* TABELA */
 
 #modalResultados table{
+
     width:100%;
     border-collapse:collapse;
-    table-layout:auto;
+
+    font-size:14px;
+
 }
 
-#modalResultados th,
+/* CABEÇALHO */
+
+#modalResultados thead th{
+
+    background:#eef1f4;
+
+    padding:10px;
+
+    font-weight:600;
+
+    position:sticky;
+    top:0;
+}
+
+/* CÉLULAS */
+
 #modalResultados td{
-    white-space:nowrap;
+
+    padding:8px;
+
+    border-bottom:1px solid #e3e6ea;
+
 }
 
-#modalResultados #tabelaResultados{
-    margin-top:10px;
-    border-radius:6px;
-}
+/* ALINHAMENTOS */
 
-#modalResultados td:first-child{
-    word-break:break-word;
-}
-
-#modalResultados .numero{
+/* Nº */
+#modalResultados th:nth-child(1),
+#modalResultados td:nth-child(1){
     width:50px;
     text-align:center;
 }
 
-#modalResultados .aluno{
+/* NOME */
+#modalResultados th:nth-child(2),
+#modalResultados td:nth-child(2){
     text-align:left;
+    min-width:180px;
 }
 
-#modalResultados .acertos,
-#modalResultados .percentual{
+/* QUESTÕES */
+#modalResultados th:nth-child(n+3):nth-child(-n+20),
+#modalResultados td:nth-child(n+3):nth-child(-n+20){
+    text-align:center;
+    width:45px;
+}
+
+/* ACERTOS */
+#modalResultados th:nth-last-child(2),
+#modalResultados td:nth-last-child(2){
+    width:80px;
     text-align:center;
 }
+
+/* % */
+#modalResultados th:last-child,
+#modalResultados td:last-child{
+    width:70px;
+    text-align:center;
+}
+
+/* LINHAS ALTERNADAS */
+
+#modalResultados tr:nth-child(even){
+    background:#f8f9fb;
+}
+
+/* ACERTO */
 
 #modalResultados .acerto{
     background:#d4edda;
     color:#155724;
     font-weight:bold;
-    text-align:center;
 }
+
+/* ERRO */
 
 #modalResultados .erro{
     background:#f8d7da;
     color:#721c24;
     font-weight:bold;
-    text-align:center;
 }
+
+/* SEM RESPOSTA */
 
 #modalResultados .vazio{
     color:#999;
-    text-align:center;
-}
-
-#modalResultados .numero{
-    width:50px;
-    text-align:center;
-}
-
-#modalResultados .aluno{
-    text-align:left;
 }
 
 

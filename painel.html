@@ -730,23 +730,14 @@ function montarAbasTurmas(dados){
     
 function mostrarTurma(turma){
 
-    const dados = window.resultadosCache[turma];
-    const ordemQuestoes = window.ordemQuestoes;
+    const lista = window.resultadosCache[turma] || [];
 
     let html = `
     <div class="tabela-scroll">
     <table class="tabela">
     <thead>
         <tr>
-            <th>Nº</th>
             <th>Aluno</th>
-    `;
-
-    ordemQuestoes.forEach((q,i)=>{
-        html += `<th>Q${i+1}</th>`;
-    });
-
-    html += `
             <th>Acertos</th>
             <th>%</th>
         </tr>
@@ -754,54 +745,22 @@ function mostrarTurma(turma){
     <tbody>
     `;
 
-    dados.forEach(aluno=>{
+    lista.forEach(a=>{
 
         html += `
         <tr>
-            <td>${aluno.numero}</td>
-            <td>${aluno.nome || "-"}</td>
-        `;
-
-        ordemQuestoes.forEach((q)=>{
-
-            const r = aluno.respostas[q];
-
-            if(!r){
-
-    html += `
-    <td>
-        <div class="resposta-circulo resposta-vazio">-</div>
-    </td>`;
-
-}else{
-
-    const classe =
-        r.marcada === r.correta
-        ? "resposta-acerto"
-        : "resposta-erro";
-
-    html += `
-    <td>
-        <div class="resposta-circulo ${classe}">
-            ${r.marcada}
-        </div>
-    </td>`;
-}
-
-        });
-
-        html += `
-            <td>${aluno.acertos}</td>
-            <td>${aluno.percentual}%</td>
+            <td>${a.nome}</td>
+            <td>${a.acertos}</td>
+            <td>${a.percentual}%</td>
         </tr>
         `;
+
     });
 
     html += "</tbody></table></div>";
 
     document.getElementById("tabelaResultados").innerHTML = html;
 }
-    
 
 function fecharResultados(){
     const modal = document.getElementById("modalResultados");

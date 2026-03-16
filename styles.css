@@ -1730,6 +1730,11 @@ label {
     color:#999;
 }
 
+#modalResultados .tabela-scroll{
+    overflow:auto;
+    max-height:55vh;
+}
+
 
 /* LOADING GLOBAL */
 

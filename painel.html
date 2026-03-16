@@ -729,41 +729,84 @@ function mostrarTurma(turma){
 
     const lista = window.resultadosCache[turma] || [];
 
-    // ordenar por número da chamada
-    lista.sort((a,b)=> (a.numero || 999) - (b.numero || 999));
+    if(lista.length === 0){
+        document.getElementById("tabelaResultados").innerHTML = "Sem dados.";
+        return;
+    }
 
-    let html = `
-    <table class="tabela">
+    const totalQuestoes = lista[0].questoes.length;
 
-    <thead>
-        <tr>
-            <th>Nº</th>
-            <th>Aluno</th>
-            <th>Acertos</th>
-            <th>%</th>
-        </tr>
-    </thead>
-
-    <tbody>
-    `;
+    // mapa por numero da chamada
+    const mapa = {};
+    let maxNumero = 0;
 
     lista.forEach(a=>{
-
-        html += `
-        <tr>
-            <td class="numero">${a.numero || "-"}</td>
-            <td class="aluno">${a.nome}</td>
-            <td class="acertos">${a.acertos}</td>
-            <td class="percentual">${a.percentual}%</td>
-        </tr>
-        `;
-
+        mapa[a.numero] = a;
+        if(a.numero > maxNumero) maxNumero = a.numero;
     });
 
-    html += `
-    </tbody>
-    </table>
-    `;
+    let html = `<table class="tabela">`;
+
+    // CABEÇALHO
+    html += `<thead><tr>`;
+    html += `<th>Nº</th>`;
+    html += `<th>Aluno</th>`;
+
+    for(let q=1;q<=totalQuestoes;q++){
+        html += `<th>Q${q}</th>`;
+    }
+
+    html += `<th>Acertos</th>`;
+    html += `<th>%</th>`;
+    html += `</tr></thead><tbody>`;
+
+
+    for(let i=1;i<=maxNumero;i++){
+
+        const aluno = mapa[i];
+
+        html += `<tr>`;
+
+        html += `<td class="numero">${i}</td>`;
+
+        if(aluno){
+
+            html += `<td class="aluno">${aluno.nome}</td>`;
+
+            aluno.questoes.forEach(q=>{
+
+                if(q === 1){
+                    html += `<td class="acerto">✓</td>`;
+                }
+                else if(q === 0){
+                    html += `<td class="erro">✗</td>`;
+                }
+                else{
+                    html += `<td class="vazio">-</td>`;
+                }
+
+            });
+
+            html += `<td class="acertos">${aluno.acertos}</td>`;
+            html += `<td class="percentual">${aluno.percentual}%</td>`;
+
+        }else{
+
+            html += `<td>-</td>`;
+
+            for(let q=0;q<totalQuestoes;q++){
+                html += `<td class="vazio">-</td>`;
+            }
+
+            html += `<td>-</td>`;
+            html += `<td>-</td>`;
+
+        }
+
+        html += `</tr>`;
+    }
+
+    html += `</tbody></table>`;
 
     document.getElementById("tabelaResultados").innerHTML = html;
 }

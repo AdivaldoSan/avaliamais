@@ -14,6 +14,7 @@
 <script src="./js/config.js"></script>    
 <script src="./js/conexao.js"></script>
 <script src="./js/layout.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>    
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
 
 <script>
@@ -22,7 +23,7 @@ function iniciarPagina(){
     criarLayout();
 
     document.getElementById("conteudo").innerHTML = `
-        <h2 style="margin-bottom:20px;">📊 Painel de Aplicações.</h2>
+        <h2 style="margin-bottom:20px;">📊 Painel de Aplicações...</h2>
         <div id="listaAplicacoes" class="card">
             Carregando aplicações...
         </div>
@@ -746,9 +747,7 @@ function mostrarTurma(turma){
         if(a.numero > maxNumero) maxNumero = a.numero;
     });
 
-    let html = `<div class="tabela-scroll">`;
-
-    html += `<table>`;
+    let html = `<div class="tabela-scroll"><table>`;
 
     html += `<thead><tr>`;
     html += `<th>Nº</th>`;
@@ -760,7 +759,6 @@ function mostrarTurma(turma){
 
     html += `<th>Acertos</th>`;
     html += `<th>%</th>`;
-
     html += `</tr></thead><tbody>`;
 
     for(let i=1;i<=maxNumero;i++){
@@ -768,7 +766,6 @@ function mostrarTurma(turma){
         const aluno = mapa[i];
 
         html += `<tr>`;
-
         html += `<td>${i}</td>`;
 
         if(aluno){
@@ -777,14 +774,14 @@ function mostrarTurma(turma){
 
             aluno.questoes.forEach(q=>{
 
-                if(q === 1){
-                    html += `<td class="acerto">✓</td>`;
+                if(!q){
+                    html += `<td>-</td>`;
                 }
-                else if(q === 0){
-                    html += `<td class="erro">✗</td>`;
+                else if(q.marcada === q.correta){
+                    html += `<td class="acerto">${q.marcada}</td>`;
                 }
                 else{
-                    html += `<td class="vazio">-</td>`;
+                    html += `<td class="erro">${q.marcada}</td>`;
                 }
 
             });
@@ -797,7 +794,7 @@ function mostrarTurma(turma){
             html += `<td>-</td>`;
 
             for(let q=0;q<totalQuestoes;q++){
-                html += `<td class="vazio">-</td>`;
+                html += `<td>-</td>`;
             }
 
             html += `<td>-</td>`;
@@ -835,30 +832,75 @@ document.addEventListener("keydown", function(e){
 
 function exportarExcel(){
 
-    const tabela = document.querySelector("#tabelaResultados table");
+    const turma = document.querySelector(".abaTurma[style]")?.innerText;
 
-    if(!tabela) return;
+    const lista = window.resultadosCache[turma] || [];
 
-    let csv = [];
+    if(lista.length === 0) return;
 
-    for(let linha of tabela.rows){
+    const totalQuestoes = lista[0].questoes.length;
 
-        let row = [];
+    const dados = [];
 
-        for(let cell of linha.cells){
-            row.push(cell.innerText);
-        }
+    const cab = ["Nº","Aluno"];
 
-        csv.push(row.join(";"));
+    for(let i=1;i<=totalQuestoes;i++){
+        cab.push("Q"+i);
     }
 
-    const blob = new Blob([csv.join("\n")], {type:"text/csv"});
-    const url = URL.createObjectURL(blob);
+    cab.push("Acertos");
+    cab.push("%");
 
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "resultados.csv";
-    a.click();
+    dados.push(cab);
+
+    lista.forEach(a=>{
+
+        const linha = [];
+
+        linha.push(a.numero);
+        linha.push(a.nome);
+
+        a.questoes.forEach(q=>{
+            linha.push(q ? q.marcada : "-");
+        });
+
+        linha.push(a.acertos);
+        linha.push(a.percentual+"%");
+
+        dados.push(linha);
+
+    });
+
+    const ws = XLSX.utils.aoa_to_sheet(dados);
+
+    lista.forEach((a,r)=>{
+
+        a.questoes.forEach((q,c)=>{
+
+            if(q && q.marcada !== q.correta){
+
+                const cell = XLSX.utils.encode_cell({
+                    r:r+1,
+                    c:c+2
+                });
+
+                if(ws[cell]){
+                    ws[cell].s = {
+                        fill:{fgColor:{rgb:"F8D7DA"}}
+                    };
+                }
+
+            }
+
+        });
+
+    });
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Resultados");
+
+    XLSX.writeFile(wb,"resultado_"+turma+".xlsx");
+
 }
 
 function mostrarLoading(msg="Carregando dados..."){

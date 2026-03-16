@@ -821,17 +821,15 @@ function fecharResultados(){
 // fechar modal com ESC
 document.addEventListener("keydown", function(e){
 
-    if(e.key === "Escape"){
+    if(e.key !== "Escape") return;
 
-        const modal = document.getElementById("modalResultados");
+    const modal = document.getElementById("modalResultados");
 
-        if(modal){
-            fecharResultados();
-        }
-
+    if(modal){
+        fecharResultados();
     }
 
-});    
+}); 
 
 function exportarExcel(){
 

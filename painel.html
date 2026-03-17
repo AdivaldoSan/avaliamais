@@ -736,6 +736,8 @@ function mostrarTurma(turma){
 
     const totalQuestoes = lista[0].questoes.length;
 
+    const resumo = gerarResumo(lista);
+
     let html = `
     <div class="tabela-scroll">
     <table class="tabela">
@@ -796,7 +798,24 @@ function mostrarTurma(turma){
 
     html += "</tbody></table></div>";
 
-    document.getElementById("tabelaResultados").innerHTML = html;
+    // 🔥 RESUMO EMBAIXO
+    let htmlResumo = "";
+
+    if(resumo){
+
+        htmlResumo = `
+        <div class="resumo-linha">
+            📊 Média: <b>${resumo.media}%</b> |
+            🏆 Maior: <b>${resumo.maior}%</b> |
+            📉 Menor: <b>${resumo.menor}%</b> |
+            ❌ Mais erro: <b>Q${resumo.questaoMaisErro}</b> |
+            ✅ Mais acerto: <b>Q${resumo.questaoMaisAcerto}</b>
+        </div>
+        `;
+    }
+
+    document.getElementById("tabelaResultados").innerHTML =
+        html + htmlResumo;
 }
 
 function fecharResultados(){
@@ -909,6 +928,57 @@ function esconderLoading(){
     if(el) el.remove();
 }    
 
+function gerarResumo(lista){
+
+    if(lista.length === 0) return null;
+
+    const totalQuestoes = lista[0].questoes.length;
+
+    let soma = 0;
+    let maior = -1;
+    let menor = 101;
+
+    const errosPorQuestao = new Array(totalQuestoes).fill(0);
+    const acertosPorQuestao = new Array(totalQuestoes).fill(0);
+
+    lista.forEach(a=>{
+
+        soma += a.percentual;
+
+        if(a.percentual > maior) maior = a.percentual;
+        if(a.percentual < menor) menor = a.percentual;
+
+        a.questoes.forEach((q,i)=>{
+
+            if(!q) return;
+
+            if(q.marcada === q.correta){
+                acertosPorQuestao[i]++;
+            }else{
+                errosPorQuestao[i]++;
+            }
+
+        });
+
+    });
+
+    const media = Math.round(soma / lista.length);
+
+    const questaoMaisErro =
+        errosPorQuestao.indexOf(Math.max(...errosPorQuestao)) + 1;
+
+    const questaoMaisAcerto =
+        acertosPorQuestao.indexOf(Math.max(...acertosPorQuestao)) + 1;
+
+    return {
+        media,
+        maior,
+        menor,
+        questaoMaisErro,
+        questaoMaisAcerto
+    };
+}
+    
 </script>
 
 </body>

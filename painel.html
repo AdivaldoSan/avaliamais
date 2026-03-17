@@ -732,12 +732,24 @@ function mostrarTurma(turma){
 
     const lista = window.resultadosCache[turma] || [];
 
+    if(lista.length === 0) return;
+
+    const totalQuestoes = lista[0].questoes.length;
+
     let html = `
     <div class="tabela-scroll">
     <table class="tabela">
     <thead>
         <tr>
+            <th>Nº</th>
             <th>Aluno</th>
+    `;
+
+    for(let i=1;i<=totalQuestoes;i++){
+        html += `<th>Q${i}</th>`;
+    }
+
+    html += `
             <th>Acertos</th>
             <th>%</th>
         </tr>
@@ -749,12 +761,37 @@ function mostrarTurma(turma){
 
         html += `
         <tr>
-            <td>${a.nome}</td>
+            <td>${a.numero}</td>
+            <td>${a.nome || "-"}</td>
+        `;
+
+        a.questoes.forEach(q=>{
+
+            if(!q){
+                html += `<td><div class="resposta-circulo resposta-vazio">-</div></td>`;
+                return;
+            }
+
+            const classe =
+                q.marcada === q.correta
+                ? "resposta-acerto"
+                : "resposta-erro";
+
+            html += `
+            <td>
+                <div class="resposta-circulo ${classe}">
+                    ${q.marcada}
+                </div>
+            </td>
+            `;
+
+        });
+
+        html += `
             <td>${a.acertos}</td>
             <td>${a.percentual}%</td>
         </tr>
         `;
-
     });
 
     html += "</tbody></table></div>";

@@ -2,62 +2,48 @@
 <html lang="pt-br">
 
 <head>
-
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-
-<title>Gerador de Gabarito</title>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-
-<style><!DOCTYPE html>
-<html lang="pt-br">
-
-<head>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>Gerador de Gabarito</title>
+<title>..Gerador de Gabarito</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
 <style>
 
 body{
-margin:0;
-background:#111;
-color:white;
-font-family:Arial;
-text-align:center;
+  margin:0;
+  background:#111;
+  color:white;
+  font-family:Arial;
+  text-align:center;
 }
 
 h2{
-margin-top:10px;
-font-size:26px;
+  margin-top:15px;
 }
 
 input{
-font-size:22px;
-padding:6px;
-width:120px;
+  font-size:22px;
+  padding:8px;
+  width:120px;
 }
 
 button{
-font-size:20px;
-padding:10px 20px;
-margin:6px;
+  font-size:20px;
+  padding:10px 20px;
+  margin:8px;
 }
 
 canvas{
-background:white;
-width:96vw;
-max-width:900px;
-margin-top:10px;
+  background:white;
+  width:95vw;
+  max-width:900px;
+  margin-top:15px;
 }
 
 #qrTemp{
-display:none;
+  display:none;
 }
 
 </style>
@@ -72,7 +58,7 @@ Questões
 
 <br>
 
-<input id="qtd" type="number" value="5" min="1" max="20">
+<input id="qtd" type="number" min="1" max="20" value="5">
 
 <br>
 
@@ -107,6 +93,9 @@ const TRy = 90
 
 const marcador = 32
 
+// 🔥 QR padronizado
+const qrSize = 140
+
 /* ========================= */
 
 function gerar(){
@@ -136,13 +125,13 @@ let letras=["A","B","C","D"]
 
 for(let c=0;c<4;c++){
 
-let x = inicioX + c*dx
+  let x = inicioX + c*dx
 
-ctx.fillText(
-letras[c],
-x-10,
-inicioY-60
-)
+  ctx.fillText(
+    letras[c],
+    x-10,
+    inicioY-60
+  )
 
 }
 
@@ -154,84 +143,89 @@ ctx.font="24px Arial"
 
 for(let i=0;i<q;i++){
 
-let y = inicioY + i*dy
+  let y = inicioY + i*dy
 
-ctx.fillText(
-(i+1)+".",
-inicioX-60,
-y+6
-)
+  ctx.fillText(
+    (i+1)+".",
+    inicioX-60,
+    y+6
+  )
 
-for(let c=0;c<4;c++){
+  for(let c=0;c<4;c++){
 
-let x = inicioX + c*dx
+    let x = inicioX + c*dx
 
-ctx.beginPath()
-ctx.arc(x,y,raio,0,Math.PI*2)
-ctx.stroke()
+    ctx.beginPath()
+    ctx.arc(x,y,raio,0,Math.PI*2)
+    ctx.stroke()
 
-}
+  }
 
 }
 
 /* =========================
-MARCADORES SUPERIORES
+MARCADORES
 ========================= */
 
 ctx.fillRect(TLx,TLy,marcador,marcador)
 ctx.fillRect(TRx,TRy,marcador,marcador)
 
-/* =========================
-MARCADORES INFERIORES
-========================= */
-
-let BLy = 280 + dy*q
-let BRy = 280 + dy*q
+let BLy = inicioY + dy*q + 40
+let BRy = inicioY + dy*q + 40
 
 ctx.fillRect(160,BLy,marcador,marcador)
 ctx.fillRect(760,BRy,marcador,marcador)
 
 /* =========================
-GERAR QR LATERAL
+GERAR QR
 ========================= */
 
 let qrDiv = document.getElementById("qrTemp")
 qrDiv.innerHTML=""
 
-let dados = "AVALIA+" +
-"|Q="+q +
-"|ID="+Date.now()
+let dados = "AVALIA+|Q="+q+"|ID="+Date.now()
 
 new QRCode(qrDiv,{
-text:dados,
-width:140,
-height:140
+  text:dados,
+  width:qrSize,
+  height:qrSize
 })
 
 let img = qrDiv.querySelector("img")
 
-setTimeout(()=>{
+/* =========================
+POSICIONAMENTO INTELIGENTE
+========================= */
 
-/* QR lateral */
+const margemQR = qrSize
+const qrX = margemQR
 
-ctx.drawImage(
-  img,
-  canvas.width - 300,  // direita
-  60,                  // topo (fora da área de leitura)
-  140,
-  140
-)
+const alturaGabarito = dy * q
+const centroY = inicioY + alturaGabarito / 2
+const qrY = centroY - qrSize / 2
 
-},200)
+/* =========================
+DESENHAR QR (robusto)
+========================= */
+
+img.onload = () => {
+
+  ctx.drawImage(
+    img,
+    qrX,
+    qrY,
+    qrSize,
+    qrSize
+  )
+
+}
 
 }
 
 /* ========================= */
 
 function imprimir(){
-
-window.print()
-
+  window.print()
 }
 
 /* ========================= */
@@ -241,200 +235,4 @@ gerar()
 </script>
 
 </body>
-
-</html>
-
-body{
-margin:0;
-background:#111;
-color:white;
-font-family:Arial;
-text-align:center;
-}
-
-h2{
-margin-top:15px;
-}
-
-input{
-font-size:22px;
-padding:8px;
-width:120px;
-}
-
-button{
-font-size:20px;
-padding:10px 20px;
-margin:8px;
-}
-
-canvas{
-background:white;
-width:95vw;
-max-width:800px;
-margin-top:15px;
-}
-
-#qr{
-display:none;
-}
-
-</style>
-
-</head>
-
-<body>
-
-<h2>Gerador de Gabarito</h2>
-
-Questões
-
-<br>
-
-<input id="qtd" type="number" min="1" max="20" value="5">
-
-<br>
-
-<button onclick="gerar()">Gerar</button>
-<button onclick="imprimir()">Imprimir</button>
-
-<br>
-
-<canvas id="canvas"></canvas>
-
-<div id="qr"></div>
-
-<script>
-
-const inicioX=320
-const inicioY=220
-
-const dx=90
-const dy=75
-
-const raio=25
-
-const TLx=160
-const TLy=90
-
-const TRx=720
-const TRy=90
-
-function gerar(){
-
-let q=parseInt(document.getElementById("qtd").value)
-
-let canvas=document.getElementById("canvas")
-let ctx=canvas.getContext("2d")
-
-canvas.width=900
-canvas.height=300+dy*q+200
-
-ctx.fillStyle="white"
-ctx.fillRect(0,0,canvas.width,canvas.height)
-
-ctx.strokeStyle="black"
-ctx.lineWidth=3
-
-/* letras */
-
-ctx.fillStyle="black"
-ctx.font="30px Arial"
-
-let letras=["A","B","C","D"]
-
-for(let c=0;c<4;c++){
-
-let x=inicioX+c*dx
-
-ctx.fillText(
-letras[c],
-x-10,
-inicioY-70
-)
-
-}
-
-/* números e bolhas */
-
-ctx.font="26px Arial"
-
-for(let i=0;i<q;i++){
-
-let y=inicioY+i*dy
-
-ctx.fillText(
-(i+1)+".",
-inicioX-70,
-y+8
-)
-
-for(let c=0;c<4;c++){
-
-let x=inicioX+c*dx
-
-ctx.beginPath()
-ctx.arc(x,y,raio,0,Math.PI*2)
-ctx.stroke()
-
-}
-
-}
-
-/* quadrados referência */
-
-let BLy=280+75*q
-let BRy=280+75*q
-
-let marcador=32
-
-ctx.fillRect(TLx,TLy,marcador,marcador)
-ctx.fillRect(TRx,TRy,marcador,marcador)
-
-ctx.fillRect(160,BLy,marcador,marcador)
-ctx.fillRect(720,BRy,marcador,marcador)
-
-/* gerar QR */
-
-let qrDiv=document.getElementById("qr")
-qrDiv.innerHTML=""
-
-let dados="PROVA|QUESTOES="+q+"|ID="+Date.now()
-
-new QRCode(qrDiv,{
-text:dados,
-width:120,
-height:120
-})
-
-/* desenhar QR no canvas */
-
-let img=qrDiv.querySelector("img")
-
-setTimeout(()=>{
-
-ctx.drawImage(
-img,
-canvas.width-180,
-80,
-120,
-120
-)
-
-},200)
-
-}
-
-function imprimir(){
-
-window.print()
-
-}
-
-gerar()
-
-</script>
-
-</body>
-
 </html>

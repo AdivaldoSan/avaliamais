@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<title>Scanner Avalia+</title>
+
+<style>
+
+body{
+margin:0;
+background:#111;
+color:white;
+font-family:Arial;
+text-align:center;
+}
+
+video,canvas{
+width:95vw;
+max-width:900px;
+margin-top:10px;
+border-radius:6px;
+}
+
+button{
+font-size:20px;
+padding:12px 24px;
+margin:10px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h2>Scanner Avalia+</h2>
+
+<video id="video" autoplay playsinline></video>
+
+<br>
+
+<button onclick="capturar()">Capturar</button>
+
+<canvas id="canvas"></canvas>
+
+<script>
+
+const THRESHOLD = 120
+
+let video = document.getElementById("video")
+let canvas = document.getElementById("canvas")
+let ctx = canvas.getContext("2d")
+
+/* abrir camera */
+
+async function iniciarCamera(){
+
+let stream = await navigator.mediaDevices.getUserMedia({
+
+video:{ facingMode:"environment" }
+
+})
+
+video.srcObject = stream
+
+}
+
+iniciarCamera()
+
+/* capturar frame */
+
+function capturar(){
+
+canvas.width = video.videoWidth
+canvas.height = video.videoHeight
+
+ctx.drawImage(video,0,0)
+
+pretoBranco()
+detectarBlobs()
+
+}
+
+/* preto branco */
+
+function pretoBranco(){
+
+let img = ctx.getImageData(0,0,canvas.width,canvas.height)
+let data = img.data
+
+for(let i=0;i<data.length;i+=4){
+
+let r=data[i]
+let g=data[i+1]
+let b=data[i+2]
+
+let brilho=(r+g+b)/3
+
+let cor = brilho < THRESHOLD ? 0 : 255
+
+data[i]=cor
+data[i+1]=cor
+data[i+2]=cor
+
+}
+
+ctx.putImageData(img,0,0)
+
+}
+
+/* detectar blobs */
+
+function detectarBlobs(){
+
+let img = ctx.getImageData(0,0,canvas.width,canvas.height)
+let data = img.data
+
+let pontos=[]
+
+for(let y=0;y<canvas.height;y+=4){
+for(let x=0;x<canvas.width;x+=4){
+
+let i=(y*canvas.width+x)*4
+
+if(data[i]==0){
+pontos.push({x,y})
+}
+
+}
+}
+
+/* agrupar */
+
+let grupos=[]
+
+pontos.forEach(p=>{
+
+let achou=false
+
+for(let g of grupos){
+
+let dx=p.x-g.cx
+let dy=p.y-g.cy
+
+if(Math.sqrt(dx*dx+dy*dy)<30){
+
+g.x+=p.x
+g.y+=p.y
+g.count++
+
+g.cx=g.x/g.count
+g.cy=g.y/g.count
+
+achou=true
+break
+
+}
+
+}
+
+if(!achou){
+
+grupos.push({
+
+x:p.x,
+y:p.y,
+cx:p.x,
+cy:p.y,
+count:1
+
+})
+
+}
+
+})
+
+/* ordenar por tamanho */
+
+grupos.sort((a,b)=>b.count-a.count)
+
+/* pegar 4 maiores */
+
+let marcadores = grupos.slice(0,4)
+
+/* identificar cantos */
+
+let tl,tr,bl,br
+
+let minSum=Infinity
+let maxSum=-Infinity
+let minDiff=Infinity
+let maxDiff=-Infinity
+
+marcadores.forEach(p=>{
+
+let sum=p.cx+p.cy
+let diff=p.cx-p.cy
+
+if(sum<minSum){
+minSum=sum
+tl=p
+}
+
+if(sum>maxSum){
+maxSum=sum
+br=p
+}
+
+if(diff<minDiff){
+minDiff=diff
+tr=p
+}
+
+if(diff>maxDiff){
+maxDiff=diff
+bl=p
+}
+
+})
+
+/* desenhar blobs */
+
+ctx.fillStyle="red"
+
+marcadores.forEach(m=>{
+
+ctx.beginPath()
+ctx.arc(m.cx,m.cy,15,0,Math.PI*2)
+ctx.fill()
+
+})
+
+/* desenhar cantos */
+
+if(tl){
+
+ctx.fillStyle="blue"
+ctx.beginPath()
+ctx.arc(tl.cx,tl.cy,20,0,Math.PI*2)
+ctx.fill()
+
+}
+
+if(tr){
+
+ctx.fillStyle="green"
+ctx.beginPath()
+ctx.arc(tr.cx,tr.cy,20,0,Math.PI*2)
+ctx.fill()
+
+}
+
+if(bl){
+
+ctx.fillStyle="orange"
+ctx.beginPath()
+ctx.arc(bl.cx,bl.cy,20,0,Math.PI*2)
+ctx.fill()
+
+}
+
+if(br){
+
+ctx.fillStyle="purple"
+ctx.beginPath()
+ctx.arc(br.cx,br.cy,20,0,Math.PI*2)
+ctx.fill()
+
+}
+
+}
+
+</script>
+
+</body>
+</html>

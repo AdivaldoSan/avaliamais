@@ -649,7 +649,9 @@ async function abrirResultados(id){
     <div class="modal-box resultados-box">
         <button class="modal-fechar" onclick="fecharResultados()">✕</button>
 
-        <h3 style="margin-bottom:15px;">Resultados da Aplicação</h3>
+        <h3 style="margin-bottom:15px;">
+            Resultados da Aplicação - ${dados.nome}
+        </h3>
 
         <div id="abasTurmas"></div>
 
@@ -666,7 +668,9 @@ async function abrirResultados(id){
 
     document.body.appendChild(modal);
 
-    montarAbasTurmas(dados);
+    window.nomeAplicacao = dados.nome;
+
+    montarAbasTurmas(dados.turmas);
 } 
 
 function montarAbasTurmas(dados){

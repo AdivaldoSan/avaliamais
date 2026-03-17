@@ -1636,8 +1636,8 @@ label {
 
     width:100%;
     border-collapse:collapse;
-
     font-size:14px;
+    table-layout:fixed; 
 
 }
 
@@ -1677,7 +1677,11 @@ label {
 /* NOME */
 #modalResultados th:nth-child(2),
 #modalResultados td:nth-child(2){
+    width: 250px;       
+    max-width: 250px;
     text-align:left;
+    overflow:hidden;
+    text-overflow:ellipsis;
     white-space:nowrap;
 }
 
@@ -1685,20 +1689,20 @@ label {
 #modalResultados th:nth-child(n+3):nth-child(-n+20),
 #modalResultados td:nth-child(n+3):nth-child(-n+20){
     text-align:center;
-    width:45px;
+    width:36px;
 }
 
 /* ACERTOS */
 #modalResultados th:nth-last-child(2),
 #modalResultados td:nth-last-child(2){
-    width:80px;
+    width:60px;
     text-align:center;
 }
 
 /* % */
 #modalResultados th:last-child,
 #modalResultados td:last-child{
-    width:70px;
+    width:55px;
     text-align:center;
 }
 

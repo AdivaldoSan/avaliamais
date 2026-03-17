@@ -23,7 +23,7 @@ function iniciarPagina(){
     criarLayout();
 
     document.getElementById("conteudo").innerHTML = `
-        <h2 style="margin-bottom:20px;">📊 Painel de Aplicações.</h2>
+        <h2 style="margin-bottom:20px;">📊 Painel de Aplicações...</h2>
         <div id="listaAplicacoes" class="card">
             Carregando aplicações...
         </div>
@@ -659,9 +659,7 @@ async function abrirResultados(id){
 
         <div class="rodape-resultados">
 
-            <div class="resumo">
-                ${gerarResumo(lista)}
-            </div>
+            <div class="resumo" id="resumoResultados"></div>
             <button class="btn-excel" onclick="exportarExcel()">
                 Baixar Excel
             </button>
@@ -822,8 +820,8 @@ function mostrarTurma(turma){
         `;
     }
 
-    document.getElementById("tabelaResultados").innerHTML =
-        html + htmlResumo;
+    //document.getElementById("tabelaResultados").innerHTML = html + htmlResumo;
+    document.getElementById("resumoResultados").innerHTML = gerarResumo(lista);
 }
 
 function fecharResultados(){

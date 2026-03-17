@@ -23,7 +23,7 @@ function iniciarPagina(){
     criarLayout();
 
     document.getElementById("conteudo").innerHTML = `
-        <h2 style="margin-bottom:20px;">📊 Painel de Aplicações.</h2>
+        <h2 style="margin-bottom:20px;">📊 Painel de Aplicações...</h2>
         <div id="listaAplicacoes" class="card">
             Carregando aplicações...
         </div>
@@ -842,74 +842,109 @@ document.addEventListener("keydown", function(e){
 
 function exportarExcel(){
 
-    const turma = document.querySelector(".abaTurma[style]")?.innerText;
+    const dados = window.resultadosCache;
+    const nomeAplicacao = window.nomeAplicacao || "Aplicacao";
 
-    const lista = window.resultadosCache[turma] || [];
-
-    if(lista.length === 0) return;
-
-    const totalQuestoes = lista[0].questoes.length;
-
-    const dados = [];
-
-    const cab = ["Nº","Aluno"];
-
-    for(let i=1;i<=totalQuestoes;i++){
-        cab.push("Q"+i);
-    }
-
-    cab.push("Acertos");
-    cab.push("%");
-
-    dados.push(cab);
-
-    lista.forEach(a=>{
-
-        const linha = [];
-
-        linha.push(a.numero);
-        linha.push(a.nome);
-
-        a.questoes.forEach(q=>{
-            linha.push(q ? q.marcada : "-");
-        });
-
-        linha.push(a.acertos);
-        linha.push(a.percentual+"%");
-
-        dados.push(linha);
-
-    });
-
-    const ws = XLSX.utils.aoa_to_sheet(dados);
-
-    lista.forEach((a,r)=>{
-
-        a.questoes.forEach((q,c)=>{
-
-            if(q && q.marcada !== q.correta){
-
-                const cell = XLSX.utils.encode_cell({
-                    r:r+1,
-                    c:c+2
-                });
-
-                if(ws[cell]){
-                    ws[cell].s = {
-                        fill:{fgColor:{rgb:"F8D7DA"}}
-                    };
-                }
-
-            }
-
-        });
-
-    });
+    if(!dados) return;
 
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Resultados");
 
-    XLSX.writeFile(wb,"resultado_"+turma+".xlsx");
+    Object.keys(dados).forEach(turma=>{
+
+        const lista = dados[turma];
+
+        if(!lista || lista.length === 0) return;
+
+        // ORDENAR POR NÚMERO
+        lista.sort((a,b)=>a.numero - b.numero);
+
+        const totalQuestoes = lista[0].questoes.length;
+
+        const planilha = [];
+
+        // 🔥 CABEÇALHO COM NOME
+        planilha.push([nomeAplicacao]);
+        planilha.push([`Turma: ${turma}`]);
+        planilha.push([]);
+
+        // CABEÇALHO TABELA
+        const cab = ["Nº","Aluno"];
+
+        for(let i=1;i<=totalQuestoes;i++){
+            cab.push("Q"+i);
+        }
+
+        cab.push("Acertos");
+        cab.push("%");
+
+        planilha.push(cab);
+
+        // LINHAS
+        lista.forEach(a=>{
+
+            const linha = [];
+
+            linha.push(a.numero);
+            linha.push(a.nome || "");
+
+            a.questoes.forEach(q=>{
+                linha.push(q ? q.marcada : "-");
+            });
+
+            linha.push(a.acertos);
+            linha.push(a.percentual+"%");
+
+            planilha.push(linha);
+
+        });
+
+        const ws = XLSX.utils.aoa_to_sheet(planilha);
+
+        // 🔥 AJUSTAR LARGURA DAS COLUNAS
+        ws["!cols"] = [
+            {wch:6},   // Nº
+            {wch:28},  // Nome
+            ...Array(totalQuestoes).fill({wch:5}),
+            {wch:10},
+            {wch:6}
+        ];
+
+        // 🔥 COLORIR ERROS
+        lista.forEach((a,r)=>{
+
+            a.questoes.forEach((q,c)=>{
+
+                if(q && q.marcada !== q.correta){
+
+                    const cell = XLSX.utils.encode_cell({
+                        r: r + 4,   // 👈 por causa do cabeçalho extra
+                        c: c + 2
+                    });
+
+                    if(ws[cell]){
+                        ws[cell].s = {
+                            fill:{
+                                fgColor:{rgb:"F8D7DA"}
+                            }
+                        };
+                    }
+
+                }
+
+            });
+
+        });
+
+        XLSX.utils.book_append_sheet(wb, ws, turma);
+
+    });
+
+    // 🔥 NOME DO ARQUIVO BONITO
+    const nomeArquivo = nomeAplicacao
+        .replace(/[^\w\s]/gi, "")
+        .replace(/\s+/g,"_");
+
+    XLSX.writeFile(wb, nomeArquivo + ".xlsx");
 
 }
 

@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>LAB - Ajuste de Gabarito</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+<style>
+body{
+  background:#111;
+  color:white;
+  font-family:Arial;
+  text-align:center;
+}
+
+.controls{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:15px;
+  margin:10px;
+}
+
+.control{
+  background:#222;
+  padding:10px;
+  border-radius:8px;
+}
+
+label{
+  font-size:14px;
+}
+
+canvas{
+  background:white;
+  margin-top:10px;
+  max-width:95vw;
+}
+</style>
+</head>
+
+<body>
+
+<h2>LAB Ajuste Gabarito</h2>
+
+<div class="controls">
+
+<div class="control">
+<label>QR X</label><br>
+<input type="range" id="qrX" min="0" max="300" value="40">
+</div>
+
+<div class="control">
+<label>QR Y</label><br>
+<input type="range" id="qrY" min="-100" max="100" value="0">
+</div>
+
+<div class="control">
+<label>Gabarito X</label><br>
+<input type="range" id="gX" min="0" max="400" value="200">
+</div>
+
+<div class="control">
+<label>Gabarito Y</label><br>
+<input type="range" id="gY" min="-100" max="100" value="0">
+</div>
+
+<div class="control">
+<label>Marcador X</label><br>
+<input type="range" id="mX" min="0" max="400" value="200">
+</div>
+
+<div class="control">
+<label>Marcador Y</label><br>
+<input type="range" id="mY" min="-100" max="100" value="0">
+</div>
+
+<div class="control">
+<label>Espaçamento (dy)</label><br>
+<input type="range" id="dy" min="50" max="120" value="80">
+</div>
+
+<div class="control">
+<label>Questões</label><br>
+<input type="number" id="qtd" value="10" min="1" max="30">
+</div>
+
+</div>
+
+<canvas id="canvas"></canvas>
+<div id="qrTemp" style="display:none"></div>
+
+<script>
+
+const qrSize = 140
+
+function draw(){
+
+let q = parseInt(document.getElementById("qtd").value)
+
+let qrOffsetX = parseInt(qrX.value)
+let qrOffsetY = parseInt(qrY.value)
+
+let gOffsetX = parseInt(gX.value)
+let gOffsetY = parseInt(gY.value)
+
+let mOffsetX = parseInt(mX.value)
+let mOffsetY = parseInt(mY.value)
+
+let dy = parseInt(document.getElementById("dy").value)
+
+let canvas = document.getElementById("canvas")
+let ctx = canvas.getContext("2d")
+
+canvas.width = 1300
+canvas.height = 300 + dy*q
+
+ctx.fillStyle="white"
+ctx.fillRect(0,0,canvas.width,canvas.height)
+
+/* GABARITO */
+
+let inicioX = 400 + gOffsetX
+let inicioY = 200 + gOffsetY
+let dx = 90
+let raio = 12
+
+ctx.fillStyle="black"
+ctx.font="24px Arial"
+
+for(let i=0;i<q;i++){
+
+  let y = inicioY + i*dy
+
+  ctx.fillText((i+1)+".", inicioX-60, y)
+
+  for(let c=0;c<4;c++){
+
+    let x = inicioX + c*dx
+
+    ctx.beginPath()
+    ctx.arc(x,y,raio,0,Math.PI*2)
+    ctx.stroke()
+
+  }
+}
+
+/* MARCADORES */
+
+let marcador = 30
+
+ctx.fillRect(160 + mOffsetX, 90 + mOffsetY, marcador, marcador)
+ctx.fillRect(760 + mOffsetX, 90 + mOffsetY, marcador, marcador)
+
+let baseY = inicioY + dy*q + 40
+
+ctx.fillRect(160 + mOffsetX, baseY + mOffsetY, marcador, marcador)
+ctx.fillRect(760 + mOffsetX, baseY + mOffsetY, marcador, marcador)
+
+/* QR */
+
+let qrDiv = document.getElementById("qrTemp")
+qrDiv.innerHTML=""
+
+new QRCode(qrDiv,{
+  text:"TESTE",
+  width:qrSize,
+  height:qrSize
+})
+
+let img = qrDiv.querySelector("img")
+
+const topo = inicioY - 80
+const base = inicioY + dy*q + 80
+const centro = (topo + base)/2
+
+img.onload = () => {
+
+  ctx.drawImage(
+    img,
+    qrOffsetX,
+    centro - qrSize/2 + qrOffsetY,
+    qrSize,
+    qrSize
+  )
+
+}
+
+}
+
+/* atualizar sempre */
+
+document.querySelectorAll("input").forEach(el=>{
+  el.addEventListener("input", draw)
+})
+
+draw()
+
+</script>
+
+</body>
+</html>

@@ -805,7 +805,7 @@ function mostrarTurma(turma){
 
         htmlResumo = `
         <div class="resumo-linha">
-            📊 Média: <b>${resumo.media}%</b> |
+            📊 Média: <b>${resumo.media}%</b>(${resumo.respondentes}) |
             🏆 Maior: <b>${resumo.maior}%</b> |
             📉 Menor: <b>${resumo.menor}%</b> |
             ❌ Mais erro: <b>Q${resumo.questaoMaisErro}</b> |
@@ -938,10 +938,19 @@ function gerarResumo(lista){
     let maior = -1;
     let menor = 101;
 
+    let respondentes = 0; // 👈 NOVO
+
     const errosPorQuestao = new Array(totalQuestoes).fill(0);
     const acertosPorQuestao = new Array(totalQuestoes).fill(0);
 
     lista.forEach(a=>{
+
+        // 👇 IGNORA QUEM NÃO RESPONDEU
+        const respondeu = a.questoes.some(q => q !== null);
+
+        if(!respondeu) return;
+
+        respondentes++; // 👈 conta só quem respondeu
 
         soma += a.percentual;
 
@@ -962,7 +971,10 @@ function gerarResumo(lista){
 
     });
 
-    const media = Math.round(soma / lista.length);
+    // 👇 evita divisão por zero
+    const media = respondentes > 0
+        ? Math.round(soma / respondentes)
+        : 0;
 
     const questaoMaisErro =
         errosPorQuestao.indexOf(Math.max(...errosPorQuestao)) + 1;
@@ -975,7 +987,8 @@ function gerarResumo(lista){
         maior,
         menor,
         questaoMaisErro,
-        questaoMaisAcerto
+        questaoMaisAcerto,
+        respondentes 
     };
 }
     

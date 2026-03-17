@@ -1821,6 +1821,20 @@ label {
     color:#111;
 }
 
+.rodape-resultados{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+
+    margin-top:30px;
+    margin-bottom:30px;
+}
+
+.resumo{
+    font-size:14px;
+    color:#444;
+}
+
 /* LOADING GLOBAL */
 
 #loadingOverlay{

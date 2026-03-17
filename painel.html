@@ -14,7 +14,7 @@
 <script src="./js/config.js"></script>    
 <script src="./js/conexao.js"></script>
 <script src="./js/layout.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>    
+<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.full.min.js"></script>  
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
 
 <script>
@@ -840,6 +840,7 @@ document.addEventListener("keydown", function(e){
 
 }); 
 
+
 function exportarExcel(){
 
     const dados = window.resultadosCache;
@@ -862,7 +863,7 @@ function exportarExcel(){
 
         const planilha = [];
 
-        // 🔥 CABEÇALHO COM NOME
+        // CABEÇALHO
         planilha.push([nomeAplicacao]);
         planilha.push([`Turma: ${turma}`]);
         planilha.push([]);
@@ -900,14 +901,36 @@ function exportarExcel(){
 
         const ws = XLSX.utils.aoa_to_sheet(planilha);
 
-        // 🔥 AJUSTAR LARGURA DAS COLUNAS
+        // 🔥 LARGURA DAS COLUNAS
         ws["!cols"] = [
-            {wch:6},   // Nº
-            {wch:28},  // Nome
+            {wch:6},
+            {wch:30},
             ...Array(totalQuestoes).fill({wch:5}),
             {wch:10},
             {wch:6}
         ];
+
+        const range = XLSX.utils.decode_range(ws['!ref']);
+
+        // 🔥 CENTRALIZAR TUDO (EXCETO NOME)
+        for(let R = 4; R <= range.e.r; R++){
+
+            for(let C = 2; C <= range.e.c; C++){
+
+                const cell = XLSX.utils.encode_cell({r:R, c:C});
+
+                if(!ws[cell]) continue;
+
+                ws[cell].s = {
+                    alignment:{
+                        horizontal:"center",
+                        vertical:"center"
+                    }
+                };
+
+            }
+
+        }
 
         // 🔥 COLORIR ERROS
         lista.forEach((a,r)=>{
@@ -917,16 +940,23 @@ function exportarExcel(){
                 if(q && q.marcada !== q.correta){
 
                     const cell = XLSX.utils.encode_cell({
-                        r: r + 4,   // 👈 por causa do cabeçalho extra
+                        r: r + 4,
                         c: c + 2
                     });
 
                     if(ws[cell]){
+
                         ws[cell].s = {
                             fill:{
+                                patternType:"solid",
                                 fgColor:{rgb:"F8D7DA"}
+                            },
+                            alignment:{
+                                horizontal:"center",
+                                vertical:"center"
                             }
                         };
+
                     }
 
                 }
@@ -939,7 +969,7 @@ function exportarExcel(){
 
     });
 
-    // 🔥 NOME DO ARQUIVO BONITO
+    // NOME DO ARQUIVO
     const nomeArquivo = nomeAplicacao
         .replace(/[^\w\s]/gi, "")
         .replace(/\s+/g,"_");
@@ -947,7 +977,7 @@ function exportarExcel(){
     XLSX.writeFile(wb, nomeArquivo + ".xlsx");
 
 }
-
+    
 function mostrarLoading(msg="Carregando dados..."){
 
     const overlay = document.createElement("div");

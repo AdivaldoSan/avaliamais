@@ -657,9 +657,13 @@ async function abrirResultados(id){
 
         <div id="tabelaResultados" style="margin-top:15px;"></div>
 
-        <div style="margin-top:20px;text-align:right;">
+        <div class="rodape-resultados">
+
+            <div class="resumo">
+                ${gerarResumo(lista)}
+            </div>
             <button class="btn-excel" onclick="exportarExcel()">
-            Baixar Excel
+                Baixar Excel
             </button>
         </div>
 

@@ -200,8 +200,16 @@ POSICIONAMENTO INTELIGENTE
 const margemQR = qrSize
 const qrX = margemQR
 
-const alturaGabarito = dy * q
-const centroY = inicioY + alturaGabarito / 2
+// topo real do bloco (inclui letras)
+const topoBloco = inicioY - 80
+
+// base real (inclui margem inferior dos marcadores)
+const baseBloco = inicioY + dy*q + 80
+
+// centro real
+const centroY = (topoBloco + baseBloco) / 2
+
+// posição final do QR
 const qrY = centroY - qrSize / 2
 
 /* =========================

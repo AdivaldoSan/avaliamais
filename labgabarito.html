@@ -135,11 +135,15 @@ let dx = 40
 let raio = 8
 
 /* =========================
-LETRAS ABCD
+LETRAS ABCD (CORRIGIDO)
 ========================= */
+
+ctx.save()
 
 ctx.fillStyle="black"
 ctx.font="12px Arial"
+ctx.textAlign = "center"
+ctx.textBaseline = "middle"
 
 let letras = ["A","B","C","D"]
 
@@ -147,24 +151,30 @@ for(let c=0;c<4;c++){
 
   let x = inicioX + c*dx
 
- ctx.fillText(letras[c], x, inicioY + offsetLetrasY)
+  ctx.fillText(letras[c], x, inicioY + offsetLetrasY)
 }
 
+ctx.restore()
+
 /* =========================
-QUESTÕES + BOLHAS
+QUESTÕES + BOLHAS (CORRIGIDO)
 ========================= */
+
+ctx.save()
 
 ctx.font="12px Arial"
 ctx.textBaseline = "middle"
-ctx.textAlign = "center"
 
 for(let i=0;i<q;i++){
 
   let y = inicioY + i*dy
 
-    ctx.textAlign = "right"
-    
-    ctx.fillText((i+1), inicioX - 25, y)
+  // números alinhados corretamente
+  ctx.textAlign = "right"
+  ctx.fillText((i+1), inicioX - 10, y)
+
+  // bolhas
+  ctx.textAlign = "center"
 
   for(let c=0;c<4;c++){
 
@@ -172,31 +182,35 @@ for(let i=0;i<q;i++){
 
     ctx.beginPath()
 
-    ctx.setLineDash([2,2])   // tracejado leve
-    ctx.lineWidth = 1        // linha fina
+    ctx.setLineDash([2,2])
+    ctx.lineWidth = 1
     ctx.strokeStyle = "#000"
-    
+
     ctx.arc(x,y,raio,0,Math.PI*2)
     ctx.stroke()
-    
-    ctx.setLineDash([])      // reset (IMPORTANTE)
-    
-      }
-    }
+
+    ctx.setLineDash([])
+  }
+}
+
+ctx.restore()
 
 /* =========================
-MARCADORES
+MARCADORES (250px FIXO)
 ========================= */
 
 let marcador = 30
 
-ctx.fillRect(160 + mOffsetX, 90 + mOffsetY, marcador, marcador)
-ctx.fillRect(410 + mOffsetX, 90 + mOffsetY, marcador, marcador)
+const TLx = 160 + mOffsetX
+const TRx = TLx + 250
+
+ctx.fillRect(TLx, 90 + mOffsetY, marcador, marcador)
+ctx.fillRect(TRx, 90 + mOffsetY, marcador, marcador)
 
 let baseY = inicioY + dy*q + 40
 
-ctx.fillRect(160 + mOffsetX, baseY + mOffsetY, marcador, marcador)
-ctx.fillRect(410 + mOffsetX, baseY + mOffsetY, marcador, marcador)
+ctx.fillRect(TLx, baseY + mOffsetY, marcador, marcador)
+ctx.fillRect(TRx, baseY + mOffsetY, marcador, marcador)
 
 /* =========================
 QR CODE
@@ -214,7 +228,7 @@ new QRCode(qrDiv,{
 let img = qrDiv.querySelector("img")
 
 /* =========================
-CENTRALIZAÇÃO REAL (COM ABCD)
+CENTRALIZAÇÃO REAL
 ========================= */
 
 const topo = inicioY + offsetLetrasY - 20
@@ -236,12 +250,17 @@ img.onload = () => {
 }
 
 /* =========================
-ATUALIZAÇÃO EM TEMPO REAL
+ATUALIZAÇÃO
 ========================= */
 
 document.querySelectorAll("input").forEach(el=>{
   el.addEventListener("input", draw)
 })
+
+/* =========================
+EXPORTAR CONFIG
+========================= */
+
 function exportar(){
 
 const config = {
@@ -261,10 +280,10 @@ const config = {
 }
 
 console.log(JSON.stringify(config, null, 2))
-
 alert("Configuração gerada no console (F12)")
 
 }
+
 draw()
 
 </script>

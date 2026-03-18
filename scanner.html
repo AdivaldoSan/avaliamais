@@ -76,7 +76,7 @@ let data = frame.data
 
 /* THRESHOLD FIXO (SEU) */
 
-const THRESHOLD = 110
+const THRESHOLD = 60
 
 for(let i=0;i<data.length;i+=4){
 
@@ -161,7 +161,23 @@ count:1
 const area_min = 20
 const area_max = 800
 
-let bolhas = grupos.filter(g=>g.count>area_min && g.count<area_max)
+let bolhas = grupos.filter(g=>{
+
+  if(g.count < area_min || g.count > area_max) return false
+
+  // estimativa de "raio"
+  let raio = Math.sqrt(g.count)
+
+  // rejeitar objetos grandes (laterais / manchas)
+  if(raio > 25) return false
+
+  // densidade (evita ruído espalhado)
+  let densidade = g.count / (raio * raio)
+
+  if(densidade < 0.3) return false
+
+  return true
+})
 
 /* DESENHAR */
 

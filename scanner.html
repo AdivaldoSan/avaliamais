@@ -195,16 +195,22 @@ let centros = marcadores.map(m=>({
   y:m.cy
 }))
 
-let TL, TR, BL, BR
+// ordenar por Y (topo → base)
+centros.sort((a,b)=>a.y-b.y)
 
-centros.forEach(p=>{
+// separa topo e base
+let top = centros.slice(0,2)
+let bottom = centros.slice(2,4)
 
-if(p.x < largura/2 && p.y < altura/2) TL = p
-if(p.x > largura/2 && p.y < altura/2) TR = p
-if(p.x < largura/2 && p.y > altura/2) BL = p
-if(p.x > largura/2 && p.y > altura/2) BR = p
+// ordenar esquerda → direita
+top.sort((a,b)=>a.x-b.x)
+bottom.sort((a,b)=>a.x-b.x)
 
-})
+// definir corretamente
+let TL = top[0]
+let TR = top[1]
+let BL = bottom[0]
+let BR = bottom[1]
 
 if(!TL || !TR || !BL || !BR){
   console.log("Falha na classificação")

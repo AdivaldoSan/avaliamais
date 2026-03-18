@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Scanner Gabarito (Validação)</title>
+<title>Scanner Gabarito</title>
 
 <style>
 body{
@@ -23,7 +23,7 @@ canvas{
 
 <body>
 
-<h2>Scanner de Gabarito</h2>
+<h2>Scanner de Gabarito...</h2>
 
 <input type="file" accept="image/*" onchange="carregarImagem(event)">
 <br><br>
@@ -51,10 +51,6 @@ const colunas = 4
 const esq = 0.22
 const dir = 0.83
 
-/* =========================
-CALIBRAÇÃO
-========================= */
-
 const calibracao = [
   {q:1, topo:0.47, base:0.62},
   {q:5, topo:0.28, base:0.80},
@@ -64,7 +60,6 @@ const calibracao = [
 ]
 
 function interpolar(q){
-
   if(q <= calibracao[0].q) return calibracao[0]
   if(q >= calibracao[calibracao.length-1].q) return calibracao[calibracao.length-1]
 
@@ -83,10 +78,7 @@ function interpolar(q){
   }
 }
 
-/* ========================= */
-
 function carregarImagem(e){
-
   const file = e.target.files[0]
   if(!file) return
 
@@ -101,8 +93,6 @@ function carregarImagem(e){
   img.src = URL.createObjectURL(file)
 }
 
-/* ========================= */
-
 function processar(){
 
 if(!img) return
@@ -112,10 +102,7 @@ ctx.drawImage(img,0,0)
 let frame = ctx.getImageData(0,0,canvas.width,canvas.height)
 let data = frame.data
 
-/* =========================
-THRESHOLD
-========================= */
-
+// threshold
 for(let i=0;i<data.length;i+=4){
   let brilho = (data[i]+data[i+1]+data[i+2])/3
   let cor = brilho < THRESHOLD ? 0 : 255
@@ -124,10 +111,7 @@ for(let i=0;i<data.length;i+=4){
 
 ctx.putImageData(frame,0,0)
 
-/* =========================
-FLOOD FILL
-========================= */
-
+// flood fill
 let w=canvas.width,h=canvas.height
 let visitado=new Uint8Array(w*h)
 let blobs=[]
@@ -178,10 +162,7 @@ for(let x=0;x<w;x+=2){
 
 }}
 
-/* =========================
-MARCADORES
-========================= */
-
+// marcadores
 let m = blobs.sort((a,b)=>b.area-a.area).slice(0,4)
 if(m.length<4){
   alert("Marcadores não detectados")
@@ -200,19 +181,12 @@ let bot=c.slice(2,4).sort((a,b)=>a.x-b.x)
 
 let TL=top[0], TR=top[1], BL=bot[0], BR=bot[1]
 
-/* =========================
-CONFIG DINÂMICA
-========================= */
-
+// CONFIG
 let q = parseInt(document.getElementById("qtd").value)
 let {topo, base} = interpolar(q)
-
 let linhas = q
 
-/* =========================
-PERSPECTIVA
-========================= */
-
+// perspectiva
 function p(u,v){
   return {
     x:(1-u)*(1-v)*TL.x + u*(1-v)*TR.x + (1-u)*v*BL.x + u*v*BR.x,
@@ -220,10 +194,7 @@ function p(u,v){
   }
 }
 
-/* =========================
-LEITURA + OVERLAY
-========================= */
-
+// leitura + overlay bolhas
 let respostas = []
 let letras = ["A","B","C","D"]
 
@@ -272,9 +243,7 @@ for(let i=0;i<linhas;i++){
 
   respostas.push(resposta)
 
-  // overlay
   if(resposta >= 0){
-
     let u = esq + (resposta+0.5)/colunas*(dir-esq)
     let v = topo + (i+0.5)/linhas*(base-topo)
 
@@ -288,15 +257,64 @@ for(let i=0;i<linhas;i++){
   }
 }
 
-/* =========================
-RESULTADO
-========================= */
+// 🔥 OVERLAY SCANNER (AQUI NO FINAL)
+desenharOverlayScanner(TL, TR, BR, BL)
 
+// resultado
 let final = respostas.map(r=> letras[r] || "-")
-
 document.getElementById("resultado").innerText =
 "Gabarito: " + final.join(" ")
 
+}
+
+// =========================
+// OVERLAY SCANNER
+// =========================
+
+function desenharOverlayScanner(TL, TR, BR, BL){
+
+  ctx.save()
+  ctx.fillStyle = "rgba(0,0,0,0.6)"
+  ctx.beginPath()
+  ctx.rect(0,0,canvas.width,canvas.height)
+
+  ctx.moveTo(TL.x, TL.y)
+  ctx.lineTo(TR.x, TR.y)
+  ctx.lineTo(BR.x, BR.y)
+  ctx.lineTo(BL.x, BL.y)
+  ctx.closePath()
+
+  ctx.fill("evenodd")
+  ctx.restore()
+
+  ctx.strokeStyle = "#00ff88"
+  ctx.lineWidth = 4
+
+  function canto(p1,p2,p3){
+
+    let t=30
+
+    let vx1=p2.x-p1.x, vy1=p2.y-p1.y
+    let l1=Math.hypot(vx1,vy1)
+    vx1/=l1; vy1/=l1
+
+    let vx2=p3.x-p1.x, vy2=p3.y-p1.y
+    let l2=Math.hypot(vx2,vy2)
+    vx2/=l2; vy2/=l2
+
+    ctx.beginPath()
+    ctx.moveTo(p1.x,p1.y)
+    ctx.lineTo(p1.x+vx1*t,p1.y+vy1*t)
+
+    ctx.moveTo(p1.x,p1.y)
+    ctx.lineTo(p1.x+vx2*t,p1.y+vy2*t)
+    ctx.stroke()
+  }
+
+  canto(TL,TR,BL)
+  canto(TR,TL,BR)
+  canto(BR,TR,BL)
+  canto(BL,TL,BR)
 }
 
 </script>

@@ -33,6 +33,7 @@ video, canvas{
 
 <canvas id="canvas"></canvas>
 
+
 <script>
 
 const video = document.getElementById("video")
@@ -66,7 +67,7 @@ processar()
 }
 
 /* =========================
-PROCESSAR IMAGEM
+PROCESSAMENTO
 ========================= */
 
 function processar(){
@@ -74,9 +75,7 @@ function processar(){
 let frame = ctx.getImageData(0,0,canvas.width,canvas.height)
 let data = frame.data
 
-/* THRESHOLD FIXO (SEU) */
-
-const THRESHOLD = 60
+const THRESHOLD = 85
 
 for(let i=0;i<data.length;i+=4){
 
@@ -94,49 +93,53 @@ detectar(frame)
 }
 
 /* =========================
-DETECTAR BOLHAS (SEU ALGORITMO)
+DETECTAR
 ========================= */
 
 function detectar(frame){
 
-let largura=frame.width
-let altura=frame.height
+let largura = frame.width
+let altura = frame.height
 
-let pontos=[]
+let pontos = []
 
-for(let y=0;y<altura;y+=4){
-for(let x=0;x<largura;x+=4){
+/* varredura */
 
-let idx=(y*largura+x)*4
+for(let y=0;y<altura;y+=2){
+for(let x=0;x<largura;x+=2){
 
-if(frame.data[idx]==0){
-pontos.push({x,y})
+let idx = (y*largura+x)*4
+
+if(frame.data[idx] === 0){
+  pontos.push({x,y})
 }
 
 }
 }
 
-let grupos=[]
+/* clusterização */
+
+let grupos = []
 
 pontos.forEach(p=>{
 
-let achou=false
+let achou = false
 
 for(let g of grupos){
 
-let dx=p.x-g.cx
-let dy=p.y-g.cy
+let dx = p.x - g.cx
+let dy = p.y - g.cy
 
-if(Math.sqrt(dx*dx+dy*dy)<20){
+if(Math.sqrt(dx*dx+dy*dy) < 20){
 
-g.x+=p.x
-g.y+=p.y
+g.x += p.x
+g.y += p.y
 g.count++
 
-g.cx=g.x/g.count
-g.cy=g.y/g.count
+g.cx = g.x / g.count
+g.cy = g.y / g.count
 
-achou=true
+achou = true
 break
 }
 
@@ -156,32 +159,26 @@ count:1
 
 })
 
-/* FILTRO DE ÁREA (SEUS PARÂMETROS) */
+/* =========================
+SEPARAR MARCADORES E BOLHAS
+========================= */
 
-const area_min = 20
-const area_max = 800
+let marcadores = grupos
+  .sort((a,b)=>b.count-a.count)
+  .slice(0,4)
+
+const area_min = 30
+const area_max = 500
 
 let bolhas = grupos.filter(g=>{
-
-  let area = g.count
-
-  // marcador (muito grande) → ignora
-  if(area > 800) return false
-
-  // muito pequeno → ruído
-  if(area < 10) return false
-
-  let raio = Math.sqrt(area)
-
-  // faixa de tamanho típica de bolha
-  if(raio < 3 || raio > 12) return false
-
-  return true
+  return g.count > area_min && g.count < area_max
 })
 
-/* DESENHAR */
+/* =========================
+DESENHAR BOLHAS
+========================= */
 
-ctx.fillStyle="red"
+ctx.fillStyle = "red"
 
 bolhas.forEach(b=>{
   ctx.beginPath()
@@ -189,11 +186,62 @@ bolhas.forEach(b=>{
   ctx.fill()
 })
 
-console.log("Bolhas:", bolhas)
+/* =========================
+CLASSIFICAR MARCADORES
+========================= */
+
+let centros = marcadores.map(m=>({
+  x:m.cx,
+  y:m.cy
+}))
+
+let TL, TR, BL, BR
+
+centros.forEach(p=>{
+
+if(p.x < largura/2 && p.y < altura/2) TL = p
+if(p.x > largura/2 && p.y < altura/2) TR = p
+if(p.x < largura/2 && p.y > altura/2) BL = p
+if(p.x > largura/2 && p.y > altura/2) BR = p
+
+})
+
+if(!TL || !TR || !BL || !BR){
+  console.log("Falha na classificação")
+  return
+}
+
+/* =========================
+DESENHAR MARCADORES
+========================= */
+
+ctx.fillStyle = "cyan"
+
+[TL,TR,BL,BR].forEach(p=>{
+  ctx.beginPath()
+  ctx.arc(p.x,p.y,6,0,Math.PI*2)
+  ctx.fill()
+})
+
+/* =========================
+DESENHAR CONTORNO
+========================= */
+
+ctx.strokeStyle = "yellow"
+ctx.lineWidth = 3
+
+ctx.beginPath()
+ctx.moveTo(TL.x, TL.y)
+ctx.lineTo(TR.x, TR.y)
+ctx.lineTo(BR.x, BR.y)
+ctx.lineTo(BL.x, BL.y)
+ctx.closePath()
+ctx.stroke()
+
+console.log("TL,TR,BL,BR:", TL, TR, BL, BR)
 
 }
 
 </script>
-
 </body>
 </html>

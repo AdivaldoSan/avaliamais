@@ -283,6 +283,56 @@ for(let j=0;j<=colunas;j++){
   ctx.stroke()
 }
 
+/* =========================
+LEITURA DAS RESPOSTAS
+========================= */
+
+let respostas = []
+
+for(let i=0;i<linhas;i++){
+
+  let linhaResposta = -1
+  let maiorArea = 0
+
+  for(let j=0;j<colunas;j++){
+
+    let u = esquerda + (j+0.5)/colunas*(direita-esquerda)
+    let v = topo + (i+0.5)/linhas*(base-topo)
+
+    let p = pontoNaArea(u, v)
+
+    let raio = 10
+
+    let soma = 0
+
+    for(let dx=-raio;dx<=raio;dx++){
+    for(let dy=-raio;dy<=raio;dy++){
+
+      let x = Math.floor(p.x + dx)
+      let y = Math.floor(p.y + dy)
+
+      if(x<0 || y<0 || x>=canvas.width || y>=canvas.height) continue
+
+      let idx = (y*canvas.width + x)*4
+
+      if(frame.data[idx] === 0){
+        soma++
+      }
+
+    }}
+
+    if(soma > maiorArea){
+      maiorArea = soma
+      linhaResposta = j
+    }
+
+  }
+
+  respostas.push(linhaResposta)
+}
+
+console.log("RESPOSTAS:", respostas)
+  
 }
 
 /* =========================

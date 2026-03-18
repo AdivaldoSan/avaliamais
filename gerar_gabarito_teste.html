@@ -1,100 +1,60 @@
 <!DOCTYPE html>
 <html lang="pt-br">
-
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
 <title>Gerador de Gabarito</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
 <style>
-
 body{
-  margin:0;
   background:#111;
   color:white;
   font-family:Arial;
   text-align:center;
 }
 
-h2{
-  margin-top:15px;
-}
-
-input{
-  font-size:22px;
-  padding:8px;
-  width:120px;
-}
-
-button{
-  font-size:20px;
-  padding:10px 20px;
-  margin:8px;
-}
-
 canvas{
   background:white;
-  width:95vw;
-  max-width:900px;
-  margin-top:15px;
+  margin-top:10px;
+  max-width:95vw;
 }
-
-#qrTemp{
-  display:none;
-}
-
 </style>
-
 </head>
 
 <body>
 
 <h2>Gerador de Gabarito</h2>
 
-Questões
+Questões:
+<input id="qtd" type="number" value="10" min="1" max="30">
 
-<br>
-
-<input id="qtd" type="number" min="1" max="20" value="5">
-
-<br>
+<br><br>
 
 <button onclick="gerar()">Gerar</button>
-<button onclick="imprimir()">Imprimir</button>
+<button onclick="window.print()">Imprimir</button>
 
 <br>
 
 <canvas id="canvas"></canvas>
-
-<div id="qrTemp"></div>
+<div id="qrTemp" style="display:none"></div>
 
 <script>
 
 /* =========================
-PARÂMETROS DO MODELO
+CONFIG FIXA (DO LAB)
 ========================= */
 
-// deslocamento global (ESSENCIAL)
-const offsetX = 200
-
-const inicioX = 420 + offsetX
-const inicioY = 200
-
-const dx = 90
-const dy = 80
-
-const raio = 12
-
-const TLx = 160 + offsetX
-const TLy = 90
-
-const TRx = 760 + offsetX
-const TRy = 90
-
-const marcador = 32
+const config = {
+  qrOffsetX: 166,
+  qrOffsetY: -29,
+  gabaritoOffsetX: 189,
+  gabaritoOffsetY: 0,
+  marcadorOffsetX: 343,
+  marcadorOffsetY: -4,
+  dy: 35,
+  topoLetras: -24
+}
 
 const qrSize = 140
 
@@ -108,113 +68,115 @@ let canvas = document.getElementById("canvas")
 let ctx = canvas.getContext("2d")
 
 canvas.width = 1300
-canvas.height = inicioY + q*dy + 220
+canvas.height = 300 + config.dy*q
 
 ctx.fillStyle="white"
 ctx.fillRect(0,0,canvas.width,canvas.height)
 
-ctx.strokeStyle="black"
-ctx.lineWidth=2
+/* BASE */
+
+let inicioX = 400 + config.gabaritoOffsetX
+let inicioY = 200 + config.gabaritoOffsetY
+
+let dx = 40
+let raio = 8
 
 /* =========================
 LETRAS
 ========================= */
 
 ctx.fillStyle="black"
-ctx.font="30px Arial"
+ctx.font="12px Arial"
+ctx.textAlign = "center"
+ctx.textBaseline = "middle"
 
-let letras=["A","B","C","D"]
+let letras = ["A","B","C","D"]
 
 for(let c=0;c<4;c++){
-
   let x = inicioX + c*dx
-
-  ctx.fillText(
-    letras[c],
-    x-10,
-    inicioY-60
-  )
-
+  ctx.fillText(letras[c], x, inicioY + config.topoLetras)
 }
 
 /* =========================
 QUESTÕES
 ========================= */
 
-ctx.font="24px Arial"
+ctx.font="12px Arial"
+ctx.textBaseline = "middle"
+
+const ajusteNumeroY = 1
 
 for(let i=0;i<q;i++){
 
-  let y = inicioY + i*dy
+  let y = inicioY + i*config.dy
 
-  ctx.fillText(
-    (i+1)+".",
-    inicioX-60,
-    y+6
-  )
+  // números
+  ctx.textAlign = "right"
+  ctx.fillText((i+1), inicioX - 10, y + ajusteNumeroY)
+
+  // bolhas
+  ctx.textAlign = "center"
 
   for(let c=0;c<4;c++){
 
     let x = inicioX + c*dx
 
     ctx.beginPath()
+    ctx.setLineDash([2,2])
+    ctx.lineWidth = 1
+    ctx.strokeStyle = "#000"
+
     ctx.arc(x,y,raio,0,Math.PI*2)
     ctx.stroke()
 
+    ctx.setLineDash([])
   }
-
 }
 
 /* =========================
 MARCADORES
 ========================= */
 
-ctx.fillRect(TLx,TLy,marcador,marcador)
-ctx.fillRect(TRx,TRy,marcador,marcador)
+let marcador = 30
 
-let BLy = inicioY + dy*q + 40
-let BRy = inicioY + dy*q + 40
+const TLx = 160 + config.marcadorOffsetX
+const TRx = TLx + 250
 
-ctx.fillRect(160 + offsetX,BLy,marcador,marcador)
-ctx.fillRect(760 + offsetX,BRy,marcador,marcador)
+ctx.fillRect(TLx, 90 + config.marcadorOffsetY, marcador, marcador)
+ctx.fillRect(TRx, 90 + config.marcadorOffsetY, marcador, marcador)
+
+let baseY = inicioY + config.dy*q + 40
+
+ctx.fillRect(TLx, baseY + config.marcadorOffsetY, marcador, marcador)
+ctx.fillRect(TRx, baseY + config.marcadorOffsetY, marcador, marcador)
 
 /* =========================
-GERAR QR
+QR CODE
 ========================= */
 
 let qrDiv = document.getElementById("qrTemp")
 qrDiv.innerHTML=""
 
-let dados = "AVALIA+|Q="+q+"|ID="+Date.now()
-
 new QRCode(qrDiv,{
-  text:dados,
+  text:"AVALIA+|Q="+q+"|ID="+Date.now(),
   width:qrSize,
   height:qrSize
 })
 
 let img = qrDiv.querySelector("img")
 
-/* =========================
-SEU POSICIONAMENTO (MANTIDO)
-========================= */
+/* CENTRALIZAÇÃO */
 
-const margemQR = qrSize
-const qrX = margemQR - 100
-
-const topoBloco = inicioY - 80
-const baseBloco = inicioY + dy*q + 80
-const centroY = (topoBloco + baseBloco) / 2
-const qrY = centroY - qrSize / 2
-
-/* ========================= */
+const topo = inicioY + config.topoLetras - 20
+const base = inicioY + config.dy*q + 60
+const centro = (topo + base)/2
 
 img.onload = () => {
 
   ctx.drawImage(
     img,
-    qrX,
-    qrY,
+    config.qrOffsetX,
+    centro - qrSize/2 + config.qrOffsetY,
     qrSize,
     qrSize
   )
@@ -224,10 +186,6 @@ img.onload = () => {
 }
 
 /* ========================= */
-
-function imprimir(){
-  window.print()
-}
 
 gerar()
 

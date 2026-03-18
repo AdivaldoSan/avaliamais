@@ -24,9 +24,19 @@ video, canvas{
 <h2>Scanner OMR</h2>
 
 <video id="video" autoplay playsinline></video>
-  <br><br>
+
+<br><br>
+
+<div style="margin:10px">
+  Marcador mínimo:
+  <input type="range" id="areaMarcador" min="100" max="1500" value="500">
+  <span id="valorArea">500</span>
+</div>
+
 <button onclick="capturar()">Capturar</button>
+
 <br>
+
 <canvas id="canvas"></canvas>
 
 <script>
@@ -34,6 +44,13 @@ video, canvas{
 const video = document.getElementById("video")
 const canvas = document.getElementById("canvas")
 const ctx = canvas.getContext("2d")
+
+const slider = document.getElementById("areaMarcador")
+const label = document.getElementById("valorArea")
+
+slider.oninput = () => {
+  label.innerText = slider.value
+}
 
 /* =========================
 CAMERA
@@ -70,7 +87,7 @@ function processar(){
 let frame = ctx.getImageData(0,0,canvas.width,canvas.height)
 let data = frame.data
 
-const THRESHOLD = 65
+const THRESHOLD = 85
 
 for(let i=0;i<data.length;i+=4){
 
@@ -142,21 +159,29 @@ grupos.push({x:p.x,y:p.y,cx:p.x,cy:p.y,count:1})
 })
 
 /* =========================
-PEGAR MARCADORES (GRANDES)
+FILTRO COM SLIDER
 ========================= */
 
+let minAreaMarcador = parseInt(slider.value)
+
 let marcadores = grupos
-.filter(g=>g.count > 300)
+.filter(g=>g.count > minAreaMarcador)
 .sort((a,b)=>b.count-a.count)
 .slice(0,4)
 
+console.log("Marcadores encontrados:", marcadores.length)
+
+/* =========================
+VALIDAÇÃO
+========================= */
+
 if(marcadores.length < 4){
-  console.log("Marcadores não encontrados")
+  console.log("Não encontrou 4 marcadores")
   return
 }
 
 /* =========================
-CLASSIFICAR
+CLASSIFICAÇÃO ROBUSTA
 ========================= */
 
 let centros = marcadores.map(m=>({x:m.cx,y:m.cy}))
@@ -190,7 +215,7 @@ ctx.closePath()
 ctx.stroke()
 
 /* =========================
-DEFINIR ROI
+ROI
 ========================= */
 
 let margem = 20
@@ -200,8 +225,6 @@ let maxX = Math.max(TR.x, BR.x) - margem
 
 let minY = Math.min(TL.y, TR.y) + margem
 let maxY = Math.max(BL.y, BR.y) - margem
-
-/* desenhar ROI */
 
 ctx.strokeStyle = "lime"
 ctx.lineWidth = 2

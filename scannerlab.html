@@ -23,7 +23,7 @@ canvas{
 
 <body>
 
-<h2>LAB - Marcadores (Retângulo Forçado)...</h2>
+<h2>LAB - Marcadores (Retângulo Forçado).</h2>
 
 <input type="file" accept="image/*" onchange="carregarImagem(event)">
 
@@ -192,7 +192,7 @@ console.log("Blobs detectados:", blobs.length)
 DESENHAR TODOS (DEBUG)
 ========================= */
 
-ctx.strokeStyle="gray"
+ctx.strokeStyle="red"
 
 blobs.forEach(b=>{
   ctx.strokeRect(b.minX,b.minY,b.maxX-b.minX,b.maxY-b.minY)

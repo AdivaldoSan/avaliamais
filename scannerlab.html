@@ -245,6 +245,19 @@ let BL = bottom[0]
 let BR = bottom[1]
 
 /* =========================
+FUNÇÃO PERSPECTIVA
+========================= */
+
+function pontoNaArea(u, v){
+
+  return {
+    x: (1-u)*(1-v)*TL.x + u*(1-v)*TR.x + (1-u)*v*BL.x + u*v*BR.x,
+    y: (1-u)*(1-v)*TL.y + u*(1-v)*TR.y + (1-u)*v*BL.y + u*v*BR.y
+  }
+
+}  
+
+/* =========================
 VALIDAÇÃO (EVITA ERRO)
 ========================= */
 
@@ -287,6 +300,45 @@ ctx.lineTo(BL.x, BL.y)
 ctx.closePath()
 ctx.stroke()
 
+/* =========================
+GRADE EM PERSPECTIVA
+========================= */
+
+let linhas = 10
+let colunas = 4
+
+ctx.strokeStyle = "blue"
+ctx.lineWidth = 1
+
+// horizontais
+for(let i=0;i<=linhas;i++){
+
+  let v = i / linhas
+
+  let p1 = pontoNaArea(0, v)
+  let p2 = pontoNaArea(1, v)
+
+  ctx.beginPath()
+  ctx.moveTo(p1.x, p1.y)
+  ctx.lineTo(p2.x, p2.y)
+  ctx.stroke()
+}
+
+// verticais
+for(let j=0;j<=colunas;j++){
+
+  let u = j / colunas
+
+  let p1 = pontoNaArea(u, 0)
+  let p2 = pontoNaArea(u, 1)
+
+  ctx.beginPath()
+  ctx.moveTo(p1.x, p1.y)
+  ctx.lineTo(p2.x, p2.y)
+  ctx.stroke()
+}
+
+  
 /* =========================
 ROI (ÁREA INTERNA)
 ========================= */

@@ -24,10 +24,15 @@ canvas{
 
 <body>
 
-<h2>Gerador de Gabarito</h2>
+<h2>Gerador de Gabarito...</h2>
 
 Questões:
-<input id="qtd" type="number" value="10" min="1" max="30">
+<input id="qtd" type="number" value="10" min="1" max="20">
+
+<br><br>
+
+Gabarito (ex: ABCDABCD):
+<input id="gabarito" type="text" value="ABCDABCDAB">
 
 <br><br>
 
@@ -63,6 +68,13 @@ const qrSize = 140
 function gerar(){
 
 let q = parseInt(document.getElementById("qtd").value)
+let gabarito = document.getElementById("gabarito").value.toUpperCase().trim()
+
+// validação básica
+if(gabarito.length !== q){
+  alert("O gabarito deve ter exatamente " + q + " letras.")
+  return
+}
 
 let canvas = document.getElementById("canvas")
 let ctx = canvas.getContext("2d")
@@ -105,17 +117,14 @@ ctx.font="12px Arial"
 ctx.textBaseline = "middle"
 
 const ajusteNumeroY = 2
-const espaco = 10
 
 for(let i=0;i<q;i++){
 
   let y = inicioY + i*config.dy
 
-  // números
   ctx.textAlign = "right"
   ctx.fillText((i+1)+"   ", inicioX - 10, y + ajusteNumeroY)
 
-  // bolhas
   ctx.textAlign = "center"
 
   for(let c=0;c<4;c++){
@@ -152,16 +161,20 @@ ctx.fillRect(TLx, baseY + config.marcadorOffsetY, marcador, marcador)
 ctx.fillRect(TRx, baseY + config.marcadorOffsetY, marcador, marcador)
 
 /* =========================
-QR CODE
+QR CODE (ATUALIZADO)
 ========================= */
 
 let qrDiv = document.getElementById("qrTemp")
 qrDiv.innerHTML=""
 
+let id = Date.now()
+
+let qrText = `AVALIA+|Q=${q}|ID=${id}|G=${gabarito}|V=1`
+
 new QRCode(qrDiv,{
-  text:"AVALIA+|Q="+q+"|ID="+Date.now(),
-  width:qrSize,
-  height:qrSize
+  text: qrText,
+  width: qrSize,
+  height: qrSize
 })
 
 let img = qrDiv.querySelector("img")

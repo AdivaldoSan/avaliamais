@@ -223,13 +223,18 @@ let centros = maiores.map(b=>({
 }))
 
 /* =========================
-CLASSIFICAÇÃO
+CLASSIFICAÇÃO ROBUSTA
 ========================= */
 
 centros.sort((a,b)=>a.y-b.y)
 
 let top = centros.slice(0,2)
 let bottom = centros.slice(2,4)
+
+if(top.length < 2 || bottom.length < 2){
+  console.log("Falha ao separar topo/base")
+  return
+}
 
 top.sort((a,b)=>a.x-b.x)
 bottom.sort((a,b)=>a.x-b.x)
@@ -240,10 +245,26 @@ let BL = bottom[0]
 let BR = bottom[1]
 
 /* =========================
+VALIDAÇÃO (EVITA ERRO)
+========================= */
+
+if(!TL || !TR || !BL || !BR){
+  console.log("Erro na classificação:", TL, TR, BL, BR)
+  return
+}
+
+
+
+/* =========================
 DESENHAR PONTOS
 ========================= */
 
-ctx.fillStyle = "cyan"
+ctx.fillStyle = "green"
+
+if(!TL || !TR || !BL || !BR){
+  console.log("Erro na classificação:", TL, TR, BL, BR)
+  return
+}
 
 [TL,TR,BL,BR].forEach(p=>{
   ctx.beginPath()

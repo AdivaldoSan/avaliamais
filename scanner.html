@@ -163,18 +163,18 @@ const area_max = 800
 
 let bolhas = grupos.filter(g=>{
 
-  if(g.count < area_min || g.count > area_max) return false
+  let area = g.count
 
-  // estimativa de "raio"
-  let raio = Math.sqrt(g.count)
+  // marcador (muito grande) → ignora
+  if(area > 800) return false
 
-  // rejeitar objetos grandes (laterais / manchas)
-  if(raio > 25) return false
+  // muito pequeno → ruído
+  if(area < 10) return false
 
-  // densidade (evita ruído espalhado)
-  let densidade = g.count / (raio * raio)
+  let raio = Math.sqrt(area)
 
-  if(densidade < 0.3) return false
+  // faixa de tamanho típica de bolha
+  if(raio < 3 || raio > 12) return false
 
   return true
 })

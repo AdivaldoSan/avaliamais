@@ -204,8 +204,7 @@ let respostas = []
 
 for(let i=0;i<linhas;i++){
 
-  let melhor = -1
-  let maiorArea = 0
+ let areas = []
 
   // 🔥 NOVO t (corrigido)
   let t = offsetTopo + ((i + 0.5) / linhas) * alturaUtil
@@ -246,18 +245,19 @@ for(let i=0;i<linhas;i++){
 
     }}
 
-    if(soma > maiorArea){
-      maiorArea = soma
-      melhor = j
-    }
-
+    areas.push(soma)
   }
 
   // 🔥 LIMIAR (evita falso positivo)
-  let LIMIAR = 18 * 18 * 0.20
-  if(maiorArea < 60){
-    melhor = -1
-  }
+let max = Math.max(...areas)
+let segundo = areas.sort((a,b)=>b-a)[1]
+
+// diferença relativa
+if(max > segundo * 1.5){
+  melhor = areas.indexOf(max)
+}else{
+  melhor = -1
+}
 
   respostas.push(melhor)
 }

@@ -78,7 +78,7 @@ canvas{
 
 <div class="control">
 <label>Espaçamento (dy)</label><br>
-<input type="range" id="dy" min="20" max="120" value="40">
+<input type="range" id="dy" min="20" max="40" value="40">
 </div>
 
 <div class="control">
@@ -186,12 +186,12 @@ MARCADORES
 let marcador = 30
 
 ctx.fillRect(160 + mOffsetX, 90 + mOffsetY, marcador, marcador)
-ctx.fillRect(660 + mOffsetX, 90 + mOffsetY, marcador, marcador)
+ctx.fillRect(410 + mOffsetX, 90 + mOffsetY, marcador, marcador)
 
 let baseY = inicioY + dy*q + 40
 
 ctx.fillRect(160 + mOffsetX, baseY + mOffsetY, marcador, marcador)
-ctx.fillRect(660 + mOffsetX, baseY + mOffsetY, marcador, marcador)
+ctx.fillRect(410 + mOffsetX, baseY + mOffsetY, marcador, marcador)
 
 /* =========================
 QR CODE

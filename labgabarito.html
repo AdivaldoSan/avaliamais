@@ -173,11 +173,18 @@ for(let i=0;i<q;i++){
     let x = inicioX + c*dx
 
     ctx.beginPath()
+
+    ctx.setLineDash([2,2])   // tracejado leve
+    ctx.lineWidth = 1        // linha fina
+    ctx.strokeStyle = "#000"
+    
     ctx.arc(x,y,raio,0,Math.PI*2)
     ctx.stroke()
-
-  }
-}
+    
+    ctx.setLineDash([])      // reset (IMPORTANTE)
+    
+      }
+    }
 
 /* =========================
 MARCADORES

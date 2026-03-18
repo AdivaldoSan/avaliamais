@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>LAB Marcadores</title>
+
+<style>
+body{
+  background:#111;
+  color:white;
+  text-align:center;
+  font-family:Arial;
+}
+
+canvas{
+  max-width:95vw;
+  margin-top:10px;
+  background:#000;
+}
+</style>
+</head>
+
+<body>
+
+<h2>LAB - Detecção de Marcadores</h2>
+
+<input type="file" accept="image/*" onchange="carregarImagem(event)">
+
+<br><br>
+
+Threshold:
+<input type="range" id="threshold" min="30" max="150" value="65">
+<span id="tVal">65</span>
+
+<br>
+
+Área mínima marcador:
+<input type="range" id="area" min="50" max="1500" value="300">
+<span id="aVal">300</span>
+
+<br><br>
+
+<button onclick="processar()">Processar</button>
+
+<canvas id="canvas"></canvas>
+
+<script>
+
+let img = null
+
+const canvas = document.getElementById("canvas")
+const ctx = canvas.getContext("2d")
+
+const tSlider = document.getElementById("threshold")
+const aSlider = document.getElementById("area")
+
+const tVal = document.getElementById("tVal")
+const aVal = document.getElementById("aVal")
+
+tSlider.oninput = () => tVal.innerText = tSlider.value
+aSlider.oninput = () => aVal.innerText = aSlider.value
+
+function carregarImagem(e){
+  img = new Image()
+  img.onload = () => {
+    canvas.width = img.width
+    canvas.height = img.height
+    ctx.drawImage(img,0,0)
+  }
+  img.src = URL.createObjectURL(e.target.files[0])
+}
+
+function processar(){
+
+if(!img) return alert("Carregue imagem")
+
+ctx.drawImage(img,0,0)
+
+let frame = ctx.getImageData(0,0,canvas.width,canvas.height)
+let data = frame.data
+
+let THRESHOLD = parseInt(tSlider.value)
+
+for(let i=0;i<data.length;i+=4){
+
+  let brilho = (data[i]+data[i+1]+data[i+2])/3
+  let cor = brilho < THRESHOLD ? 0 : 255
+
+  data[i]=data[i+1]=data[i+2]=cor
+}
+
+ctx.putImageData(frame,0,0)
+
+/* =========================
+DETECÇÃO
+========================= */
+
+let pontos=[]
+
+for(let y=0;y<canvas.height;y+=2){
+for(let x=0;x<canvas.width;x+=2){
+
+let i=(y*canvas.width+x)*4
+
+if(frame.data[i]===0){
+pontos.push({x,y})
+}
+
+}
+}
+
+let grupos=[]
+
+pontos.forEach(p=>{
+
+let achou=false
+
+for(let g of grupos){
+
+let dx=p.x-g.cx
+let dy=p.y-g.cy
+
+if(Math.sqrt(dx*dx+dy*dy)<20){
+
+g.x+=p.x
+g.y+=p.y
+g.count++
+
+g.cx=g.x/g.count
+g.cy=g.y/g.count
+
+achou=true
+break
+}
+
+}
+
+if(!achou){
+grupos.push({x:p.x,y:p.y,cx:p.x,cy:p.y,count:1})
+}
+
+})
+
+console.log("Total grupos:", grupos.length)
+
+/* =========================
+DESENHAR TODOS (debug)
+========================= */
+
+ctx.strokeStyle = "gray"
+
+grupos.forEach(g=>{
+  ctx.strokeRect(g.cx-3,g.cy-3,6,6)
+})
+
+/* =========================
+FILTRO MARCADORES
+========================= */
+
+let minArea = parseInt(aSlider.value)
+
+let marcadores = grupos.filter(g => {
+
+  if(g.count < minArea) return false
+
+  let lado = Math.sqrt(g.count)
+
+  if(lado < 20) return false
+
+  let proporcao = g.count / (lado * lado)
+
+  if(proporcao < 0.5) return false
+
+  return true
+
+})
+
+console.log("Marcadores filtrados:", marcadores.length)
+
+/* =========================
+DESTACAR MARCADORES
+========================= */
+
+ctx.strokeStyle = "red"
+ctx.lineWidth = 2
+
+marcadores.forEach(m=>{
+  ctx.strokeRect(m.cx-10,m.cy-10,20,20)
+})
+
+}
+</script>
+
+</body>
+</html>

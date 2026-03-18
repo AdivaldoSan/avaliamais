@@ -23,7 +23,7 @@ canvas{
 
 <body>
 
-<h2>Scanner de Gabarito.</h2>
+<h2>Scanner de Gabarito...</h2>
 
 <input type="file" accept="image/*" onchange="carregarImagem(event)">
 <br><br>
@@ -278,7 +278,7 @@ for(let i=0;i<linhas;i++){
   let p = pontoNaArea(u, v)
 
   ctx.beginPath()
-  ctx.arc(p.x, p.y, 20, 0, Math.PI*2)
+  ctx.arc(p.x, p.y, 28, 0, Math.PI*2)
   ctx.stroke()
   ctx.fillStyle = "rgba(0,255,0,0.3)"
   ctx.fill()

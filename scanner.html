@@ -1,77 +1,58 @@
 <!DOCTYPE html>
 <html lang="pt-br">
-
 <head>
-
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-
-<title>Scanner Avalia+</title>
+<title>OMR Scanner - Camera</title>
 
 <style>
-
 body{
-margin:0;
-background:#111;
-color:white;
-font-family:Arial;
-text-align:center;
+  background:#111;
+  color:white;
+  text-align:center;
+  font-family:Arial;
 }
 
-video,canvas{
-width:95vw;
-max-width:900px;
-margin-top:10px;
-border-radius:6px;
+video, canvas{
+  max-width:95vw;
+  margin-top:10px;
 }
-
-button{
-font-size:20px;
-padding:12px 24px;
-margin:10px;
-}
-
 </style>
-
 </head>
 
 <body>
 
-<h2>Scanner Avalia+</h2>
+<h2>Scanner OMR - Camera</h2>
 
 <video id="video" autoplay playsinline></video>
 
 <br>
 
-<button onclick="capturar()">Capturar</button>
+<button onclick="capturar()">Capturar Frame</button>
+
+<br>
 
 <canvas id="canvas"></canvas>
 
 <script>
 
-const THRESHOLD = 120
+const video = document.getElementById("video")
+const canvas = document.getElementById("canvas")
+const ctx = canvas.getContext("2d")
 
-let video = document.getElementById("video")
-let canvas = document.getElementById("canvas")
-let ctx = canvas.getContext("2d")
+/* =========================
+ABRIR CAMERA
+========================= */
 
-/* abrir camera */
-
-async function iniciarCamera(){
-
-let stream = await navigator.mediaDevices.getUserMedia({
-
-video:{ facingMode:"environment" }
-
+navigator.mediaDevices.getUserMedia({
+  video:{ facingMode:"environment" }
+})
+.then(stream=>{
+  video.srcObject = stream
 })
 
-video.srcObject = stream
-
-}
-
-iniciarCamera()
-
-/* capturar frame */
+/* =========================
+CAPTURAR FRAME
+========================= */
 
 function capturar(){
 
@@ -80,60 +61,60 @@ canvas.height = video.videoHeight
 
 ctx.drawImage(video,0,0)
 
-pretoBranco()
-detectarBlobs()
+processar()
 
 }
 
-/* preto branco */
+/* =========================
+PROCESSAR IMAGEM
+========================= */
 
-function pretoBranco(){
+function processar(){
 
-let img = ctx.getImageData(0,0,canvas.width,canvas.height)
-let data = img.data
+let frame = ctx.getImageData(0,0,canvas.width,canvas.height)
+let data = frame.data
+
+/* THRESHOLD FIXO (SEU) */
+
+const THRESHOLD = 50
 
 for(let i=0;i<data.length;i+=4){
 
-let r=data[i]
-let g=data[i+1]
-let b=data[i+2]
+  let brilho = (data[i]+data[i+1]+data[i+2])/3
 
-let brilho=(r+g+b)/3
+  let cor = brilho < THRESHOLD ? 0 : 255
 
-let cor = brilho < THRESHOLD ? 0 : 255
+  data[i]=data[i+1]=data[i+2]=cor
+}
 
-data[i]=cor
-data[i+1]=cor
-data[i+2]=cor
+ctx.putImageData(frame,0,0)
+
+detectar(frame)
 
 }
 
-ctx.putImageData(img,0,0)
+/* =========================
+DETECTAR BOLHAS (SEU ALGORITMO)
+========================= */
 
-}
+function detectar(frame){
 
-/* detectar blobs */
-
-function detectarBlobs(){
-
-let img = ctx.getImageData(0,0,canvas.width,canvas.height)
-let data = img.data
+let largura=frame.width
+let altura=frame.height
 
 let pontos=[]
 
-for(let y=0;y<canvas.height;y+=4){
-for(let x=0;x<canvas.width;x+=4){
+for(let y=0;y<altura;y+=4){
+for(let x=0;x<largura;x+=4){
 
-let i=(y*canvas.width+x)*4
+let idx=(y*largura+x)*4
 
-if(data[i]==0){
+if(frame.data[idx]==0){
 pontos.push({x,y})
 }
 
 }
 }
-
-/* agrupar */
 
 let grupos=[]
 
@@ -146,7 +127,7 @@ for(let g of grupos){
 let dx=p.x-g.cx
 let dy=p.y-g.cy
 
-if(Math.sqrt(dx*dx+dy*dy)<30){
+if(Math.sqrt(dx*dx+dy*dy)<20){
 
 g.x+=p.x
 g.y+=p.y
@@ -157,7 +138,6 @@ g.cy=g.y/g.count
 
 achou=true
 break
-
 }
 
 }
@@ -165,112 +145,35 @@ break
 if(!achou){
 
 grupos.push({
-
 x:p.x,
 y:p.y,
 cx:p.x,
 cy:p.y,
 count:1
-
 })
 
 }
 
 })
 
-/* ordenar por tamanho */
+/* FILTRO DE ÁREA (SEUS PARÂMETROS) */
 
-grupos.sort((a,b)=>b.count-a.count)
+const area_min = 39
+const area_max = 395
 
-/* pegar 4 maiores */
+let bolhas = grupos.filter(g=>g.count>area_min && g.count<area_max)
 
-let marcadores = grupos.slice(0,4)
-
-/* identificar cantos */
-
-let tl,tr,bl,br
-
-let minSum=Infinity
-let maxSum=-Infinity
-let minDiff=Infinity
-let maxDiff=-Infinity
-
-marcadores.forEach(p=>{
-
-let sum=p.cx+p.cy
-let diff=p.cx-p.cy
-
-if(sum<minSum){
-minSum=sum
-tl=p
-}
-
-if(sum>maxSum){
-maxSum=sum
-br=p
-}
-
-if(diff<minDiff){
-minDiff=diff
-tr=p
-}
-
-if(diff>maxDiff){
-maxDiff=diff
-bl=p
-}
-
-})
-
-/* desenhar blobs */
+/* DESENHAR */
 
 ctx.fillStyle="red"
 
-marcadores.forEach(m=>{
-
-ctx.beginPath()
-ctx.arc(m.cx,m.cy,15,0,Math.PI*2)
-ctx.fill()
-
+bolhas.forEach(b=>{
+  ctx.beginPath()
+  ctx.arc(b.cx,b.cy,8,0,Math.PI*2)
+  ctx.fill()
 })
 
-/* desenhar cantos */
-
-if(tl){
-
-ctx.fillStyle="blue"
-ctx.beginPath()
-ctx.arc(tl.cx,tl.cy,20,0,Math.PI*2)
-ctx.fill()
-
-}
-
-if(tr){
-
-ctx.fillStyle="green"
-ctx.beginPath()
-ctx.arc(tr.cx,tr.cy,20,0,Math.PI*2)
-ctx.fill()
-
-}
-
-if(bl){
-
-ctx.fillStyle="orange"
-ctx.beginPath()
-ctx.arc(bl.cx,bl.cy,20,0,Math.PI*2)
-ctx.fill()
-
-}
-
-if(br){
-
-ctx.fillStyle="purple"
-ctx.beginPath()
-ctx.arc(br.cx,br.cy,20,0,Math.PI*2)
-ctx.fill()
-
-}
+console.log("Bolhas:", bolhas)
 
 }
 

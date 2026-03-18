@@ -2,193 +2,303 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Gerador de Gabarito</title>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<title>Scanner Gabarito</title>
 
 <style>
 body{
   background:#111;
   color:white;
-  font-family:Arial;
   text-align:center;
+  font-family:Arial;
 }
 
 canvas{
-  background:white;
-  margin-top:10px;
+  width:900px;
   max-width:95vw;
+  margin-top:10px;
+  background:#000;
 }
 </style>
 </head>
 
 <body>
 
-<h2>Gerador de Gabarito</h2>
+<h2>Scanner de Gabarito.</h2>
 
-Questões:
-<input id="qtd" type="number" value="10" min="1" max="30">
-
+<input type="file" accept="image/*" onchange="carregarImagem(event)">
 <br><br>
-
-<button onclick="gerar()">Gerar</button>
-<button onclick="window.print()">Imprimir</button>
-
-<br>
+<button onclick="processar()">Processar</button>
 
 <canvas id="canvas"></canvas>
-<div id="qrTemp" style="display:none"></div>
+  
+<div id="resultado" style="margin-top:10px;font-size:20px;"></div>  
 
 <script>
 
+let img = null
+
+const canvas = document.getElementById("canvas")
+const ctx = canvas.getContext("2d", { willReadFrequently: true })
+
 /* =========================
-CONFIG FIXA (DO LAB)
+CONFIG
 ========================= */
 
-const config = {
-  qrOffsetX: 166,
-  qrOffsetY: -29,
-  gabaritoOffsetX: 189,
-  gabaritoOffsetY: 0,
-  marcadorOffsetX: 343,
-  marcadorOffsetY: -4,
-  dy: 35,
-  topoLetras: -24
-}
+const THRESHOLD = 50
 
-const qrSize = 140
+let linhas = 10 // depois vem do QR
+const colunas = 4
 
 /* ========================= */
 
-function gerar(){
+function carregarImagem(e){
 
-let q = parseInt(document.getElementById("qtd").value)
+  const file = e.target.files[0]
+  if(!file) return
 
-let canvas = document.getElementById("canvas")
-let ctx = canvas.getContext("2d")
+  img = new Image()
 
-canvas.width = 1300
-canvas.height = 300 + config.dy*q
-
-ctx.fillStyle="white"
-ctx.fillRect(0,0,canvas.width,canvas.height)
-
-/* BASE */
-
-let inicioX = 400 + config.gabaritoOffsetX
-let inicioY = 200 + config.gabaritoOffsetY
-
-let dx = 40
-let raio = 8
-
-/* =========================
-LETRAS
-========================= */
-
-ctx.fillStyle="black"
-ctx.font="12px Arial"
-ctx.textAlign = "center"
-ctx.textBaseline = "middle"
-
-let letras = ["A","B","C","D"]
-
-for(let c=0;c<4;c++){
-  let x = inicioX + c*dx
-  ctx.fillText(letras[c], x, inicioY + config.topoLetras)
-}
-
-/* =========================
-QUESTÕES
-========================= */
-
-ctx.font="12px Arial"
-ctx.textBaseline = "middle"
-
-const ajusteNumeroY = 2
-const espaco = 10
-
-for(let i=0;i<q;i++){
-
-  let y = inicioY + i*config.dy
-
-  // números
-  ctx.textAlign = "right"
-  ctx.fillText((i+1)+"   ", inicioX - 10, y + ajusteNumeroY)
-
-  // bolhas
-  ctx.textAlign = "center"
-
-  for(let c=0;c<4;c++){
-
-    let x = inicioX + c*dx
-
-    ctx.beginPath()
-    ctx.setLineDash([2,2])
-    ctx.lineWidth = 1
-    ctx.strokeStyle = "#000"
-
-    ctx.arc(x,y,raio,0,Math.PI*2)
-    ctx.stroke()
-
-    ctx.setLineDash([])
+  img.onload = () => {
+    canvas.width = img.width
+    canvas.height = img.height
+    ctx.drawImage(img,0,0)
   }
+
+  img.src = URL.createObjectURL(file)
 }
+
+/* ========================= */
+
+function processar(){
+
+if(!img) return
+
+ctx.drawImage(img,0,0)
+
+let frame = ctx.getImageData(0,0,canvas.width,canvas.height)
+let data = frame.data
+
+/* =========================
+THRESHOLD
+========================= */
+
+for(let i=0;i<data.length;i+=4){
+
+  let brilho = (data[i]+data[i+1]+data[i+2])/3
+  let cor = brilho < THRESHOLD ? 0 : 255
+
+  data[i]=data[i+1]=data[i+2]=cor
+}
+
+ctx.putImageData(frame,0,0)
+
+/* =========================
+FLOOD FILL
+========================= */
+
+let w = canvas.width
+let h = canvas.height
+
+let visitado = new Uint8Array(w*h)
+let blobs = []
+
+function floodFill(x,y){
+
+  let stack = [[x,y]]
+
+  let minX=x, maxX=x
+  let minY=y, maxY=y
+  let area=0
+
+  while(stack.length){
+
+    let [px,py] = stack.pop()
+    let idx = py*w + px
+
+    if(visitado[idx]) continue
+    visitado[idx]=1
+
+    let i = idx*4
+    if(frame.data[i] !== 0) continue
+
+    area++
+
+    minX = Math.min(minX, px)
+    maxX = Math.max(maxX, px)
+    minY = Math.min(minY, py)
+    maxY = Math.max(maxY, py)
+
+    for(let dx=-1;dx<=1;dx++){
+    for(let dy=-1;dy<=1;dy++){
+
+      let nx=px+dx
+      let ny=py+dy
+
+      if(nx>=0 && ny>=0 && nx<w && ny<h){
+        stack.push([nx,ny])
+      }
+
+    }}
+  }
+
+  return {area,minX,maxX,minY,maxY}
+}
+
+/* ========================= */
+
+for(let y=0;y<h;y+=2){
+for(let x=0;x<w;x+=2){
+
+  let idx = y*w+x
+  if(visitado[idx]) continue
+
+  let i = idx*4
+
+  if(frame.data[i]===0){
+    let blob = floodFill(x,y)
+    if(blob.area > 200) blobs.push(blob)
+  }
+
+}}
 
 /* =========================
 MARCADORES
 ========================= */
 
-let marcador = 30
+let maiores = blobs
+.sort((a,b)=>b.area-a.area)
+.slice(0,4)
 
-const TLx = 160 + config.marcadorOffsetX
-const TRx = TLx + 250
+if(maiores.length < 4){
+  alert("Marcadores não detectados")
+  return
+}
 
-ctx.fillRect(TLx, 90 + config.marcadorOffsetY, marcador, marcador)
-ctx.fillRect(TRx, 90 + config.marcadorOffsetY, marcador, marcador)
+let centros = maiores.map(b=>({
+  x:(b.minX+b.maxX)/2,
+  y:(b.minY+b.maxY)/2
+}))
 
-let baseY = inicioY + config.dy*q + 40
+centros.sort((a,b)=>a.y-b.y)
 
-ctx.fillRect(TLx, baseY + config.marcadorOffsetY, marcador, marcador)
-ctx.fillRect(TRx, baseY + config.marcadorOffsetY, marcador, marcador)
+let top = centros.slice(0,2)
+let bottom = centros.slice(2,4)
+
+top.sort((a,b)=>a.x-b.x)
+bottom.sort((a,b)=>a.x-b.x)
+
+let TL = top[0]
+let TR = top[1]
+let BL = bottom[0]
+let BR = bottom[1]
 
 /* =========================
-QR CODE
+LEITURA ROBUSTA (VETORIAL)
 ========================= */
 
-let qrDiv = document.getElementById("qrTemp")
-qrDiv.innerHTML=""
+let respostas = []
 
-new QRCode(qrDiv,{
-  text:"AVALIA+|Q="+q+"|ID="+Date.now(),
-  width:qrSize,
-  height:qrSize
-})
+for(let i=0;i<linhas;i++){
 
-let img = qrDiv.querySelector("img")
+  let melhor = -1
+  let maiorArea = 0
 
-/* CENTRALIZAÇÃO */
+  let t = (i + 0.5) / linhas
 
-const topo = inicioY + config.topoLetras - 20
-const base = inicioY + config.dy*q + 60
-const centro = (topo + base)/2
+  let pontoEsq = {
+    x: TL.x + (BL.x - TL.x) * t,
+    y: TL.y + (BL.y - TL.y) * t
+  }
 
-img.onload = () => {
+  let pontoDir = {
+    x: TR.x + (BR.x - TR.x) * t,
+    y: TR.y + (BR.y - TR.y) * t
+  }
 
-  ctx.drawImage(
-    img,
-    config.qrOffsetX,
-    centro - qrSize/2 + config.qrOffsetY,
-    qrSize,
-    qrSize
-  )
+  for(let j=0;j<colunas;j++){
 
+    let u = (j + 0.5) / colunas
+
+    let px = pontoEsq.x + (pontoDir.x - pontoEsq.x) * u
+    let py = pontoEsq.y + (pontoDir.y - pontoEsq.y) * u
+
+    let raio = 14
+    let soma = 0
+
+    for(let dx=-raio;dx<=raio;dx++){
+    for(let dy=-raio;dy<=raio;dy++){
+
+      let x = Math.floor(px + dx)
+      let y = Math.floor(py + dy)
+
+      if(x<0 || y<0 || x>=canvas.width || y>=canvas.height) continue
+
+      let idx = (y*canvas.width + x)*4
+
+      if(frame.data[idx] === 0){
+        soma++
+      }
+
+    }}
+
+    if(soma > maiorArea){
+      maiorArea = soma
+      melhor = j
+    }
+
+  }
+
+  respostas.push(melhor)
 }
 
+/* =========================
+OVERLAY
+========================= */
+
+ctx.strokeStyle = "lime"
+ctx.lineWidth = 3
+
+for(let i=0;i<linhas;i++){
+
+  let j = respostas[i]
+  if(j < 0) continue
+
+  let t = (i + 0.5) / linhas
+
+  let pontoEsq = {
+    x: TL.x + (BL.x - TL.x) * t,
+    y: TL.y + (BL.y - TL.y) * t
+  }
+
+  let pontoDir = {
+    x: TR.x + (BR.x - TR.x) * t,
+    y: TR.y + (BR.y - TR.y) * t
+  }
+
+  let u = (j + 0.5) / colunas
+
+  let px = pontoEsq.x + (pontoDir.x - pontoEsq.x) * u
+  let py = pontoEsq.y + (pontoDir.y - pontoEsq.y) * u
+
+  ctx.beginPath()
+  ctx.arc(px, py, 28, 0, Math.PI*2)
+  ctx.stroke()
+  ctx.fillStyle = "rgba(0,255,0,0.3)"
+  ctx.fill()
 }
 
-/* ========================= */
+/* =========================
+RESULTADO
+========================= */
 
-gerar()
+let letras = ["A","B","C","D"]
+
+let final = respostas.map(r => letras[r] || "-")
+
+document.getElementById("resultado").innerText =
+"Gabarito: " + final.join(" ")
+
+}
 
 </script>
 

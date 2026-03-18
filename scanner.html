@@ -164,11 +164,30 @@ FILTRO COM SLIDER
 
 let minAreaMarcador = parseInt(slider.value)
 
-let marcadores = grupos
-.filter(g=>g.count > minAreaMarcador)
+let marcadores = grupos.filter(g => {
+
+  if(g.count < minAreaMarcador) return false
+
+  // estimar largura aproximada
+  let lado = Math.sqrt(g.count)
+
+  // marcador é grande
+  if(lado < 20) return false
+
+  // marcador tende a ser "quadrado"
+  // rejeita formas muito alongadas
+  let proporcao = g.count / (lado * lado)
+
+  if(proporcao < 0.5) return false
+
+  return true
+
+})
 .sort((a,b)=>b.count-a.count)
 .slice(0,4)
 
+console.log("Grupos totais:", grupos.length)
+console.log("Marcadores filtrados:", marcadores.length)
 console.log("Marcadores encontrados:", marcadores.length)
 
 /* =========================

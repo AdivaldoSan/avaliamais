@@ -32,16 +32,6 @@ canvas{
 
 <script>
 
-function carregarImagem(event){
-
-const file = event.target.files[0]
-const img = new Image()
-
-img.onload = () => processar(img)
-img.src = URL.createObjectURL(file)
-
-}
-
 function processar(img){
 
 const canvas = document.getElementById("canvas")
@@ -53,82 +43,124 @@ canvas.height = img.height
 ctx.drawImage(img,0,0)
 
 /* =========================
-CONVERTER PARA PB
+PEGAR PIXELS
 ========================= */
 
 let imgData = ctx.getImageData(0,0,canvas.width,canvas.height)
 let data = imgData.data
 
+/* =========================
+CONVERTER PARA CINZA
+========================= */
+
+let gray = []
+
 for(let i=0;i<data.length;i+=4){
 
-  let media = (data[i] + data[i+1] + data[i+2]) / 3
-
-  let cor = media > 150 ? 255 : 0
-
-  data[i] = data[i+1] = data[i+2] = cor
+  let g = data[i]*0.3 + data[i+1]*0.59 + data[i+2]*0.11
+  gray.push(g)
 }
 
-ctx.putImageData(imgData,0,0)
+/* =========================
+NORMALIZAÇÃO DE ILUMINAÇÃO
+(remove sombras)
+========================= */
+
+let media = gray.reduce((a,b)=>a+b,0) / gray.length
+
+for(let i=0;i<gray.length;i++){
+
+  // puxa tudo para média
+  gray[i] = gray[i] * (128 / media)
+}
 
 /* =========================
-DETECTAR BLOCOS PRETOS
+THRESHOLD ADAPTATIVO SIMPLES
 ========================= */
+
+let resultado = new Uint8ClampedArray(data.length)
+
+for(let i=0;i<gray.length;i++){
+
+  let v = gray[i]
+
+  // threshold mais inteligente
+  const THRESHOLD = 112
+
+let cor = v < THRESHOLD ? 0 : 255
+
+  let idx = i*4
+
+  resultado[idx] = resultado[idx+1] = resultado[idx+2] = cor
+  resultado[idx+3] = 255
+}
+
+let novaImagem = new ImageData(resultado, canvas.width)
+
+ctx.putImageData(novaImagem,0,0)
+
+/* =========================
+DETECTAR MARCADORES
+========================= */
+
+detectarMarcadores(canvas, ctx)
+
+}
+
+/* ========================= */
+
+function detectarMarcadores(canvas, ctx){
+
+let imgData = ctx.getImageData(0,0,canvas.width,canvas.height)
+let data = imgData.data
 
 let blocos = []
 
-for(let y=0; y<canvas.height; y+=5){
-  for(let x=0; x<canvas.width; x+=5){
+for(let y=0; y<canvas.height; y+=6){
+  for(let x=0; x<canvas.width; x+=6){
 
     let i = (y * canvas.width + x) * 4
 
-    if(data[i] === 0){ // pixel preto
+    if(data[i] === 0){
 
       let largura = 0
       let altura = 0
 
-      // medir largura
       while(x+largura < canvas.width){
         let idx = (y * canvas.width + (x+largura)) * 4
         if(data[idx] !== 0) break
         largura++
       }
 
-      // medir altura
       while(y+altura < canvas.height){
         let idx = ((y+altura) * canvas.width + x) * 4
         if(data[idx] !== 0) break
         altura++
       }
 
-      // filtrar quadrados grandes
-      if(largura > 20 && altura > 20 && Math.abs(largura-altura) < 10){
-
+      if(largura > 25 && altura > 25 && Math.abs(largura-altura) < 10){
         blocos.push({x,y,largura,altura})
       }
     }
   }
 }
 
-/* =========================
-FILTRAR OS 4 MAIORES
-========================= */
+/* pegar os 4 maiores */
 
 blocos.sort((a,b)=> (b.largura*b.altura) - (a.largura*a.altura))
 
 let marcadores = blocos.slice(0,4)
 
-/* =========================
-DESENHAR RESULTADO
-========================= */
+/* desenhar */
 
 ctx.strokeStyle = "red"
-ctx.lineWidth = 3
+ctx.lineWidth = 4
 
 marcadores.forEach(m => {
   ctx.strokeRect(m.x, m.y, m.largura, m.altura)
 })
 
-console.log("Marcadores detectados:", marcadores)
+console.log("Marcadores:", marcadores)
 
 }
 

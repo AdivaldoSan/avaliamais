@@ -23,7 +23,7 @@ canvas{
 
 <body>
 
-<h2>Scanner de Gabarito...</h2>
+<h2>Scanner de Gabarito.</h2>
 
 <input type="file" accept="image/*" onchange="carregarImagem(event)">
 <br><br>
@@ -44,7 +44,7 @@ const ctx = canvas.getContext("2d", { willReadFrequently: true })
 CONFIG
 ========================= */
 
-const THRESHOLD = 50
+const THRESHOLD = 80
 
 let linhas = 10
 const colunas = 4
@@ -230,8 +230,8 @@ for(let i=0;i<linhas;i++){
     let raio = 18
     let soma = 0
 
-    for(let dx=-raio;dx<=raio;dx+=2){
-    for(let dy=-raio;dy<=raio;dy+=2){
+    for(let dx=-raio;dx<=raio;dx++){
+    for(let dy=-raio;dy<=raio;dy++){
 
       let x = Math.floor(px + dx)
       let y = Math.floor(py + dy)
@@ -254,8 +254,8 @@ for(let i=0;i<linhas;i++){
   }
 
   // 🔥 LIMIAR (evita falso positivo)
-  let LIMIAR = 18 * 18 * 0.4
-  if(maiorArea < LIMIAR){
+  let LIMIAR = 18 * 18 * 0.20
+  if(maiorArea < 60){
     melhor = -1
   }
 

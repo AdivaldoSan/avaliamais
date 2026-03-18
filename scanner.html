@@ -44,15 +44,10 @@ navigator.mediaDevices.getUserMedia({
 })
 
 /* =========================
-LOOP CONTÍNUO
+CAPTURA
 ========================= */
 
-function loop(){
-
-if(video.videoWidth === 0){
-  requestAnimationFrame(loop)
-  return
-}
+function capturar(){
 
 canvas.width = video.videoWidth
 canvas.height = video.videoHeight
@@ -61,12 +56,6 @@ ctx.drawImage(video,0,0)
 
 processar()
 
-requestAnimationFrame(loop)
-
-}
-
-video.onloadeddata = () => {
-  loop()
 }
 
 /* =========================
@@ -88,15 +77,17 @@ let cor = brilho < THRESHOLD ? 0 : 255
 data[i]=data[i+1]=data[i+2]=cor
 }
 
-detectar(frame)
+ctx.putImageData(frame,0,0)
+
+detectarMarcadores(frame)
 
 }
 
 /* =========================
-DETECÇÃO
+DETECTAR MARCADORES
 ========================= */
 
-function detectar(frame){
+function detectarMarcadores(frame){
 
 let largura = frame.width
 let altura = frame.height
@@ -148,20 +139,24 @@ grupos.push({x:p.x,y:p.y,cx:p.x,cy:p.y,count:1})
 })
 
 /* =========================
-MARCADORES (4 MAIORES)
+PEGAR MARCADORES (GRANDES)
 ========================= */
 
 let marcadores = grupos
+.filter(g=>g.count > 500)
 .sort((a,b)=>b.count-a.count)
 .slice(0,4)
 
-if(marcadores.length < 4) return
-
-let centros = marcadores.map(m=>({x:m.cx,y:m.cy}))
+if(marcadores.length < 4){
+  console.log("Marcadores não encontrados")
+  return
+}
 
 /* =========================
-CLASSIFICAÇÃO ROBUSTA
+CLASSIFICAR
 ========================= */
+
+let centros = marcadores.map(m=>({x:m.cx,y:m.cy}))
 
 centros.sort((a,b)=>a.y-b.y)
 
@@ -177,45 +172,11 @@ let BL = bottom[0]
 let BR = bottom[1]
 
 /* =========================
-VALIDAÇÃO DE ALINHAMENTO
-========================= */
-
-let alinhado = Math.abs(TL.y - TR.y) < 15
-
-/* =========================
-GUIA VISUAL (SUA IDENTIDADE)
-========================= */
-
-let larguraTopo = TR.x - TL.x
-let margem = larguraTopo * 0.15
-
-// faixa dinâmica
-ctx.fillStyle = alinhado 
-  ? "rgba(0,255,0,0.15)" 
-  : "rgba(255,0,0,0.15)"
-
-ctx.fillRect(
-  TL.x - margem,
-  TL.y - 40,
-  larguraTopo + margem*2,
-  80
-)
-
-// linha central
-ctx.strokeStyle = alinhado ? "lime" : "red"
-ctx.lineWidth = 3
-
-ctx.beginPath()
-ctx.moveTo(TL.x, TL.y)
-ctx.lineTo(TR.x, TR.y)
-ctx.stroke()
-
-/* =========================
-CONTORNO DO GABARITO
+DESENHAR CONTORNO
 ========================= */
 
 ctx.strokeStyle = "yellow"
-ctx.lineWidth = 2
+ctx.lineWidth = 3
 
 ctx.beginPath()
 ctx.moveTo(TL.x, TL.y)
@@ -226,16 +187,25 @@ ctx.closePath()
 ctx.stroke()
 
 /* =========================
-PONTOS (DEBUG)
+DEFINIR ROI
 ========================= */
 
-ctx.fillStyle = "cyan"
+let margem = 20
 
-[TL,TR,BL,BR].forEach(p=>{
-ctx.beginPath()
-ctx.arc(p.x,p.y,5,0,Math.PI*2)
-ctx.fill()
-})
+let minX = Math.min(TL.x, BL.x) + margem
+let maxX = Math.max(TR.x, BR.x) - margem
+
+let minY = Math.min(TL.y, TR.y) + margem
+let maxY = Math.max(BL.y, BR.y) - margem
+
+/* desenhar ROI */
+
+ctx.strokeStyle = "lime"
+ctx.lineWidth = 2
+
+ctx.strokeRect(minX, minY, maxX-minX, maxY-minY)
+
+console.log("ROI:", {minX,maxX,minY,maxY})
 
 }
 

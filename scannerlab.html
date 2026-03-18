@@ -53,18 +53,32 @@ tSlider.oninput = () => tVal.innerText = tSlider.value
 
 function carregarImagem(e){
 
+  const file = e.target.files[0]
+
+  if(!file){
+    alert("Nenhuma imagem selecionada")
+    return
+  }
+
+  const url = URL.createObjectURL(file)
+
   img = new Image()
 
   img.onload = () => {
 
-    // mantém resolução real
+    console.log("Imagem carregada:", img.width, img.height)
+
     canvas.width = img.width
     canvas.height = img.height
 
     ctx.drawImage(img,0,0)
   }
 
-  img.src = URL.createObjectURL(e.target.files[0])
+  img.onerror = () => {
+    alert("Erro ao carregar imagem")
+  }
+
+  img.src = url
 }
 
 /* ========================= */

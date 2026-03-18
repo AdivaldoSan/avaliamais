@@ -22,9 +22,14 @@ canvas{
 
 <body>
 
-<h2>Teste de Reconhecimento de Marcadores</h2>
+<h2>Scanner - Teste de Marcadores...</h2>
 
 <input type="file" accept="image/*" onchange="carregarImagem(event)">
+
+<br><br>
+
+<button onclick="processarImagem()">1 - Processar</button>
+<button onclick="detectar()">2 - Detectar Marcadores</button>
 
 <br>
 
@@ -32,84 +37,86 @@ canvas{
 
 <script>
 
-function processar(img){
+let imagemCarregada = null
+
+/* =========================
+CARREGAR IMAGEM
+========================= */
+
+function carregarImagem(event){
+
+const file = event.target.files[0]
+const img = new Image()
+
+img.onload = () => {
+  imagemCarregada = img
+  alert("Imagem carregada. Agora clique em PROCESSAR.")
+}
+
+img.src = URL.createObjectURL(file)
+
+}
+
+/* =========================
+PASSO 1 - PROCESSAR
+========================= */
+
+function processarImagem(){
+
+if(!imagemCarregada) return alert("Carregue uma imagem primeiro")
 
 const canvas = document.getElementById("canvas")
 const ctx = canvas.getContext("2d")
 
-canvas.width = img.width
-canvas.height = img.height
+canvas.width = imagemCarregada.width
+canvas.height = imagemCarregada.height
 
-ctx.drawImage(img,0,0)
-
-/* =========================
-PEGAR PIXELS
-========================= */
+ctx.drawImage(imagemCarregada,0,0)
 
 let imgData = ctx.getImageData(0,0,canvas.width,canvas.height)
 let data = imgData.data
 
-/* =========================
-CONVERTER PARA CINZA
-========================= */
-
 let gray = []
 
+// converter para cinza
 for(let i=0;i<data.length;i+=4){
-
   let g = data[i]*0.3 + data[i+1]*0.59 + data[i+2]*0.11
   gray.push(g)
 }
 
-/* =========================
-NORMALIZAÇÃO DE ILUMINAÇÃO
-(remove sombras)
-========================= */
-
+// normalizar iluminação
 let media = gray.reduce((a,b)=>a+b,0) / gray.length
 
 for(let i=0;i<gray.length;i++){
-
-  // puxa tudo para média
   gray[i] = gray[i] * (128 / media)
 }
 
-/* =========================
-THRESHOLD ADAPTATIVO SIMPLES
-========================= */
-
-let resultado = new Uint8ClampedArray(data.length)
+// threshold fixo
+const THRESHOLD = 112
 
 for(let i=0;i<gray.length;i++){
 
-  let v = gray[i]
-
-  // threshold mais inteligente
-  const THRESHOLD = 112
-
-let cor = v < THRESHOLD ? 0 : 255
+  let cor = gray[i] < THRESHOLD ? 0 : 255
 
   let idx = i*4
 
-  resultado[idx] = resultado[idx+1] = resultado[idx+2] = cor
-  resultado[idx+3] = 255
+  data[idx] = data[idx+1] = data[idx+2] = cor
 }
 
-let novaImagem = new ImageData(resultado, canvas.width)
+ctx.putImageData(imgData,0,0)
 
-ctx.putImageData(novaImagem,0,0)
+alert("Processamento concluído. Agora clique em DETECTAR.")
+
+}
 
 /* =========================
-DETECTAR MARCADORES
+PASSO 2 - DETECTAR
 ========================= */
 
-detectarMarcadores(canvas, ctx)
+function detectar(){
 
-}
-
-/* ========================= */
-
-function detectarMarcadores(canvas, ctx){
+const canvas = document.getElementById("canvas")
+const ctx = canvas.getContext("2d")
 
 let imgData = ctx.getImageData(0,0,canvas.width,canvas.height)
 let data = imgData.data
@@ -145,14 +152,12 @@ for(let y=0; y<canvas.height; y+=6){
   }
 }
 
-/* pegar os 4 maiores */
-
+// ordenar pelos maiores
 blocos.sort((a,b)=> (b.largura*b.altura) - (a.largura*a.altura))
 
 let marcadores = blocos.slice(0,4)
 
-/* desenhar */
-
+// desenhar resultado
 ctx.strokeStyle = "red"
 ctx.lineWidth = 4
 
@@ -160,7 +165,9 @@ marcadores.forEach(m => {
   ctx.strokeRect(m.x, m.y, m.largura, m.altura)
 })
 
-console.log("Marcadores:", marcadores)
+console.log("Marcadores detectados:", marcadores)
+
+alert("Detecção concluída. Veja os quadrados vermelhos.")
 
 }
 

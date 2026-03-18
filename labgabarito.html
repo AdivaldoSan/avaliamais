@@ -82,6 +82,11 @@ canvas{
 </div>
 
 <div class="control">
+<label>Topo Letras</label><br>
+<input type="range" id="topo" min="-120" max="-20" value="-60">
+</div>
+
+<div class="control">
 <label>Questões</label><br>
 <input type="number" id="qtd" value="10" min="1" max="30">
 </div>
@@ -109,6 +114,7 @@ let mOffsetX = parseInt(mX.value)
 let mOffsetY = parseInt(mY.value)
 
 let dy = parseInt(document.getElementById("dy").value)
+let offsetLetrasY = parseInt(document.getElementById("topo").value)
 
 let canvas = document.getElementById("canvas")
 let ctx = canvas.getContext("2d")
@@ -119,14 +125,39 @@ canvas.height = 300 + dy*q
 ctx.fillStyle="white"
 ctx.fillRect(0,0,canvas.width,canvas.height)
 
-/* GABARITO */
+/* =========================
+GABARITO BASE
+========================= */
 
 let inicioX = 400 + gOffsetX
 let inicioY = 200 + gOffsetY
 let dx = 90
 let raio = 12
 
+/* =========================
+LETRAS ABCD
+========================= */
+
 ctx.fillStyle="black"
+ctx.font="30px Arial"
+
+let letras = ["A","B","C","D"]
+
+for(let c=0;c<4;c++){
+
+  let x = inicioX + c*dx
+
+  ctx.fillText(
+    letras[c],
+    x-10,
+    inicioY + offsetLetrasY
+  )
+}
+
+/* =========================
+QUESTÕES + BOLHAS
+========================= */
+
 ctx.font="24px Arial"
 
 for(let i=0;i<q;i++){
@@ -146,7 +177,9 @@ for(let i=0;i<q;i++){
   }
 }
 
-/* MARCADORES */
+/* =========================
+MARCADORES
+========================= */
 
 let marcador = 30
 
@@ -158,7 +191,9 @@ let baseY = inicioY + dy*q + 40
 ctx.fillRect(160 + mOffsetX, baseY + mOffsetY, marcador, marcador)
 ctx.fillRect(760 + mOffsetX, baseY + mOffsetY, marcador, marcador)
 
-/* QR */
+/* =========================
+QR CODE
+========================= */
 
 let qrDiv = document.getElementById("qrTemp")
 qrDiv.innerHTML=""
@@ -171,8 +206,12 @@ new QRCode(qrDiv,{
 
 let img = qrDiv.querySelector("img")
 
-const topo = inicioY - 80
-const base = inicioY + dy*q + 80
+/* =========================
+CENTRALIZAÇÃO REAL (COM ABCD)
+========================= */
+
+const topo = inicioY + offsetLetrasY - 20
+const base = inicioY + dy*q + 60
 const centro = (topo + base)/2
 
 img.onload = () => {
@@ -189,7 +228,9 @@ img.onload = () => {
 
 }
 
-/* atualizar sempre */
+/* =========================
+ATUALIZAÇÃO EM TEMPO REAL
+========================= */
 
 document.querySelectorAll("input").forEach(el=>{
   el.addEventListener("input", draw)

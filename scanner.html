@@ -70,7 +70,7 @@ function processar(){
 let frame = ctx.getImageData(0,0,canvas.width,canvas.height)
 let data = frame.data
 
-const THRESHOLD = 85
+const THRESHOLD = 65
 
 for(let i=0;i<data.length;i+=4){
 
@@ -146,7 +146,7 @@ PEGAR MARCADORES (GRANDES)
 ========================= */
 
 let marcadores = grupos
-.filter(g=>g.count > 500)
+.filter(g=>g.count > 300)
 .sort((a,b)=>b.count-a.count)
 .slice(0,4)
 

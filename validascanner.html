@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Scanner Validação Grade</title>
+
+<style>
+body{
+  background:#111;
+  color:white;
+  text-align:center;
+  font-family:Arial;
+}
+
+canvas{
+  width:900px;
+  max-width:95vw;
+  margin-top:10px;
+  background:#000;
+}
+</style>
+</head>
+
+<body>
+
+<h2>Scanner - Validação de Grade</h2>
+
+<input type="file" accept="image/*" onchange="carregarImagem(event)">
+<br><br>
+
+Questões:
+<input type="number" id="qtd" value="10" min="1" max="20">
+
+<br><br>
+
+<button onclick="processar()">Gerar Grade</button>
+
+<canvas id="canvas"></canvas>
+
+<script>
+
+let img = null
+
+const canvas = document.getElementById("canvas")
+const ctx = canvas.getContext("2d", {willReadFrequently:true})
+
+const THRESHOLD = 50
+
+const esq = 0.22
+const dir = 0.83
+
+/* =========================
+CALIBRAÇÃO BASE
+========================= */
+
+const calibracao = [
+  {q:1, topo:0.47, base:0.62},
+  {q:5, topo:0.28, base:0.80},
+  {q:8, topo:0.20, base:0.84},
+  {q:10, topo:0.17, base:0.86},
+  {q:15, topo:0.13, base:0.90}
+]
+
+function interpolar(q){
+
+  // limites
+  if(q <= calibracao[0].q) return calibracao[0]
+  if(q >= calibracao[calibracao.length-1].q) return calibracao[calibracao.length-1]
+
+  for(let i=0;i<calibracao.length-1;i++){
+    let a = calibracao[i]
+    let b = calibracao[i+1]
+
+    if(q >= a.q && q <= b.q){
+
+      let t = (q - a.q) / (b.q - a.q)
+
+      return {
+        topo: a.topo + t*(b.topo - a.topo),
+        base: a.base + t*(b.base - a.base)
+      }
+    }
+  }
+}
+
+/* ========================= */
+
+function carregarImagem(e){
+
+  const file = e.target.files[0]
+  if(!file) return
+
+  img = new Image()
+
+  img.onload = () => {
+    canvas.width = img.width
+    canvas.height = img.height
+    ctx.drawImage(img,0,0)
+  }
+
+  img.src = URL.createObjectURL(file)
+}
+
+/* ========================= */
+
+function processar(){
+
+if(!img) return
+
+ctx.drawImage(img,0,0)
+
+let frame = ctx.getImageData(0,0,canvas.width,canvas.height)
+let data = frame.data
+
+/* =========================
+THRESHOLD FIXO
+========================= */
+
+for(let i=0;i<data.length;i+=4){
+  let brilho = (data[i]+data[i+1]+data[i+2])/3
+  let cor = brilho < THRESHOLD ? 0 : 255
+  data[i]=data[i+1]=data[i+2]=cor
+}
+
+ctx.putImageData(frame,0,0)
+
+/* =========================
+FLOOD FILL
+========================= */
+
+let w = canvas.width
+let h = canvas.height
+
+let visitado = new Uint8Array(w*h)
+let blobs = []
+
+function flood(x,y){
+
+  let stack=[[x,y]]
+  let minX=x,maxX=x,minY=y,maxY=y,area=0
+
+  while(stack.length){
+
+    let [px,py]=stack.pop()
+    let idx=py*w+px
+
+    if(visitado[idx]) continue
+    visitado[idx]=1
+
+    let i=idx*4
+    if(frame.data[i]!==0) continue
+
+    area++
+
+    minX=Math.min(minX,px)
+    maxX=Math.max(maxX,px)
+    minY=Math.min(minY,py)
+    maxY=Math.max(maxY,py)
+
+    for(let dx=-1;dx<=1;dx++){
+    for(let dy=-1;dy<=1;dy++){
+      let nx=px+dx, ny=py+dy
+      if(nx>=0&&ny>=0&&nx<w&&ny<h){
+        stack.push([nx,ny])
+      }
+    }}
+  }
+
+  return {area,minX,maxX,minY,maxY}
+}
+
+for(let y=0;y<h;y+=2){
+for(let x=0;x<w;x+=2){
+
+  let idx=y*w+x
+  if(visitado[idx]) continue
+
+  let i=idx*4
+  if(frame.data[i]===0){
+    let b=flood(x,y)
+    if(b.area>200) blobs.push(b)
+  }
+
+}}
+
+/* =========================
+MARCADORES
+========================= */
+
+let m = blobs.sort((a,b)=>b.area-a.area).slice(0,4)
+if(m.length<4){
+  alert("Marcadores não detectados")
+  return
+}
+
+let c = m.map(b=>({
+  x:(b.minX+b.maxX)/2,
+  y:(b.minY+b.maxY)/2
+}))
+
+c.sort((a,b)=>a.y-b.y)
+
+let top=c.slice(0,2).sort((a,b)=>a.x-b.x)
+let bot=c.slice(2,4).sort((a,b)=>a.x-b.x)
+
+let TL=top[0], TR=top[1], BL=bot[0], BR=bot[1]
+
+/* =========================
+INTERPOLAÇÃO
+========================= */
+
+let q = parseInt(document.getElementById("qtd").value)
+
+let {topo, base} = interpolar(q)
+
+let colunas = 4
+let linhas = q
+
+/* =========================
+FUNÇÃO PERSPECTIVA
+========================= */
+
+function p(u,v){
+  return {
+    x:(1-u)*(1-v)*TL.x + u*(1-v)*TR.x + (1-u)*v*BL.x + u*v*BR.x,
+    y:(1-u)*(1-v)*TL.y + u*(1-v)*TR.y + (1-u)*v*BL.y + u*v*BR.y
+  }
+}
+
+/* =========================
+DESENHO DA GRADE
+========================= */
+
+ctx.strokeStyle="lime"
+ctx.lineWidth=2
+
+// horizontais
+for(let i=0;i<=linhas;i++){
+
+  let v = topo + (i/linhas)*(base - topo)
+
+  let a = p(esq, v)
+  let b = p(dir, v)
+
+  ctx.beginPath()
+  ctx.moveTo(a.x,a.y)
+  ctx.lineTo(b.x,b.y)
+  ctx.stroke()
+}
+
+// verticais
+for(let j=0;j<=colunas;j++){
+
+  let u = esq + (j/colunas)*(dir - esq)
+
+  let a = p(u, topo)
+  let b = p(u, base)
+
+  ctx.beginPath()
+  ctx.moveTo(a.x,a.y)
+  ctx.lineTo(b.x,b.y)
+  ctx.stroke()
+}
+
+}
+
+</script>
+
+</body>
+</html>

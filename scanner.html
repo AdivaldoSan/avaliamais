@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Scanner OMR</title>
+<title>Scanner Gabarito</title>
 
 <style>
 body{
@@ -12,198 +12,175 @@ body{
   font-family:Arial;
 }
 
-video, canvas{
+canvas{
+  width:900px;
   max-width:95vw;
   margin-top:10px;
+  background:#000;
 }
 </style>
 </head>
 
 <body>
 
-<h2>Scanner OMR</h2>
+<h2>Scanner de Gabarito</h2>
 
-<video id="video" autoplay playsinline></video>
-
+<input type="file" accept="image/*" onchange="carregarImagem(event)">
 <br><br>
-
-<div style="margin:10px">
-  Marcador mínimo:
-  <input type="range" id="areaMarcador" min="100" max="1500" value="500">
-  <span id="valorArea">500</span>
-</div>
-
-<button onclick="capturar()">Capturar</button>
-
-<br>
+<button onclick="processar()">Processar</button>
 
 <canvas id="canvas"></canvas>
 
 <script>
 
-const video = document.getElementById("video")
+let img = null
+
 const canvas = document.getElementById("canvas")
-const ctx = canvas.getContext("2d")
+const ctx = canvas.getContext("2d", { willReadFrequently: true })
 
-const slider = document.getElementById("areaMarcador")
-const label = document.getElementById("valorArea")
+/* =========================
+CONFIG FIXA (SUA CALIBRAÇÃO)
+========================= */
 
-slider.oninput = () => {
-  label.innerText = slider.value
+const THRESHOLD = 50
+
+const topo = 0.18
+const base = 0.88
+const esquerda = 0.22
+const direita = 0.83
+
+const linhas = 10
+const colunas = 4
+
+/* ========================= */
+
+function carregarImagem(e){
+
+  const file = e.target.files[0]
+  if(!file) return
+
+  img = new Image()
+
+  img.onload = () => {
+    canvas.width = img.width
+    canvas.height = img.height
+    ctx.drawImage(img,0,0)
+  }
+
+  img.src = URL.createObjectURL(file)
 }
 
-/* =========================
-CAMERA
-========================= */
-
-navigator.mediaDevices.getUserMedia({
-  video:{ facingMode:"environment" }
-})
-.then(stream=>{
-  video.srcObject = stream
-})
-
-/* =========================
-CAPTURA
-========================= */
-
-function capturar(){
-
-canvas.width = video.videoWidth
-canvas.height = video.videoHeight
-
-ctx.drawImage(video,0,0)
-
-processar()
-
-}
-
-/* =========================
-PROCESSAMENTO
-========================= */
+/* ========================= */
 
 function processar(){
+
+if(!img) return
+
+ctx.drawImage(img,0,0)
 
 let frame = ctx.getImageData(0,0,canvas.width,canvas.height)
 let data = frame.data
 
-const THRESHOLD = 65
+/* =========================
+THRESHOLD FIXO
+========================= */
 
 for(let i=0;i<data.length;i+=4){
 
-let brilho = (data[i]+data[i+1]+data[i+2])/3
-let cor = brilho < THRESHOLD ? 0 : 255
+  let brilho = (data[i]+data[i+1]+data[i+2])/3
+  let cor = brilho < THRESHOLD ? 0 : 255
 
-data[i]=data[i+1]=data[i+2]=cor
+  data[i]=data[i+1]=data[i+2]=cor
 }
 
 ctx.putImageData(frame,0,0)
 
-detectarMarcadores(frame)
-
-}
-
 /* =========================
-DETECTAR MARCADORES
+FLOOD FILL
 ========================= */
 
-function detectarMarcadores(frame){
+let w = canvas.width
+let h = canvas.height
 
-let largura = frame.width
-let altura = frame.height
+let visitado = new Uint8Array(w*h)
+let blobs = []
 
-let pontos=[]
+function floodFill(x,y){
 
-for(let y=0;y<altura;y+=3){
-for(let x=0;x<largura;x+=3){
+  let stack = [[x,y]]
 
-let i=(y*largura+x)*4
+  let minX=x, maxX=x
+  let minY=y, maxY=y
+  let area=0
 
-if(frame.data[i]===0){
-pontos.push({x,y})
+  while(stack.length){
+
+    let [px,py] = stack.pop()
+    let idx = py*w + px
+
+    if(visitado[idx]) continue
+    visitado[idx]=1
+
+    let i = idx*4
+    if(frame.data[i] !== 0) continue
+
+    area++
+
+    minX = Math.min(minX, px)
+    maxX = Math.max(maxX, px)
+    minY = Math.min(minY, py)
+    maxY = Math.max(maxY, py)
+
+    for(let dx=-1;dx<=1;dx++){
+    for(let dy=-1;dy<=1;dy++){
+
+      let nx=px+dx
+      let ny=py+dy
+
+      if(nx>=0 && ny>=0 && nx<w && ny<h){
+        stack.push([nx,ny])
+      }
+
+    }}
+  }
+
+  return {area,minX,maxX,minY,maxY}
 }
 
-}
-}
+/* ========================= */
 
-let grupos=[]
+for(let y=0;y<h;y+=2){
+for(let x=0;x<w;x+=2){
 
-pontos.forEach(p=>{
+  let idx = y*w+x
+  if(visitado[idx]) continue
 
-let achou=false
+  let i = idx*4
 
-for(let g of grupos){
+  if(frame.data[i]===0){
+    let blob = floodFill(x,y)
+    if(blob.area > 200) blobs.push(blob)
+  }
 
-let dx=p.x-g.cx
-let dy=p.y-g.cy
-
-if(Math.sqrt(dx*dx+dy*dy)<20){
-
-g.x+=p.x
-g.y+=p.y
-g.count++
-
-g.cx=g.x/g.count
-g.cy=g.y/g.count
-
-achou=true
-break
-}
-
-}
-
-if(!achou){
-grupos.push({x:p.x,y:p.y,cx:p.x,cy:p.y,count:1})
-}
-
-})
+}}
 
 /* =========================
-FILTRO COM SLIDER
+MARCADORES
 ========================= */
 
-let minAreaMarcador = parseInt(slider.value)
-
-let marcadores = grupos.filter(g => {
-
-  if(g.count < minAreaMarcador) return false
-
-  // estimar largura aproximada
-  let lado = Math.sqrt(g.count)
-
-  // marcador é grande
-  if(lado < 20) return false
-
-  // marcador tende a ser "quadrado"
-  // rejeita formas muito alongadas
-  let proporcao = g.count / (lado * lado)
-
-  if(proporcao < 0.5) return false
-
-  return true
-
-})
-.sort((a,b)=>b.count-a.count)
+let maiores = blobs
+.sort((a,b)=>b.area-a.area)
 .slice(0,4)
 
-console.log("Grupos totais:", grupos.length)
-console.log("Marcadores filtrados:", marcadores.length)
-console.log("Marcadores encontrados:", marcadores.length)
-
-/* =========================
-VALIDAÇÃO
-========================= */
-
-if(marcadores.length < 4){
-  console.log("Não encontrou 4 marcadores")
+if(maiores.length < 4){
+  alert("Marcadores não detectados")
   return
 }
 
-/* =========================
-CLASSIFICAÇÃO ROBUSTA
-========================= */
-
-let centros = marcadores.map(m=>({x:m.cx,y:m.cy}))
+let centros = maiores.map(b=>({
+  x:(b.minX+b.maxX)/2,
+  y:(b.minY+b.maxY)/2
+}))
 
 centros.sort((a,b)=>a.y-b.y)
 
@@ -218,39 +195,79 @@ let TR = top[1]
 let BL = bottom[0]
 let BR = bottom[1]
 
-/* =========================
-DESENHAR CONTORNO
-========================= */
-
-ctx.strokeStyle = "yellow"
-ctx.lineWidth = 3
-
-ctx.beginPath()
-ctx.moveTo(TL.x, TL.y)
-ctx.lineTo(TR.x, TR.y)
-ctx.lineTo(BR.x, BR.y)
-ctx.lineTo(BL.x, BL.y)
-ctx.closePath()
-ctx.stroke()
+if(!TL || !TR || !BL || !BR){
+  alert("Erro na detecção dos cantos")
+  return
+}
 
 /* =========================
-ROI
+PERSPECTIVA
 ========================= */
 
-let margem = 20
+function pontoNaArea(u, v){
+  return {
+    x: (1-u)*(1-v)*TL.x + u*(1-v)*TR.x + (1-u)*v*BL.x + u*v*BR.x,
+    y: (1-u)*(1-v)*TL.y + u*(1-v)*TR.y + (1-u)*v*BL.y + u*v*BR.y
+  }
+}
 
-let minX = Math.min(TL.x, BL.x) + margem
-let maxX = Math.max(TR.x, BR.x) - margem
+/* =========================
+LEITURA DAS RESPOSTAS
+========================= */
 
-let minY = Math.min(TL.y, TR.y) + margem
-let maxY = Math.max(BL.y, BR.y) - margem
+let respostas = []
 
-ctx.strokeStyle = "lime"
-ctx.lineWidth = 2
+for(let i=0;i<linhas;i++){
 
-ctx.strokeRect(minX, minY, maxX-minX, maxY-minY)
+  let linhaResposta = -1
+  let maiorArea = 0
 
-console.log("ROI:", {minX,maxX,minY,maxY})
+  for(let j=0;j<colunas;j++){
+
+    let u = esquerda + (j+0.5)/colunas*(direita-esquerda)
+    let v = topo + (i+0.5)/linhas*(base-topo)
+
+    let p = pontoNaArea(u, v)
+
+    let raio = 10
+    let soma = 0
+
+    for(let dx=-raio;dx<=raio;dx++){
+    for(let dy=-raio;dy<=raio;dy++){
+
+      let x = Math.floor(p.x + dx)
+      let y = Math.floor(p.y + dy)
+
+      if(x<0 || y<0 || x>=canvas.width || y>=canvas.height) continue
+
+      let idx = (y*canvas.width + x)*4
+
+      if(frame.data[idx] === 0){
+        soma++
+      }
+
+    }}
+
+    if(soma > maiorArea){
+      maiorArea = soma
+      linhaResposta = j
+    }
+
+  }
+
+  respostas.push(linhaResposta)
+}
+
+/* =========================
+RESULTADO FINAL
+========================= */
+
+let letras = ["A","B","C","D"]
+
+let final = respostas.map(r => letras[r] || "-")
+
+console.log("GABARITO:", final)
+alert("Gabarito: " + final.join(" "))
 
 }
 

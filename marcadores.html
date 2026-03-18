@@ -2,279 +2,135 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Detector de Marcadores</title>
+<title>Scanner - Teste Marcadores</title>
 
 <style>
-
 body{
-margin:0;
-background:#111;
-color:white;
-font-family:Arial;
-text-align:center;
+  background:#111;
+  color:white;
+  font-family:Arial;
+  text-align:center;
 }
 
-video,canvas{
-width:90%;
-max-width:500px;
-margin-top:10px;
+canvas{
+  margin-top:10px;
+  max-width:95vw;
+  background:#000;
 }
-
-button{
-padding:12px 20px;
-margin:10px;
-font-size:16px;
-}
-
 </style>
 </head>
 
 <body>
 
-<h2>Detector de Marcadores</h2>
+<h2>Teste de Reconhecimento de Marcadores</h2>
 
-<div id="camera"></div>
+<input type="file" accept="image/*" onchange="carregarImagem(event)">
 
-<div id="info">Centralize a folha</div>
+<br>
 
-<button onclick="capturar()">Capturar</button>
-<button onclick="abrirCamera()">Ler novamente</button>
+<canvas id="canvas"></canvas>
 
 <script>
 
-const THRESHOLD=110
+function carregarImagem(event){
 
-let stream
+const file = event.target.files[0]
+const img = new Image()
 
-/* ===================== */
-
-function abrirCamera(){
-
-navigator.mediaDevices.getUserMedia({
-video:{facingMode:"environment"}
-})
-.then(s=>{
-
-stream=s
-
-let video=document.createElement("video")
-video.srcObject=s
-video.play()
-
-document.getElementById("camera").innerHTML=""
-document.getElementById("camera").appendChild(video)
-
-})
+img.onload = () => processar(img)
+img.src = URL.createObjectURL(file)
 
 }
 
-/* ===================== */
+function processar(img){
 
-function capturar(){
+const canvas = document.getElementById("canvas")
+const ctx = canvas.getContext("2d")
 
-let video=document.querySelector("video")
+canvas.width = img.width
+canvas.height = img.height
 
-let canvas=document.createElement("canvas")
-let ctx=canvas.getContext("2d")
+ctx.drawImage(img,0,0)
 
-canvas.width=video.videoWidth
-canvas.height=video.videoHeight
+/* =========================
+CONVERTER PARA PB
+========================= */
 
-ctx.drawImage(video,0,0)
-
-document.getElementById("camera").innerHTML=""
-document.getElementById("camera").appendChild(canvas)
-
-processar(canvas)
-
-}
-
-/* ===================== */
-
-function processar(canvas){
-
-let ctx=canvas.getContext("2d")
-
-let largura=canvas.width
-let altura=canvas.height
-
-let frame=ctx.getImageData(0,0,largura,altura)
-let data=frame.data
-
-/* threshold */
+let imgData = ctx.getImageData(0,0,canvas.width,canvas.height)
+let data = imgData.data
 
 for(let i=0;i<data.length;i+=4){
 
-let brilho=(data[i]+data[i+1]+data[i+2])/3
+  let media = (data[i] + data[i+1] + data[i+2]) / 3
 
-let cor = brilho < THRESHOLD ? 0 : 255
+  let cor = media > 150 ? 255 : 0
 
-data[i]=cor
-data[i+1]=cor
-data[i+2]=cor
-
+  data[i] = data[i+1] = data[i+2] = cor
 }
 
-ctx.putImageData(frame,0,0)
-
-/* detectar pixels escuros */
-
-let pontos=[]
-
-for(let y=0;y<altura;y+=4){
-for(let x=0;x<largura;x+=4){
-
-let idx=(y*largura+x)*4
-
-if(data[idx]==0){
-pontos.push({x,y})
-}
-
-}
-}
-
-/* agrupar */
-
-let grupos=[]
-
-pontos.forEach(p=>{
-
-let achou=false
-
-for(let g of grupos){
-
-let dx=p.x-g.cx
-let dy=p.y-g.cy
-
-if(Math.sqrt(dx*dx+dy*dy)<30){
-
-g.x+=p.x
-g.y+=p.y
-g.count++
-
-g.cx=g.x/g.count
-g.cy=g.y/g.count
-
-achou=true
-break
-
-}
-
-}
-
-if(!achou){
-
-grupos.push({
-x:p.x,
-y:p.y,
-cx:p.x,
-cy:p.y,
-count:1
-})
-
-}
-
-})
-
-ctx.fillStyle = "yellow"
-
-grupos.forEach(g => {
-
-ctx.beginPath()
-ctx.arc(g.cx, g.cy, 4, 0, Math.PI*2)
-ctx.fill()
-
-})  
-
-/* filtrar quadrados grandes */
-let marcadores = grupos
+ctx.putImageData(imgData,0,0)
 
 /* =========================
-IDENTIFICAR CANTOS
+DETECTAR BLOCOS PRETOS
 ========================= */
 
-let tl,tr,bl,br
+let blocos = []
 
-let minSum = Infinity
-let maxSum = -Infinity
-let minDiff = Infinity
-let maxDiff = -Infinity
+for(let y=0; y<canvas.height; y+=5){
+  for(let x=0; x<canvas.width; x+=5){
 
-marcadores.forEach(p=>{
+    let i = (y * canvas.width + x) * 4
 
-let sum = p.cx + p.cy
-let diff = p.cx - p.cy
+    if(data[i] === 0){ // pixel preto
 
-if(sum < minSum){
-minSum = sum
-tl = p
+      let largura = 0
+      let altura = 0
+
+      // medir largura
+      while(x+largura < canvas.width){
+        let idx = (y * canvas.width + (x+largura)) * 4
+        if(data[idx] !== 0) break
+        largura++
+      }
+
+      // medir altura
+      while(y+altura < canvas.height){
+        let idx = ((y+altura) * canvas.width + x) * 4
+        if(data[idx] !== 0) break
+        altura++
+      }
+
+      // filtrar quadrados grandes
+      if(largura > 20 && altura > 20 && Math.abs(largura-altura) < 10){
+
+        blocos.push({x,y,largura,altura})
+      }
+    }
+  }
 }
-
-if(sum > maxSum){
-maxSum = sum
-br = p
-}
-
-if(diff < minDiff){
-minDiff = diff
-tr = p
-}
-
-if(diff > maxDiff){
-maxDiff = diff
-bl = p
-}
-
-})
-  
-
-  
-/* desenhar */
-
-ctx.fillStyle="red"
-
-marcadores.forEach(m=>{
-
-ctx.beginPath()
-ctx.arc(m.cx,m.cy,12,0,Math.PI*2)
-ctx.fill()
-
-})
 
 /* =========================
-DESENHAR CANTOS
+FILTRAR OS 4 MAIORES
 ========================= */
 
-ctx.fillStyle="blue"
-ctx.beginPath()
-ctx.arc(tl.cx,tl.cy,14,0,Math.PI*2)
-ctx.fill()
+blocos.sort((a,b)=> (b.largura*b.altura) - (a.largura*a.altura))
 
-ctx.fillStyle="green"
-ctx.beginPath()
-ctx.arc(tr.cx,tr.cy,14,0,Math.PI*2)
-ctx.fill()
+let marcadores = blocos.slice(0,4)
 
-ctx.fillStyle="orange"
-ctx.beginPath()
-ctx.arc(bl.cx,bl.cy,14,0,Math.PI*2)
-ctx.fill()
+/* =========================
+DESENHAR RESULTADO
+========================= */
 
-ctx.fillStyle="purple"
-ctx.beginPath()
-ctx.arc(br.cx,br.cy,14,0,Math.PI*2)
-ctx.fill()
-  
+ctx.strokeStyle = "red"
+ctx.lineWidth = 3
 
-document.getElementById("info").innerHTML=
+marcadores.forEach(m => {
+  ctx.strokeRect(m.x, m.y, m.largura, m.altura)
+})
 
-`
-Marcadores detectados: ${marcadores.length}
-`
+console.log("Marcadores detectados:", marcadores)
 
 }
-
-abrirCamera()
 
 </script>
 

@@ -13,6 +13,7 @@ body{
 }
 
 canvas{
+  width:900px;
   max-width:95vw;
   margin-top:10px;
   background:#000;
@@ -22,7 +23,7 @@ canvas{
 
 <body>
 
-<h2>LAB - Detecção de Marcadores</h2>
+<h2>LAB - Marcadores (Retângulo Forçado)</h2>
 
 <input type="file" accept="image/*" onchange="carregarImagem(event)">
 
@@ -33,12 +34,6 @@ Threshold:
 <span id="tVal">65</span>
 
 <br>
-
-Área mínima marcador:
-<input type="range" id="area" min="50" max="1500" value="300">
-<span id="aVal">300</span>
-
-<br><br>
 
 <button onclick="processar()">Processar</button>
 
@@ -52,23 +47,27 @@ const canvas = document.getElementById("canvas")
 const ctx = canvas.getContext("2d")
 
 const tSlider = document.getElementById("threshold")
-const aSlider = document.getElementById("area")
-
 const tVal = document.getElementById("tVal")
-const aVal = document.getElementById("aVal")
 
 tSlider.oninput = () => tVal.innerText = tSlider.value
-aSlider.oninput = () => aVal.innerText = aSlider.value
 
 function carregarImagem(e){
+
   img = new Image()
+
   img.onload = () => {
+
+    // mantém resolução real
     canvas.width = img.width
     canvas.height = img.height
+
     ctx.drawImage(img,0,0)
   }
+
   img.src = URL.createObjectURL(e.target.files[0])
 }
+
+/* ========================= */
 
 function processar(){
 
@@ -80,6 +79,10 @@ let frame = ctx.getImageData(0,0,canvas.width,canvas.height)
 let data = frame.data
 
 let THRESHOLD = parseInt(tSlider.value)
+
+/* =========================
+THRESHOLD
+========================= */
 
 for(let i=0;i<data.length;i+=4){
 
@@ -144,7 +147,7 @@ grupos.push({x:p.x,y:p.y,cx:p.x,cy:p.y,count:1})
 console.log("Total grupos:", grupos.length)
 
 /* =========================
-DESENHAR TODOS (debug)
+DESENHAR TODOS (DEBUG)
 ========================= */
 
 ctx.strokeStyle = "gray"
@@ -154,41 +157,74 @@ grupos.forEach(g=>{
 })
 
 /* =========================
-FILTRO MARCADORES
+PEGAR 4 MAIORES (FORÇADO)
 ========================= */
 
-let minArea = parseInt(aSlider.value)
+let maiores = grupos
+.sort((a,b)=>b.count-a.count)
+.slice(0,4)
 
-let marcadores = grupos.filter(g => {
+console.log("Top 4 areas:", maiores.map(m=>m.count))
 
-  if(g.count < minArea) return false
-
-  let lado = Math.sqrt(g.count)
-
-  if(lado < 20) return false
-
-  let proporcao = g.count / (lado * lado)
-
-  if(proporcao < 0.5) return false
-
-  return true
-
-})
-
-console.log("Marcadores filtrados:", marcadores.length)
+if(maiores.length < 4){
+  alert("Não encontrou 4 regiões grandes")
+  return
+}
 
 /* =========================
-DESTACAR MARCADORES
+CENTROS
 ========================= */
 
-ctx.strokeStyle = "red"
-ctx.lineWidth = 2
+let centros = maiores.map(m=>({x:m.cx,y:m.cy}))
 
-marcadores.forEach(m=>{
-  ctx.strokeRect(m.cx-10,m.cy-10,20,20)
+/* =========================
+CLASSIFICAÇÃO ROBUSTA
+========================= */
+
+centros.sort((a,b)=>a.y-b.y)
+
+let top = centros.slice(0,2)
+let bottom = centros.slice(2,4)
+
+top.sort((a,b)=>a.x-b.x)
+bottom.sort((a,b)=>a.x-b.x)
+
+let TL = top[0]
+let TR = top[1]
+let BL = bottom[0]
+let BR = bottom[1]
+
+/* =========================
+DESENHAR PONTOS
+========================= */
+
+ctx.fillStyle = "cyan"
+
+[TL,TR,BL,BR].forEach(p=>{
+  ctx.beginPath()
+  ctx.arc(p.x,p.y,6,0,Math.PI*2)
+  ctx.fill()
 })
 
+/* =========================
+RETÂNGULO (SEMPRE VAI APARECER)
+========================= */
+
+ctx.strokeStyle = "yellow"
+ctx.lineWidth = 3
+
+ctx.beginPath()
+ctx.moveTo(TL.x, TL.y)
+ctx.lineTo(TR.x, TR.y)
+ctx.lineTo(BR.x, BR.y)
+ctx.lineTo(BL.x, BL.y)
+ctx.closePath()
+ctx.stroke()
+
+console.log("Retângulo:", {TL,TR,BL,BR})
+
 }
+
 </script>
 
 </body>

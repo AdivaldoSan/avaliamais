@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>LAB Marcadores</title>
+<title>Scanner Gabarito</title>
 
 <style>
 body{
@@ -13,6 +13,7 @@ body{
 }
 
 canvas{
+  width:900px;
   max-width:95vw;
   margin-top:10px;
   background:#000;
@@ -22,64 +23,68 @@ canvas{
 
 <body>
 
-<h2>LAB - Detecção de Marcadores</h2>
+<h2>Scanner de Gabarito...</h2>
 
 <input type="file" accept="image/*" onchange="carregarImagem(event)">
-
 <br><br>
-
-Threshold:
-<input type="range" id="threshold" min="30" max="150" value="65">
-<span id="tVal">65</span>
-
-<br>
-
-Área mínima marcador:
-<input type="range" id="area" min="50" max="1500" value="300">
-<span id="aVal">300</span>
-
-<br><br>
-
 <button onclick="processar()">Processar</button>
 
 <canvas id="canvas"></canvas>
+  
+<div id="resultado" style="margin-top:10px;font-size:20px;"></div>  
 
 <script>
 
 let img = null
 
 const canvas = document.getElementById("canvas")
-const ctx = canvas.getContext("2d")
+const ctx = canvas.getContext("2d", { willReadFrequently: true })
 
-const tSlider = document.getElementById("threshold")
-const aSlider = document.getElementById("area")
+/* =========================
+CONFIG
+========================= */
 
-const tVal = document.getElementById("tVal")
-const aVal = document.getElementById("aVal")
+const THRESHOLD = 50
 
-tSlider.oninput = () => tVal.innerText = tSlider.value
-aSlider.oninput = () => aVal.innerText = aSlider.value
+let linhas = 10
+const colunas = 4
+
+// 🔥 AJUSTES FINOS (IMPORTANTE)
+const offsetTopo = 0.18
+const alturaUtil = 0.70
+
+/* ========================= */
 
 function carregarImagem(e){
+
+  const file = e.target.files[0]
+  if(!file) return
+
   img = new Image()
+
   img.onload = () => {
     canvas.width = img.width
     canvas.height = img.height
     ctx.drawImage(img,0,0)
   }
-  img.src = URL.createObjectURL(e.target.files[0])
+
+  img.src = URL.createObjectURL(file)
 }
+
+/* ========================= */
 
 function processar(){
 
-if(!img) return alert("Carregue imagem")
+if(!img) return
 
 ctx.drawImage(img,0,0)
 
 let frame = ctx.getImageData(0,0,canvas.width,canvas.height)
 let data = frame.data
 
-let THRESHOLD = parseInt(tSlider.value)
+/* =========================
+THRESHOLD
+========================= */
 
 for(let i=0;i<data.length;i+=4){
 
@@ -92,103 +97,220 @@ for(let i=0;i<data.length;i+=4){
 ctx.putImageData(frame,0,0)
 
 /* =========================
-DETECÇÃO
+FLOOD FILL
 ========================= */
 
-let pontos=[]
+let w = canvas.width
+let h = canvas.height
 
-for(let y=0;y<canvas.height;y+=2){
-for(let x=0;x<canvas.width;x+=2){
+let visitado = new Uint8Array(w*h)
+let blobs = []
 
-let i=(y*canvas.width+x)*4
+function floodFill(x,y){
 
-if(frame.data[i]===0){
-pontos.push({x,y})
+  let stack = [[x,y]]
+
+  let minX=x, maxX=x
+  let minY=y, maxY=y
+  let area=0
+
+  while(stack.length){
+
+    let [px,py] = stack.pop()
+    let idx = py*w + px
+
+    if(visitado[idx]) continue
+    visitado[idx]=1
+
+    let i = idx*4
+    if(frame.data[i] !== 0) continue
+
+    area++
+
+    minX = Math.min(minX, px)
+    maxX = Math.max(maxX, px)
+    minY = Math.min(minY, py)
+    maxY = Math.max(maxY, py)
+
+    for(let dx=-1;dx<=1;dx++){
+    for(let dy=-1;dy<=1;dy++){
+
+      let nx=px+dx
+      let ny=py+dy
+
+      if(nx>=0 && ny>=0 && nx<w && ny<h){
+        stack.push([nx,ny])
+      }
+
+    }}
+  }
+
+  return {area,minX,maxX,minY,maxY}
 }
 
-}
-}
+/* ========================= */
 
-let grupos=[]
+for(let y=0;y<h;y+=2){
+for(let x=0;x<w;x+=2){
 
-pontos.forEach(p=>{
+  let idx = y*w+x
+  if(visitado[idx]) continue
 
-let achou=false
+  let i = idx*4
 
-for(let g of grupos){
+  if(frame.data[i]===0){
+    let blob = floodFill(x,y)
+    if(blob.area > 200) blobs.push(blob)
+  }
 
-let dx=p.x-g.cx
-let dy=p.y-g.cy
-
-if(Math.sqrt(dx*dx+dy*dy)<20){
-
-g.x+=p.x
-g.y+=p.y
-g.count++
-
-g.cx=g.x/g.count
-g.cy=g.y/g.count
-
-achou=true
-break
-}
-
-}
-
-if(!achou){
-grupos.push({x:p.x,y:p.y,cx:p.x,cy:p.y,count:1})
-}
-
-})
-
-console.log("Total grupos:", grupos.length)
+}}
 
 /* =========================
-DESENHAR TODOS (debug)
+MARCADORES
 ========================= */
 
-ctx.strokeStyle = "gray"
+let maiores = blobs
+.sort((a,b)=>b.area-a.area)
+.slice(0,4)
 
-grupos.forEach(g=>{
-  ctx.strokeRect(g.cx-3,g.cy-3,6,6)
-})
+if(maiores.length < 4){
+  alert("Marcadores não detectados")
+  return
+}
+
+let centros = maiores.map(b=>({
+  x:(b.minX+b.maxX)/2,
+  y:(b.minY+b.maxY)/2
+}))
+
+centros.sort((a,b)=>a.y-b.y)
+
+let top = centros.slice(0,2)
+let bottom = centros.slice(2,4)
+
+top.sort((a,b)=>a.x-b.x)
+bottom.sort((a,b)=>a.x-b.x)
+
+let TL = top[0]
+let TR = top[1]
+let BL = bottom[0]
+let BR = bottom[1]
 
 /* =========================
-FILTRO MARCADORES
+LEITURA HÍBRIDA (CORRIGIDA)
 ========================= */
 
-let minArea = parseInt(aSlider.value)
+let respostas = []
 
-let marcadores = grupos.filter(g => {
+for(let i=0;i<linhas;i++){
 
-  if(g.count < minArea) return false
+  let melhor = -1
+  let maiorArea = 0
 
-  let lado = Math.sqrt(g.count)
+  // 🔥 NOVO t (corrigido)
+  let t = offsetTopo + ((i + 0.5) / linhas) * alturaUtil
 
-  if(lado < 20) return false
+  let pontoEsq = {
+    x: TL.x + (BL.x - TL.x) * t,
+    y: TL.y + (BL.y - TL.y) * t
+  }
 
-  let proporcao = g.count / (lado * lado)
+  let pontoDir = {
+    x: TR.x + (BR.x - TR.x) * t,
+    y: TR.y + (BR.y - TR.y) * t
+  }
 
-  if(proporcao < 0.5) return false
+  for(let j=0;j<colunas;j++){
 
-  return true
+    let u = (j + 0.5) / colunas
 
-})
+    let px = pontoEsq.x + (pontoDir.x - pontoEsq.x) * u
+    let py = pontoEsq.y + (pontoDir.y - pontoEsq.y) * u
 
-console.log("Marcadores filtrados:", marcadores.length)
+    let raio = 18
+    let soma = 0
+
+    for(let dx=-raio;dx<=raio;dx+=2){
+    for(let dy=-raio;dy<=raio;dy+=2){
+
+      let x = Math.floor(px + dx)
+      let y = Math.floor(py + dy)
+
+      if(x<0 || y<0 || x>=canvas.width || y>=canvas.height) continue
+
+      let idx = (y*canvas.width + x)*4
+
+      if(frame.data[idx] === 0){
+        soma++
+      }
+
+    }}
+
+    if(soma > maiorArea){
+      maiorArea = soma
+      melhor = j
+    }
+
+  }
+
+  // 🔥 LIMIAR (evita falso positivo)
+  let LIMIAR = 18 * 18 * 0.4
+  if(maiorArea < LIMIAR){
+    melhor = -1
+  }
+
+  respostas.push(melhor)
+}
 
 /* =========================
-DESTACAR MARCADORES
+OVERLAY
 ========================= */
 
-ctx.strokeStyle = "red"
-ctx.lineWidth = 2
+ctx.strokeStyle = "lime"
+ctx.lineWidth = 3
 
-marcadores.forEach(m=>{
-  ctx.strokeRect(m.cx-10,m.cy-10,20,20)
-})
+for(let i=0;i<linhas;i++){
+
+  let j = respostas[i]
+  if(j < 0) continue
+
+  let t = offsetTopo + ((i + 0.5) / linhas) * alturaUtil
+
+  let pontoEsq = {
+    x: TL.x + (BL.x - TL.x) * t,
+    y: TL.y + (BL.y - TL.y) * t
+  }
+
+  let pontoDir = {
+    x: TR.x + (BR.x - TR.x) * t,
+    y: TR.y + (BR.y - TR.y) * t
+  }
+
+  let u = (j + 0.5) / colunas
+
+  let px = pontoEsq.x + (pontoDir.x - pontoEsq.x) * u
+  let py = pontoEsq.y + (pontoDir.y - pontoEsq.y) * u
+
+  ctx.beginPath()
+  ctx.arc(px, py, 28, 0, Math.PI*2)
+  ctx.stroke()
+  ctx.fillStyle = "rgba(0,255,0,0.3)"
+  ctx.fill()
+}
+
+/* =========================
+RESULTADO
+========================= */
+
+let letras = ["A","B","C","D"]
+
+let final = respostas.map(r => letras[r] || "-")
+
+document.getElementById("resultado").innerText =
+"Gabarito: " + final.join(" ")
 
 }
+
 </script>
 
 </body>

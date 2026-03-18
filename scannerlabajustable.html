@@ -27,7 +27,7 @@ canvas{
 
 <body>
 
-<h2>LAB Calibração (1–20 questões)</h2>
+<h2>LAB Calibração (1–20 questões)...</h2>
 
 <input type="file" accept="image/*" onchange="carregarImagem(event)">
 
@@ -40,7 +40,7 @@ Questões:
 
 Threshold:
 <input type="range" id="threshold" min="30" max="150" value="60">
-<span id="tVal">60</span>
+<span id="tVal">50</span>
 
 <br><br>
 
@@ -54,7 +54,6 @@ Dir <input type="range" id="dir" min="0" max="1" step="0.01" value="0.83">
 
 <br><br>
 
-<button onclick="processar()">Atualizar</button>
 <button onclick="salvar()">Salvar Parâmetros</button>
 
 <pre id="saida"></pre>
@@ -225,6 +224,10 @@ let dados = {
 document.getElementById("saida").innerText =
 JSON.stringify(dados, null, 2)
 }
+
+document.querySelectorAll("input, select").forEach(el=>{
+  el.addEventListener("input", processar)
+})
 
 </script>
 

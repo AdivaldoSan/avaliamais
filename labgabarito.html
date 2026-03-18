@@ -43,7 +43,7 @@ canvas{
 <body>
 
 <h2>LAB Ajuste Gabarito</h2>
-
+<button onclick="exportar()">Exportar Config</button>
 <div class="controls">
 
 <div class="control">
@@ -235,7 +235,29 @@ ATUALIZAÇÃO EM TEMPO REAL
 document.querySelectorAll("input").forEach(el=>{
   el.addEventListener("input", draw)
 })
+function exportar(){
 
+const config = {
+
+  qrOffsetX: parseInt(document.getElementById("qrX").value),
+  qrOffsetY: parseInt(document.getElementById("qrY").value),
+
+  gabaritoOffsetX: parseInt(document.getElementById("gX").value),
+  gabaritoOffsetY: parseInt(document.getElementById("gY").value),
+
+  marcadorOffsetX: parseInt(document.getElementById("mX").value),
+  marcadorOffsetY: parseInt(document.getElementById("mY").value),
+
+  dy: parseInt(document.getElementById("dy").value),
+  topoLetras: parseInt(document.getElementById("topo").value)
+
+}
+
+console.log(JSON.stringify(config, null, 2))
+
+alert("Configuração gerada no console (F12)")
+
+}
 draw()
 
 </script>

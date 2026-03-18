@@ -23,7 +23,7 @@ canvas{
 
 <body>
 
-<h2>LAB - Marcadores (Retângulo Forçado)</h2>
+<h2>LAB - Marcadores (Retângulo Forçado)...</h2>
 
 <input type="file" accept="image/*" onchange="carregarImagem(event)">
 
@@ -109,10 +109,6 @@ for(let i=0;i<data.length;i+=4){
 ctx.putImageData(frame,0,0)
 
 /* =========================
-DETECÇÃO
-========================= */
-
-/* =========================
 DETECÇÃO (FLOOD FILL)
 ========================= */
 
@@ -120,88 +116,86 @@ let w = canvas.width
 let h = canvas.height
 
 let visitado = new Uint8Array(w*h)
-
 let blobs = []
 
 function floodFill(x,y){
 
-let stack = [[x,y]]
+  let stack = [[x,y]]
 
-let minX=x, maxX=x
-let minY=y, maxY=y
-let area=0
+  let minX=x, maxX=x
+  let minY=y, maxY=y
+  let area=0
 
-while(stack.length){
+  while(stack.length){
 
-let [px,py] = stack.pop()
-let idx = py*w + px
+    let [px,py] = stack.pop()
+    let idx = py*w + px
 
-if(visitado[idx]) continue
-visitado[idx]=1
+    if(visitado[idx]) continue
+    visitado[idx]=1
 
-let i = idx*4
+    let i = idx*4
 
-if(frame.data[i] !== 0) continue
+    if(frame.data[i] !== 0) continue
 
-area++
+    area++
 
-if(px<minX) minX=px
-if(px>maxX) maxX=px
-if(py<minY) minY=py
-if(py>maxY) maxY=py
+    if(px<minX) minX=px
+    if(px>maxX) maxX=px
+    if(py<minY) minY=py
+    if(py>maxY) maxY=py
 
-for(let dx=-1;dx<=1;dx++){
-for(let dy=-1;dy<=1;dy++){
+    for(let dx=-1;dx<=1;dx++){
+    for(let dy=-1;dy<=1;dy++){
 
-let nx=px+dx
-let ny=py+dy
+      let nx=px+dx
+      let ny=py+dy
 
-if(nx>=0 && ny>=0 && nx<w && ny<h){
-stack.push([nx,ny])
+      if(nx>=0 && ny>=0 && nx<w && ny<h){
+        stack.push([nx,ny])
+      }
+
+    }}
+  }
+
+  return {area,minX,maxX,minY,maxY}
 }
 
-}
-}
-
-}
-
-return {area,minX,maxX,minY,maxY}
-}
-
-/* ========================= */
+/* =========================
+VARREDURA
+========================= */
 
 for(let y=0;y<h;y+=2){
 for(let x=0;x<w;x+=2){
 
-let idx = y*w+x
+  let idx = y*w+x
 
-if(visitado[idx]) continue
+  if(visitado[idx]) continue
 
-let i = idx*4
+  let i = idx*4
 
-if(frame.data[i]===0){
+  if(frame.data[i]===0){
 
-let blob = floodFill(x,y)
+    let blob = floodFill(x,y)
 
-if(blob.area > 200){
-blobs.push(blob)
-}
+    if(blob.area > 200){
+      blobs.push(blob)
+    }
 
-}
+  }
 
-}
-}
+}}
 
-console.log("Blobs:", blobs.length)
+console.log("Blobs detectados:", blobs.length)
 
 /* =========================
-DESENHAR TODOS
+DESENHAR TODOS (DEBUG)
 ========================= */
 
 ctx.strokeStyle="gray"
 
 blobs.forEach(b=>{
-ctx.strokeRect(b.minX,b.minY,b.maxX-b.minX,b.maxY-b.minY)
+  ctx.strokeRect(b.minX,b.minY,b.maxX-b.minX,b.maxY-b.minY)
 })
 
 /* =========================
@@ -212,7 +206,7 @@ let maiores = blobs
 .sort((a,b)=>b.area-a.area)
 .slice(0,4)
 
-console.log("Top 4 areas:", maiores.map(m=>m.area))
+console.log("Top 4 áreas:", maiores.map(m=>m.area))
 
 if(maiores.length < 4){
   alert("Não encontrou 4 regiões grandes")
@@ -224,45 +218,12 @@ CENTROS
 ========================= */
 
 let centros = maiores.map(b=>({
-x:(b.minX+b.maxX)/2,
-y:(b.minY+b.maxY)/2
+  x:(b.minX+b.maxX)/2,
+  y:(b.minY+b.maxY)/2
 }))
 
-console.log("Total grupos:", grupos.length)
-
 /* =========================
-DESENHAR TODOS (DEBUG)
-========================= */
-
-ctx.strokeStyle = "gray"
-
-grupos.forEach(g=>{
-  ctx.strokeRect(g.cx-3,g.cy-3,6,6)
-})
-
-/* =========================
-PEGAR 4 MAIORES (FORÇADO)
-========================= */
-
-let maiores = grupos
-.sort((a,b)=>b.count-a.count)
-.slice(0,4)
-
-console.log("Top 4 areas:", maiores.map(m=>m.count))
-
-if(maiores.length < 4){
-  alert("Não encontrou 4 regiões grandes")
-  return
-}
-
-/* =========================
-CENTROS
-========================= */
-
-let centros = maiores.map(m=>({x:m.cx,y:m.cy}))
-
-/* =========================
-CLASSIFICAÇÃO ROBUSTA
+CLASSIFICAÇÃO
 ========================= */
 
 centros.sort((a,b)=>a.y-b.y)
@@ -291,7 +252,7 @@ ctx.fillStyle = "cyan"
 })
 
 /* =========================
-RETÂNGULO (SEMPRE VAI APARECER)
+RETÂNGULO
 ========================= */
 
 ctx.strokeStyle = "yellow"

@@ -104,7 +104,8 @@ QUESTÕES
 ctx.font="12px Arial"
 ctx.textBaseline = "middle"
 
-const ajusteNumeroY = 1
+const ajusteNumeroY = 3
+const espaco = 10
 
 for(let i=0;i<q;i++){
 
@@ -112,7 +113,7 @@ for(let i=0;i<q;i++){
 
   // números
   ctx.textAlign = "right"
-  ctx.fillText((i+1), inicioX - 10, y + ajusteNumeroY)
+  ctx.fillText((i+1)+espaco, inicioX - 10, y + ajusteNumeroY)
 
   // bolhas
   ctx.textAlign = "center"

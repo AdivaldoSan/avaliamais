@@ -126,7 +126,7 @@ ctx.fillStyle="white"
 ctx.fillRect(0,0,canvas.width,canvas.height)
 
 /* =========================
-GABARITO BASE
+BASE
 ========================= */
 
 let inicioX = 400 + gOffsetX
@@ -135,10 +135,8 @@ let dx = 40
 let raio = 8
 
 /* =========================
-LETRAS ABCD (CORRIGIDO)
+LETRAS (CENTRALIZADAS)
 ========================= */
-
-ctx.save()
 
 ctx.fillStyle="black"
 ctx.font="12px Arial"
@@ -148,19 +146,13 @@ ctx.textBaseline = "middle"
 let letras = ["A","B","C","D"]
 
 for(let c=0;c<4;c++){
-
   let x = inicioX + c*dx
-
   ctx.fillText(letras[c], x, inicioY + offsetLetrasY)
 }
 
-ctx.restore()
-
 /* =========================
-QUESTÕES + BOLHAS (CORRIGIDO)
+QUESTÕES + NÚMEROS + BOLHAS
 ========================= */
-
-ctx.save()
 
 ctx.font="12px Arial"
 ctx.textBaseline = "middle"
@@ -169,7 +161,7 @@ for(let i=0;i<q;i++){
 
   let y = inicioY + i*dy
 
-  // números alinhados corretamente
+  // números (AGORA GARANTIDO VISÍVEL)
   ctx.textAlign = "right"
   ctx.fillText((i+1), inicioX - 10, y)
 
@@ -193,24 +185,19 @@ for(let i=0;i<q;i++){
   }
 }
 
-ctx.restore()
-
 /* =========================
-MARCADORES (250px FIXO)
+MARCADORES (SEU PADRÃO ORIGINAL)
 ========================= */
 
 let marcador = 30
 
-const TLx = 160 + mOffsetX
-const TRx = TLx + 250
-
-ctx.fillRect(TLx, 90 + mOffsetY, marcador, marcador)
-ctx.fillRect(TRx, 90 + mOffsetY, marcador, marcador)
+ctx.fillRect(160 + mOffsetX, 90 + mOffsetY, marcador, marcador)
+ctx.fillRect(410 + mOffsetX, 90 + mOffsetY, marcador, marcador)
 
 let baseY = inicioY + dy*q + 40
 
-ctx.fillRect(TLx, baseY + mOffsetY, marcador, marcador)
-ctx.fillRect(TRx, baseY + mOffsetY, marcador, marcador)
+ctx.fillRect(160 + mOffsetX, baseY + mOffsetY, marcador, marcador)
+ctx.fillRect(410 + mOffsetX, baseY + mOffsetY, marcador, marcador)
 
 /* =========================
 QR CODE
@@ -228,7 +215,7 @@ new QRCode(qrDiv,{
 let img = qrDiv.querySelector("img")
 
 /* =========================
-CENTRALIZAÇÃO REAL
+CENTRALIZAÇÃO
 ========================= */
 
 const topo = inicioY + offsetLetrasY - 20
@@ -249,17 +236,11 @@ img.onload = () => {
 
 }
 
-/* =========================
-ATUALIZAÇÃO
-========================= */
+/* ========================= */
 
 document.querySelectorAll("input").forEach(el=>{
   el.addEventListener("input", draw)
 })
-
-/* =========================
-EXPORTAR CONFIG
-========================= */
 
 function exportar(){
 

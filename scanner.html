@@ -133,24 +133,42 @@ function parseQR(text){
 OVERLAY QR
 ========================= */
 
-function desenharOverlayQR(){
+function desenharOverlayOMR(){
 
   let w = canvas.width
   let h = canvas.height
 
-  ctx.fillStyle = "rgba(0,0,0,0.6)"
+  ctx.fillStyle = "rgba(0,0,0,0.5)"
   ctx.fillRect(0,0,w,h)
 
-  // 🔥 quadrado baseado no menor lado
-  let size = Math.min(w,h) * 0.5
+  if(!dadosQR) return
 
-  let x = (w - size)/2
-  let y = (h - size)/2
+  let q = parseInt(dadosQR.Q)
 
-  // furo
-  ctx.clearRect(x,y,size,size)
+  // 🔥 largura fixa proporcional à tela
+  let boxW = w * 0.6
+
+  // 🔥 altura baseada no número de questões
+  // referência: 10 questões = proporção base
+  let baseQ = 10
+  let escala = q / baseQ
+
+  let boxH = h * 0.5 * escala
+
+  // 🔥 limites (não deixar sair da tela)
+  boxH = Math.min(boxH, h * 0.85)
+
+  let x = (w - boxW)/2
+  let y = (h - boxH)/2
+
+  // recorte (furo)
+  ctx.clearRect(x,y,boxW,boxH)
+
+  // 🔥 salvar área estimada (IMPORTANTE PRO PRÓXIMO PASSO)
+  window.areaOMR = {
+    x, y, w: boxW, h: boxH
+  }
 }
-
 /* =========================
 OVERLAY OMR
 ========================= */

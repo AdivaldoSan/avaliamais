@@ -152,9 +152,21 @@ function detectarMarcadores(frame){
       let i=idx*4
       if(data[i]===0){
         let b=flood(x,y)
+
         if(b.area>800 && b.area<20000){
-          blobs.push(b)
-        }
+
+  let largura = b.maxX - b.minX
+  let altura = b.maxY - b.minY
+
+  let proporcao = largura / altura
+
+  // só aceita formato próximo de quadrado
+  if(proporcao > 0.6 && proporcao < 1.4){
+    blobs.push(b)
+  }
+
+}
+
       }
     }
   }

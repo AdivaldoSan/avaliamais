@@ -26,8 +26,13 @@ video, canvas{
 
 #ui{
   position:absolute;
-  bottom:20px;
+  bottom:0;
   width:100%;
+  height:120px;   /* 🔥 igual ao areaUI */
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:20px;
 }
 </style>
 </head>
@@ -156,8 +161,14 @@ OVERLAY OMR
 ========================= */
 function desenharOverlayOMR(){
 
-  let w = canvas.width
-  let h = canvas.height
+ let w = canvas.width
+ let h = canvas.height
+
+  // 🔥 reserva espaço inferior para botões (em px)
+  let areaUI = 120
+  
+  // área útil real
+  let hUtil = h - areaUI
 
   ctx.fillStyle = "rgba(0,0,0,0.5)"
   ctx.fillRect(0,0,w,h)
@@ -181,13 +192,13 @@ function desenharOverlayOMR(){
   // 🔥 ajuste para não estourar tela
   let limiteAltura = 0.75  // 🔥 margem segura (ajuste fino aqui)
 
-  if(boxH > h * limiteAltura){
-      boxH = h * limiteAltura
-      boxW = boxH / proporcao
+  if(boxH > hUtil * limiteAltura){
+    boxH = hUtil * limiteAltura
+    boxW = boxH / proporcao
   }
 
   let x = (w - boxW)/2
-  let y = (h - boxH)/2
+  let y = (hUtil - boxH)/2
 
   // recorte (furo)
   ctx.clearRect(x,y,boxW,boxH)

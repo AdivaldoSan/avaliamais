@@ -54,7 +54,11 @@ let ultimoFrame = null
 INICIAR CAMERA
 ========================= */
 
-navigator.mediaDevices.getUserMedia({video:true})
+navigator.mediaDevices.getUserMedia({
+  video: {
+    facingMode: { ideal: "environment" }
+  }
+})
 .then(stream=>{
   video.srcObject = stream
   loop()

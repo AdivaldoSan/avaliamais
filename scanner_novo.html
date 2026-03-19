@@ -45,7 +45,7 @@ button{
 
 <body>
 
-<h2>Scanner Híbrido (QR + Detecção)-</h2>
+<h2>Scanner Híbrido (QR + Detecção)---</h2>
 
 <video id="video" autoplay playsinline style="display:none;"></video>
 <canvas id="canvas"></canvas>
@@ -267,77 +267,44 @@ PROCESSAMENTO HÍBRIDO
 ========================= */
 function processarImagem(frame, marcadores){
 
-  let data = frame.data
-  let w = canvas.width
-  let h = canvas.height
-
-  // =========================
-  // ÁREA DOS MARCADORES
-  // =========================
-  let xs = marcadores.map(m=>m.x)
-  let ys = marcadores.map(m=>m.y)
-
-  let minX = Math.min(...xs)
-  let maxX = Math.max(...xs)
-  let minY = Math.min(...ys)
-  let maxY = Math.max(...ys)
-
-  // =========================
-  // ORGANIZAR MARCADORES (TL, TR, BL, BR)
-  // =========================
+  // ordenar marcadores
   marcadores.sort((a,b)=>a.y-b.y)
-  
-   // =========================
-// ORGANIZAR MARCADORES
-// =========================
-marcadores.sort((a,b)=>a.y-b.y)
 
-let top = marcadores.slice(0,2).sort((a,b)=>a.x-b.x)
-let bottom = marcadores.slice(2,4).sort((a,b)=>a.x-b.x)
+  let top = marcadores.slice(0,2).sort((a,b)=>a.x-b.x)
+  let bottom = marcadores.slice(2,4).sort((a,b)=>a.x-b.x)
 
-let TL = top[0]
-let TR = top[1]
-let BL = bottom[0]
-let BR = bottom[1]
+  let TL = top[0]
+  let TR = top[1]
+  let BL = bottom[0]
+  let BR = bottom[1]
 
-// =========================
-// CANVAS TEMPORÁRIO
-// =========================
-let tempCanvas = document.createElement("canvas")
-tempCanvas.width = canvas.width
-tempCanvas.height = canvas.height
+  // canvas temporário
+  let tempCanvas = document.createElement("canvas")
+  tempCanvas.width = canvas.width
+  tempCanvas.height = canvas.height
 
-let tctx = tempCanvas.getContext("2d")
-tctx.putImageData(frame,0,0)
+  let tctx = tempCanvas.getContext("2d")
+  tctx.putImageData(frame,0,0)
 
-// =========================
-// APLICAR WARP
-// =========================
-let warp = warpImagem(tempCanvas, TL, TR, BL, BR)
+  // warp
+  let warp = warpImagem(tempCanvas, TL, TR, BL, BR)
 
-// desenha resultado na tela
-ctx.drawImage(warp,0,0)
+  ctx.drawImage(warp,0,0)
 
-// novos dados
-let warpCtx = warp.getContext("2d")
-let imageData = warpCtx.getImageData(0,0,warp.width,warp.height)
+  let warpCtx = warp.getContext("2d")
+  let imageData = warpCtx.getImageData(0,0,warp.width,warp.height)
 
-let data = imageData.data
-let w = warp.width
-let h = warp.height
+  let data = imageData.data
+  let w = warp.width
+  let h = warp.height
 
-// =========================
-// QR
-// =========================
-let TOTAL_LINHAS = qr.questoes
-let TOTAL_COLUNAS = qr.colunas
+  let TOTAL_LINHAS = qr.questoes
+  let TOTAL_COLUNAS = qr.colunas
 
-// =========================
-// RAIO FIXO (AGORA ESTÁVEL)
-// =========================
-let raio = Math.min(w/TOTAL_COLUNAS, h/TOTAL_LINHAS) * 0.25
+  let raio = Math.min(w/TOTAL_COLUNAS, h/TOTAL_LINHAS) * 0.25
+  let densThreshold = 0.20
 
-let densThreshold = 0.20
+  let respostas = []
 
   for(let i=0;i<TOTAL_LINHAS;i++){
 
@@ -345,12 +312,7 @@ let densThreshold = 0.20
 
     for(let j=0;j<TOTAL_COLUNAS;j++){
 
-    let u = esquerda + (j+0.5)/TOTAL_COLUNAS * (direita - esquerda)
-    let v = topo + (i+0.5)/TOTAL_LINHAS * (base - topo)
-
-      let p = interpolar(u, v, TL, TR, BL, BR)
-      
-     let x = (j + 0.5) * (w / TOTAL_COLUNAS)
+      let x = (j + 0.5) * (w / TOTAL_COLUNAS)
       let y = (i + 0.5) * (h / TOTAL_LINHAS)
 
       let soma = 0
@@ -359,12 +321,12 @@ let densThreshold = 0.20
       for(let dx=-raio; dx<=raio; dx++){
       for(let dy=-raio; dy<=raio; dy++){
 
-        if(Math.sqrt(dx*dx+dy*dy) > raio*0.7) continue
+        if(dx*dx+dy*dy > raio*raio*0.6) continue
 
         let px = Math.floor(x+dx)
         let py = Math.floor(y+dy)
 
-        if(px<0 || py<0 || px>=w || py>=h) continue
+        if(px<0||py<0||px>=w||py>=h) continue
 
         let idx = (py*w+px)*4
         cont++
@@ -378,23 +340,18 @@ let densThreshold = 0.20
 
         respostas[i].push(j)
 
-        // círculo verde
-        ctx.fillStyle = "rgba(0,255,0,0.5)"
+        ctx.fillStyle="rgba(0,255,0,0.5)"
         ctx.beginPath()
         ctx.arc(x,y,raio,0,Math.PI*2)
         ctx.fill()
       }
 
-      // ponto vermelho (debug)
-      ctx.fillStyle = "red"
+      ctx.fillStyle="red"
       ctx.fillRect(x-2,y-2,4,4)
     }
   }
 
-  // =========================
-  // RESULTADO
-  // =========================
-  let letras = ["A","B","C","D"]
+  let letras=["A","B","C","D"]
 
   let txt = respostas.map((r,i)=>{
     if(!r.length) return `${i+1}: -`

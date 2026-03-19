@@ -296,10 +296,63 @@ function centroMedio(cs){
 }
 
 /* ========================= */
+
+
 function processarImagem(frame, marcadores){
+
+  // =========================
+  // ORGANIZAR CANTOS
+  // =========================
+
+  let TL = marcadores.reduce((p,c)=> (c.x + c.y < p.x + p.y ? c : p))
+  let BR = marcadores.reduce((p,c)=> (c.x + c.y > p.x + p.y ? c : p))
+  let TR = marcadores.reduce((p,c)=> (c.x - c.y > p.x - p.y ? c : p))
+  let BL = marcadores.reduce((p,c)=> (c.x - c.y < p.x - p.y ? c : p))
+
+  // =========================
+  // WARP PADRONIZADO
+  // =========================
+
+  let W = 800
+  let H = 1200
+
+  let tempCanvas = document.createElement("canvas")
+  tempCanvas.width = canvas.width
+  tempCanvas.height = canvas.height
+
+  let tctx = tempCanvas.getContext("2d")
+  tctx.putImageData(frame,0,0)
+
+  let warp = warpImagem(tempCanvas, TL, TR, BL, BR, W, H)
+
+  ctx.clearRect(0,0,canvas.width,canvas.height)
+  ctx.drawImage(warp,0,0)
+
+  // =========================
+  // DEBUG VISUAL
+  // =========================
+
+  let w = warp.width
+  let h = warp.height
+
+  let TOTAL_LINHAS = qr.questoes
+  let TOTAL_COLUNAS = qr.colunas
+
+  for(let i=0;i<TOTAL_LINHAS;i++){
+    for(let j=0;j<TOTAL_COLUNAS;j++){
+
+      let x = (j + 0.5) * (w / TOTAL_COLUNAS)
+      let y = (i + 0.5) * (h / TOTAL_LINHAS)
+
+      ctx.fillStyle="red"
+      ctx.fillRect(x-3,y-3,6,6)
+    }
+  }
+
   document.getElementById("gabarito").innerText =
-    "Leitura capturada (warp próximo passo)"
+    "Warp aplicado (grade alinhada)"
 }
+
 
 function confirmar(){
   alert("Leitura confirmada")

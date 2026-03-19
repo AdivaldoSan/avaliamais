@@ -11,41 +11,19 @@ body{
   text-align:center;
   font-family:Arial;
 }
-
 canvas{
-  width:125vw;
+  width:100%;
   max-width:650px;
   margin-top:10px;
   background:#000;
 }
-
 button{
-  padding:28px 40px;
+  padding:20px;
   margin:10px;
-  font-size:24px;
-  border:none;
-  border-radius:8px;
-}
-
-#confirmar{background:#2ecc71;}
-#refazer{background:#e74c3c;}
-
-#status{
-  font-size:46px;
-  font-weight:bold;
-}
-
-#debug{
-  font-size:16px;
-  color:#ccc;
-  margin-top:10px;
-}
-
-#gabarito{
-  margin-top:15px;
   font-size:18px;
-  color:#00ffcc;
 }
+#status{font-size:28px;}
+#debug{font-size:14px;color:#aaa;}
 </style>
 </head>
 
@@ -59,13 +37,6 @@ button{
 <div id="status">🔴 Iniciando...</div>
 <div id="debug"></div>
 
-<div id="botoes" style="display:none;">
-  <button onclick="confirmar()">✔ Confirmar</button>
-  <button onclick="refazer()">❌ Refazer</button>
-</div>
-
-<div id="gabarito"></div>
-
 <script>
 
 let video = document.getElementById("video")
@@ -73,16 +44,11 @@ let canvas = document.getElementById("canvas")
 let ctx = canvas.getContext("2d")
 
 let rodando = true
-let framesEstaveis = 0
-let ultimoCentro = null
-
 let qr = { questoes:10, colunas:4 }
 
-/* =========================
-CAMERA
-========================= */
+/* CAMERA */
 navigator.mediaDevices.getUserMedia({
-  video:{ facingMode:{ ideal:"environment" } }
+  video:{ facingMode:"environment" }
 })
 .then(stream=>{
   video.srcObject = stream
@@ -91,14 +57,8 @@ navigator.mediaDevices.getUserMedia({
     loop()
   }
 })
-.catch(err=>{
-  document.getElementById("status").innerText =
-    "❌ Erro câmera: " + err.message
-})
 
-/* =========================
-LOOP
-========================= */
+/* LOOP */
 function loop(){
 
   if(!rodando) return
@@ -116,84 +76,31 @@ function loop(){
   let frame = ctx.getImageData(0,0,canvas.width,canvas.height)
   let data = frame.data
 
-  // threshold
+  // binarização
   for(let i=0;i<data.length;i+=4){
     let brilho = (data[i]+data[i+1]+data[i+2])/3
-    let cor = brilho < 50 ? 0 : 255
+    let cor = brilho < 80 ? 0 : 255
     data[i]=data[i+1]=data[i+2]=cor
   }
 
   ctx.putImageData(frame,0,0)
 
-  let marcadores = null
-
-  try{
-    marcadores = detectarMarcadores(frame)
-  }catch(e){
-    console.log("erro detector", e)
-  }
+  let marcadores = detectarMarcadores(frame)
 
   document.getElementById("debug").innerText =
     `Blobs: ${window._blobs||0} | Candidatos: ${window._candidatos||0}`
 
   if(marcadores){
-
-    let centro = centroMedio(marcadores)
-
-    if(ultimoCentro){
-      let dist = Math.hypot(
-        centro.x-ultimoCentro.x,
-        centro.y-ultimoCentro.y
-      )
-      framesEstaveis = dist < 2 ? framesEstaveis+1 : 0
-    }
-
-    ultimoCentro = centro
-
-    document.getElementById("status").innerText =
-      `🟡 Estabilizando (${framesEstaveis})`
-
-    if(framesEstaveis > 8){
-      capturar(frame, marcadores)
-      return
-    }
-
-  }else{
-    document.getElementById("status").innerText =
-      "🔴 Posicione o gabarito"
+    processarImagem(frame, marcadores)
+    rodando = false
+    document.getElementById("status").innerText = "🟢 Capturado"
+    return
   }
 
   requestAnimationFrame(loop)
 }
 
-/* =========================
-CAPTURA
-========================= */
-function capturar(frame, marcadores){
-
-  rodando = false
-
-  processarImagem(frame, marcadores)
-
-  document.getElementById("status").innerText =
-    "🟢 Conferir leitura"
-
-  document.getElementById("botoes").style.display="block"
-}
-
-/* ========================= */
-function refazer(){
-  rodando = true
-  framesEstaveis = 0
-  ultimoCentro = null
-  document.getElementById("botoes").style.display="none"
-  document.getElementById("gabarito").innerText=""
-  loop()
-}
-
-/* =========================
-DETECTAR MARCADORES
-========================= */
+/* DETECÇÃO */
 function detectarMarcadores(frame){
 
   let data = frame.data
@@ -203,16 +110,13 @@ function detectarMarcadores(frame){
   let visitado = new Uint8Array(w*h)
   let blobs = []
 
-  function floodFill(x,y){
-
+  function flood(x,y){
     let stack=[[x,y]]
     let minX=x,maxX=x,minY=y,maxY=y,area=0
 
     while(stack.length){
-
       let [px,py]=stack.pop()
       let idx=py*w+px
-
       if(visitado[idx]) continue
       visitado[idx]=1
 
@@ -242,14 +146,11 @@ function detectarMarcadores(frame){
 
   for(let y=0;y<h;y+=4){
     for(let x=0;x<w;x+=4){
-
       let idx=y*w+x
       if(visitado[idx]) continue
-
       let i=idx*4
-
       if(data[i]===0){
-        let b=floodFill(x,y)
+        let b=flood(x,y)
         if(b.area>500) blobs.push(b)
       }
     }
@@ -257,205 +158,66 @@ function detectarMarcadores(frame){
 
   window._blobs = blobs.length
 
-  let candidatos = blobs.filter(b=>{
-
-    let cx = (b.minX + b.maxX)/2
-    let cy = (b.minY + b.maxY)/2
-
-    let margemX = w * 0.25
-    let margemY = h * 0.25
-
-    let canto =
-      (cx < margemX && cy < margemY) ||
-      (cx > w - margemX && cy < margemY) ||
-      (cx < margemX && cy > h - margemY) ||
-      (cx > w - margemX && cy > h - margemY)
-
-    return canto && b.area > 300 && b.area < 10000
-  })
-
-  window._candidatos = candidatos.length
+  let candidatos = blobs.map(b=>({
+    ...b,
+    cx:(b.minX+b.maxX)/2,
+    cy:(b.minY+b.maxY)/2
+  }))
 
   candidatos.sort((a,b)=>b.area-a.area)
 
   if(candidatos.length < 4) return null
 
-  let maiores = candidatos.slice(0,4)
+  window._candidatos = candidatos.length
 
-  return maiores.map(b=>({
-  minX: b.minX,
-  minY: b.minY,
-  maxX: b.maxX,
-  maxY: b.maxY,
-  cx: (b.minX+b.maxX)/2,
-  cy: (b.minY+b.maxY)/2
-}))
+  return candidatos.slice(0,4)
 }
 
-/* ========================= */
-function centroMedio(cs){
-  let x=0,y=0
-  cs.forEach(c=>{x+=c.x;y+=c.y})
-  return {x:x/cs.length,y:y/cs.length}
-}
-
-/* ========================= */
-
-
+/* PROCESSAMENTO */
 function processarImagem(frame, marcadores){
 
-  // =========================
-  // ORGANIZAR CANTOS
-  // =========================
+  // ordenar por posição
+  marcadores.sort((a,b)=>a.cy - b.cy)
 
-  // ordenar por Y (topo → base)
+  let top = marcadores.slice(0,2)
+  let bottom = marcadores.slice(2,4)
 
-// ordenar pelos centros
-marcadores.sort((a,b)=>a.cy - b.cy)
+  top.sort((a,b)=>a.cx - b.cx)
+  bottom.sort((a,b)=>a.cx - b.cx)
 
-let top = marcadores.slice(0,2)
-let bottom = marcadores.slice(2,4)
+  let TL = { x: top[0].minX, y: top[0].minY }
+  let TR = { x: top[1].maxX, y: top[1].minY }
+  let BL = { x: bottom[0].minX, y: bottom[0].maxY }
+  let BR = { x: bottom[1].maxX, y: bottom[1].maxY }
 
-top.sort((a,b)=>a.cx - b.cx)
-bottom.sort((a,b)=>a.cx - b.cx)
+  let temp = document.createElement("canvas")
+  temp.width = canvas.width
+  temp.height = canvas.height
+  temp.getContext("2d").putImageData(frame,0,0)
 
-// agora usar OS CANTOS REAIS
-let TL = { x: top[0].minX, y: top[0].minY }
-let TR = { x: top[1].maxX, y: top[1].minY }
-let BL = { x: bottom[0].minX, y: bottom[0].maxY }
-let BR = { x: bottom[1].maxX, y: bottom[1].maxY }
-
-// dois de cima e dois de baixo
-let top = marcadores.slice(0,2)
-let bottom = marcadores.slice(2,4)
-
-// ordenar cada par por X (esquerda → direita)
-top.sort((a,b)=>a.x - b.x)
-bottom.sort((a,b)=>a.x - b.x)
-
-// agora sim fixo
-let TL = top[0]
-let TR = top[1]
-let BL = bottom[0]
-let BR = bottom[1]
-
-  // =========================
-  // WARP PADRONIZADO
-  // =========================
-
-  let W = 800
-  let H = 1200
-
-  let tempCanvas = document.createElement("canvas")
-  tempCanvas.width = canvas.width
-  tempCanvas.height = canvas.height
-
-  let tctx = tempCanvas.getContext("2d")
-  tctx.putImageData(frame,0,0)
-
-  let warp = warpImagem(tempCanvas, TL, TR, BL, BR, W, H)
+  let warp = warpImagem(temp, TL, TR, BL, BR, 800, 1200)
 
   ctx.clearRect(0,0,canvas.width,canvas.height)
   ctx.drawImage(warp,0,0)
-
-  // =========================
-  // DEBUG VISUAL
-  // =========================
-
-  let w = warp.width
-  let h = warp.height
-
-  let TOTAL_LINHAS = qr.questoes
-  let TOTAL_COLUNAS = qr.colunas
-
-  for(let i=0;i<TOTAL_LINHAS;i++){
-    for(let j=0;j<TOTAL_COLUNAS;j++){
-
-      let x = (j + 0.5) * (w / TOTAL_COLUNAS)
-      let y = (i + 0.5) * (h / TOTAL_LINHAS)
-
-      ctx.fillStyle="red"
-      ctx.fillRect(x-3,y-3,6,6)
-    }
-  }
-
-  document.getElementById("gabarito").innerText =
-    "Warp aplicado (grade alinhada)"
 }
 
+/* WARP */
+function warpImagem(src, TL, TR, BL, BR, W, H){
 
+  let dst = document.createElement("canvas")
+  dst.width=W
+  dst.height=H
 
-function warpImagem(srcCanvas, TL, TR, BL, BR, W=800, H=1200){
+  let ctx = dst.getContext("2d")
 
-  let dest = document.createElement("canvas")
-  dest.width = W
-  dest.height = H
-
-  let ctx = dest.getContext("2d")
-
-  // mapeamento por triângulos (mais estável que bilinear)
-
-  function drawTriangle(sx1,sy1, sx2,sy2, sx3,sy3,
-                        dx1,dy1, dx2,dy2, dx3,dy3){
-
-    ctx.save()
-
-    ctx.beginPath()
-    ctx.moveTo(dx1,dy1)
-    ctx.lineTo(dx2,dy2)
-    ctx.lineTo(dx3,dy3)
-    ctx.closePath()
-    ctx.clip()
-
-    let denom = (sx1*(sy2 - sy3) + sx2*(sy3 - sy1) + sx3*(sy1 - sy2))
-
-    let a = (dx1*(sy2 - sy3) + dx2*(sy3 - sy1) + dx3*(sy1 - sy2)) / denom
-    let b = (dx1*(sx3 - sx2) + dx2*(sx1 - sx3) + dx3*(sx2 - sx1)) / denom
-    let c = (dx1*(sx2*sy3 - sx3*sy2) +
-             dx2*(sx3*sy1 - sx1*sy3) +
-             dx3*(sx1*sy2 - sx2*sy1)) / denom
-
-    let d = (dy1*(sy2 - sy3) + dy2*(sy3 - sy1) + dy3*(sy1 - sy2)) / denom
-    let e = (dy1*(sx3 - sx2) + dy2*(sx1 - sx3) + dy3*(sx2 - sx1)) / denom
-    let f = (dy1*(sx2*sy3 - sx3*sy2) +
-             dy2*(sx3*sy1 - sx1*sy3) +
-             dy3*(sx1*sy2 - sx2*sy1)) / denom
-
-    ctx.transform(a, d, b, e, c, f)
-
-    ctx.drawImage(srcCanvas,0,0)
-
-    ctx.restore()
-  }
-
-  // TRIÂNGULO 1
-  drawTriangle(
-    TL.x,TL.y,
-    TR.x,TR.y,
-    BL.x,BL.y,
-
-    0,0,
-    W,0,
-    0,H
+  ctx.drawImage(src,
+    TL.x, TL.y,
+    TR.x-TL.x,
+    BL.y-TL.y,
+    0,0,W,H
   )
 
-  // TRIÂNGULO 2
-  drawTriangle(
-    BR.x,BR.y,
-    TR.x,TR.y,
-    BL.x,BL.y,
-
-    W,H,
-    W,0,
-    0,H
-  )
-
-  return dest
-}
-
-
-function confirmar(){
-  alert("Leitura confirmada")
+  return dst
 }
 
 </script>

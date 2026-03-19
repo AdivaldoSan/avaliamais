@@ -45,7 +45,7 @@ button{
 
 <body>
 
-<h2>Scanner Híbrido (QR + Detecção)---</h2>
+<h2>Scanner Híbrido (QR + Detecção)-</h2>
 
 <video id="video" autoplay playsinline style="display:none;"></video>
 <canvas id="canvas"></canvas>
@@ -257,23 +257,7 @@ function detectarMarcadores(frame){
 // FILTRAR POR POSIÇÃO (CANTOS)
 // =========================
 
-let candidatos = blobs.filter(b=>{
 
-  let cx = (b.minX + b.maxX)/2
-  let cy = (b.minY + b.maxY)/2
-
-  let margemX = canvas.width * 0.25
-  let margemY = canvas.height * 0.25
-
-  let canto =
-    (cx < margemX && cy < margemY) || // TL
-    (cx > canvas.width - margemX && cy < margemY) || // TR
-    (cx < margemX && cy > canvas.height - margemY) || // BL
-    (cx > canvas.width - margemX && cy > canvas.height - margemY) // BR
-
-  return canto && b.area > 1500
-})
-window._candidatos = candidatos.length
 // ordenar por área
 // =========================
 // FILTRAR POR POSIÇÃO (CANTOS)
@@ -295,14 +279,14 @@ let candidatos = blobs.filter(b=>{
 
   return canto && b.area > 1500
 })
-
+window._candidatos = candidatos.length
 // ordenar por área
 candidatos.sort((a,b)=>b.area-a.area)
 
 if(candidatos.length < 4) return null
 
-let maiores = candidatos.slice(0,4)candidatos.sort((a,b)=>b.area-a.area)
-
+let maiores = candidatos.slice(0,4)
+  
 if(candidatos.length < 4) return null
 
 let maiores = candidatos.slice(0,4)

@@ -354,6 +354,64 @@ function processarImagem(frame, marcadores){
 }
 
 
+
+
+function warpImagem(srcCanvas, TL, TR, BL, BR, W=800, H=1200){
+
+  let dest = document.createElement("canvas")
+  dest.width = W
+  dest.height = H
+
+  let dctx = dest.getContext("2d")
+
+  let srcCtx = srcCanvas.getContext("2d")
+  let srcData = srcCtx.getImageData(0,0,srcCanvas.width,srcCanvas.height)
+
+  let dstData = dctx.createImageData(W,H)
+
+  let s = srcData.data
+  let d = dstData.data
+
+  for(let y=0;y<H;y++){
+    for(let x=0;x<W;x++){
+
+      let u = x / W
+      let v = y / H
+
+      // interpolação bilinear dos cantos
+      let sx =
+        TL.x*(1-u)*(1-v) +
+        TR.x*(u)*(1-v) +
+        BL.x*(1-u)*(v) +
+        BR.x*(u)*(v)
+
+      let sy =
+        TL.y*(1-u)*(1-v) +
+        TR.y*(u)*(1-v) +
+        BL.y*(1-u)*(v) +
+        BR.y*(u)*(v)
+
+      let px = Math.floor(sx)
+      let py = Math.floor(sy)
+
+      if(px>=0 && py>=0 && px<srcCanvas.width && py<srcCanvas.height){
+
+        let si = (py*srcCanvas.width + px)*4
+        let di = (y*W + x)*4
+
+        d[di]   = s[si]
+        d[di+1] = s[si+1]
+        d[di+2] = s[si+2]
+        d[di+3] = 255
+      }
+    }
+  }
+
+  dctx.putImageData(dstData,0,0)
+
+  return dest
+}
+
 function confirmar(){
   alert("Leitura confirmada")
 }

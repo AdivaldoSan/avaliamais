@@ -45,7 +45,7 @@ button{
 
 <body>
 
-<h2>Scanner Híbrido (QR + Detecção)---</h2>
+<h2>Scanner Híbrido (QR + Detecção)-</h2>
 
 <video id="video" autoplay playsinline style="display:none;"></video>
 <canvas id="canvas"></canvas>
@@ -267,16 +267,14 @@ PROCESSAMENTO HÍBRIDO
 ========================= */
 function processarImagem(frame, marcadores){
 
-  // ordenar marcadores
-  marcadores.sort((a,b)=>a.y-b.y)
+  // =========================
+  // DEFINIR CANTOS CORRETOS
+  // =========================
 
-  let top = marcadores.slice(0,2).sort((a,b)=>a.x-b.x)
-  let bottom = marcadores.slice(2,4).sort((a,b)=>a.x-b.x)
-
-  let TL = top[0]
-  let TR = top[1]
-  let BL = bottom[0]
-  let BR = bottom[1]
+  let TL = marcadores.reduce((p,c)=> (c.x + c.y < p.x + p.y ? c : p))
+  let BR = marcadores.reduce((p,c)=> (c.x + c.y > p.x + p.y ? c : p))
+  let TR = marcadores.reduce((p,c)=> (c.x - c.y > p.x - p.y ? c : p))
+  let BL = marcadores.reduce((p,c)=> (c.x - c.y < p.x - p.y ? c : p))
 
   // canvas temporário
   let tempCanvas = document.createElement("canvas")

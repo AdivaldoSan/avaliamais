@@ -325,15 +325,15 @@ function capturarFrame(){
 
   capturado = true
 
-  // 🔥 captura frame real da tela
-  frameCapturado = ctx.getImageData(0,0,canvas.width,canvas.height)
-
   let {TL,TR,BL,BR} = window.marcadores
 
-  // 🔥 limpa e redesenha frame congelado
-  ctx.putImageData(frameCapturado, 0, 0)
+  // 🔥 redesenha frame LIMPO (sem overlay)
+  ctx.drawImage(video, 0, 0)
 
-  // 🔥 agora sim desenha overlay definitivo
+  // 🔥 captura sem overlay
+  frameCapturado = ctx.getImageData(0,0,canvas.width,canvas.height)
+
+  // 🔥 agora sim desenha resultado
   processarOMR(TL,TR,BL,BR)
 
   window.captura = {TL,TR,BL,BR}

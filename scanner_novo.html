@@ -30,34 +30,39 @@ button{
 #confirmar{background:#2ecc71;}
 #refazer{background:#e74c3c;}
 
+#status{
+  font-size:46px;
+  font-weight:bold;
+}
+
+#debug{
+  font-size:16px;
+  color:#ccc;
+  margin-top:10px;
+}
+
 #gabarito{
   margin-top:15px;
   font-size:18px;
   color:#00ffcc;
-}
-
-#status{
-  font-size: 46px;
-  font-weight: bold;
 }
 </style>
 </head>
 
 <body>
 
-<h2>Scanner Híbrido (QR + Detecção)---</h2>
+<h2>Scanner Híbrido</h2>
 
 <video id="video" autoplay playsinline style="display:none;"></video>
 <canvas id="canvas"></canvas>
 
 <div id="status">🔴 Iniciando...</div>
+<div id="debug"></div>
 
 <div id="botoes" style="display:none;">
-  <button id="confirmar" onclick="confirmar()">✔ Confirmar</button>
-  <button id="refazer" onclick="refazer()">❌ Refazer</button>
+  <button onclick="confirmar()">✔ Confirmar</button>
+  <button onclick="refazer()">❌ Refazer</button>
 </div>
-
-  <div id="debug" style="font-size:16px;color:#ccc;margin-top:10px;"></div>
 
 <div id="gabarito"></div>
 
@@ -71,13 +76,7 @@ let rodando = true
 let framesEstaveis = 0
 let ultimoCentro = null
 
-/* =========================
-SIMULAÇÃO QR (SUBSTITUIR DEPOIS)
-========================= */
-let qr = {
-  questoes: 10,
-  colunas: 4
-}
+let qr = { questoes:10, colunas:4 }
 
 /* =========================
 CAMERA
@@ -87,7 +86,7 @@ navigator.mediaDevices.getUserMedia({
 })
 .then(stream=>{
   video.srcObject = stream
-  video.onloadedmetadata = () => {
+  video.onloadedmetadata = ()=>{
     video.play()
     loop()
   }
@@ -125,11 +124,17 @@ function loop(){
   }
 
   ctx.putImageData(frame,0,0)
+
   let marcadores = null
-  let marcadores = detectarMarcadores(frame)
+
+  try{
+    marcadores = detectarMarcadores(frame)
+  }catch(e){
+    console.log("erro detector", e)
+  }
 
   document.getElementById("debug").innerText =
-  `Blobs: ${window._blobs || 0} | Candidatos: ${window._candidatos || 0}`
+    `Blobs: ${window._blobs||0} | Candidatos: ${window._candidatos||0}`
 
   if(marcadores){
 
@@ -168,8 +173,6 @@ function capturar(frame, marcadores){
 
   rodando = false
 
-  ctx.putImageData(frame,0,0)
-
   processarImagem(frame, marcadores)
 
   document.getElementById("status").innerText =
@@ -178,9 +181,7 @@ function capturar(frame, marcadores){
   document.getElementById("botoes").style.display="block"
 }
 
-/* =========================
-REFazer
-========================= */
+/* ========================= */
 function refazer(){
   rodando = true
   framesEstaveis = 0
@@ -239,7 +240,6 @@ function detectarMarcadores(frame){
     return {area,minX,maxX,minY,maxY}
   }
 
-  // varrer imagem
   for(let y=0;y<h;y+=4){
     for(let x=0;x<w;x+=4){
 
@@ -255,12 +255,8 @@ function detectarMarcadores(frame){
     }
   }
 
-  // debug
   window._blobs = blobs.length
 
-  // =========================
-  // FILTRAR MARCADORES NOS CANTOS
-  // =========================
   let candidatos = blobs.filter(b=>{
 
     let cx = (b.minX + b.maxX)/2
@@ -270,18 +266,16 @@ function detectarMarcadores(frame){
     let margemY = h * 0.25
 
     let canto =
-      (cx < margemX && cy < margemY) || // TL
-      (cx > w - margemX && cy < margemY) || // TR
-      (cx < margemX && cy > h - margemY) || // BL
-      (cx > w - margemX && cy > h - margemY) // BR
+      (cx < margemX && cy < margemY) ||
+      (cx > w - margemX && cy < margemY) ||
+      (cx < margemX && cy > h - margemY) ||
+      (cx > w - margemX && cy > h - margemY)
 
     return canto && b.area > 1500
   })
 
-  // debug
   window._candidatos = candidatos.length
 
-  // ordenar por tamanho
   candidatos.sort((a,b)=>b.area-a.area)
 
   if(candidatos.length < 4) return null
@@ -293,278 +287,24 @@ function detectarMarcadores(frame){
     y:(b.minY+b.maxY)/2
   }))
 }
-/* =========================
-CENTRO
-========================= */
+
+/* ========================= */
 function centroMedio(cs){
   let x=0,y=0
   cs.forEach(c=>{x+=c.x;y+=c.y})
   return {x:x/cs.length,y:y/cs.length}
 }
 
-/* =========================
-PROCESSAMENTO HÍBRIDO
-========================= */
+/* ========================= */
 function processarImagem(frame, marcadores){
-
-  // =========================
-  // DEFINIR CANTOS CORRETOS
-  // =========================
-
-  let TL = marcadores.reduce((p,c)=> (c.x + c.y < p.x + p.y ? c : p))
-  let BR = marcadores.reduce((p,c)=> (c.x + c.y > p.x + p.y ? c : p))
-  let TR = marcadores.reduce((p,c)=> (c.x - c.y > p.x - p.y ? c : p))
-  let BL = marcadores.reduce((p,c)=> (c.x - c.y < p.x - p.y ? c : p))
-
-  // canvas temporário
-  let tempCanvas = document.createElement("canvas")
-  tempCanvas.width = canvas.width
-  tempCanvas.height = canvas.height
-
-  let tctx = tempCanvas.getContext("2d")
-  tctx.putImageData(frame,0,0)
-
-  // warp
-  let warp = warpImagem(tempCanvas, TL, TR, BL, BR)
-
-  ctx.drawImage(warp,0,0)
-
-  let warpCtx = warp.getContext("2d")
-  let imageData = warpCtx.getImageData(0,0,warp.width,warp.height)
-
-  let data = imageData.data
-  let w = warp.width
-  let h = warp.height
-
-  let TOTAL_LINHAS = qr.questoes
-  let TOTAL_COLUNAS = qr.colunas
-
-  let raio = Math.min(w/TOTAL_COLUNAS, h/TOTAL_LINHAS) * 0.25
-  let densThreshold = 0.20
-
-  let respostas = []
-
-  for(let i=0;i<TOTAL_LINHAS;i++){
-
-    respostas[i] = []
-
-    for(let j=0;j<TOTAL_COLUNAS;j++){
-
-      let x = (j + 0.5) * (w / TOTAL_COLUNAS)
-      let y = (i + 0.5) * (h / TOTAL_LINHAS)
-
-      let soma = 0
-      let cont = 0
-
-      for(let dx=-raio; dx<=raio; dx++){
-      for(let dy=-raio; dy<=raio; dy++){
-
-        if(dx*dx+dy*dy > raio*raio*0.6) continue
-
-        let px = Math.floor(x+dx)
-        let py = Math.floor(y+dy)
-
-        if(px<0||py<0||px>=w||py>=h) continue
-
-        let idx = (py*w+px)*4
-        cont++
-
-        if(data[idx]===0) soma++
-      }}
-
-      let dens = soma / cont
-
-      if(dens > densThreshold){
-
-        respostas[i].push(j)
-
-        ctx.fillStyle="rgba(0,255,0,0.5)"
-        ctx.beginPath()
-        ctx.arc(x,y,raio,0,Math.PI*2)
-        ctx.fill()
-      }
-
-      ctx.fillStyle="red"
-      ctx.fillRect(x-2,y-2,4,4)
-    }
-  }
-
-  let letras=["A","B","C","D"]
-
-  let txt = respostas.map((r,i)=>{
-    if(!r.length) return `${i+1}: -`
-    return `${i+1}: ${r.map(j=>letras[j]).join(",")}`
-  })
-
   document.getElementById("gabarito").innerText =
-    txt.join(" | ")
+    "Leitura capturada (warp próximo passo)"
 }
 
 function confirmar(){
   alert("Leitura confirmada")
 }
 
-function interpolar(u, v, TL, TR, BL, BR){
-
-  let x =
-    (1-u)*(1-v)*TL.x +
-    u*(1-v)*TR.x +
-    (1-u)*v*BL.x +
-    u*v*BR.x
-
-  let y =
-    (1-u)*(1-v)*TL.y +
-    u*(1-v)*TR.y +
-    (1-u)*v*BL.y +
-    u*v*BR.y
-
-  return {x,y}
-} 
-
-function calibrarProporcoes(frame, TL, TR, BL, BR, TOTAL_LINHAS, TOTAL_COLUNAS){
-
-  let data = frame.data
-  let w = canvas.width
-  let h = canvas.height
-
-  function interp(u,v){
-    return {
-      x:
-        (1-u)*(1-v)*TL.x +
-        u*(1-v)*TR.x +
-        (1-u)*v*BL.x +
-        u*v*BR.x,
-      y:
-        (1-u)*(1-v)*TL.y +
-        u*(1-v)*TR.y +
-        (1-u)*v*BL.y +
-        u*v*BR.y
-    }
-  }
-
-  function densidade(u,v,raio=8){
-    let p = interp(u,v)
-    let soma=0, cont=0
-
-     for(let dx=-raio;dx<=raio;dx+=2){
-     for(let dy=-raio;dy<=raio;dy+=2){
-
-      if(dx*dx+dy*dy > raio*raio) continue
-
-      let x = Math.floor(p.x+dx)
-      let y = Math.floor(p.y+dy)
-
-      if(x<0||y<0||x>=w||y>=h) continue
-
-      let idx=(y*w+x)*4
-      cont++
-
-      if(data[idx]===0) soma++
-    }}
-
-    return soma/cont
-  }
-
-  // busca vertical (topo/base)
-  let topo = 0.05
-  let base = 0.95
-
-  for(let v=0.05; v<0.5; v+=0.03){
-    if(densidade(0.5,v) > 0.02){
-      topo = v - 0.02
-      break
-    }
-  }
-
-  for(let v=0.95; v>0.5; v-=0.01){
-    if(densidade(0.5,v) > 0.02){
-      base = v + 0.02
-      break
-    }
-  }
-
-  // busca horizontal (esquerda/direita)
-  let esquerda = 0.05
-  let direita = 0.95
-
-  for(let u=0.1; u<0.5; u+=0.03){
-    if(densidade(u,0.5) > 0.02){
-      esquerda = u - 0.02
-      break
-    }
-  }
-
-  for(let u=0.95; u>0.5; u-=0.01){
-    if(densidade(u,0.5) > 0.02){
-      direita = u + 0.02
-      break
-    }
-  }
-
-  return {
-    topo: Math.max(0, topo),
-    base: Math.min(1, base),
-    esquerda: Math.max(0, esquerda),
-    direita: Math.min(1, direita)
-  }
-}  
-
-function warpImagem(srcCanvas, TL, TR, BL, BR, W=800, H=1200){
-
-  let dstCanvas = document.createElement("canvas")
-  dstCanvas.width = W
-  dstCanvas.height = H
-  let dctx = dstCanvas.getContext("2d")
-
-  // transformação aproximada (bilinear)
-  let img = srcCanvas
-
-  let src = srcCanvas.getContext("2d").getImageData(0,0,srcCanvas.width,srcCanvas.height)
-  let dst = dctx.createImageData(W,H)
-
-  function interp(u,v){
-    return {
-      x:
-        (1-u)*(1-v)*TL.x +
-        u*(1-v)*TR.x +
-        (1-u)*v*BL.x +
-        u*v*BR.x,
-      y:
-        (1-u)*(1-v)*TL.y +
-        u*(1-v)*TR.y +
-        (1-u)*v*BL.y +
-        u*v*BR.y
-    }
-  }
-
-  for(let y=0;y<H;y++){
-    for(let x=0;x<W;x++){
-
-      let u = x / W
-      let v = y / H
-
-      let p = interp(u,v)
-
-      let sx = Math.floor(p.x)
-      let sy = Math.floor(p.y)
-
-      if(sx<0||sy<0||sx>=srcCanvas.width||sy>=srcCanvas.height) continue
-
-      let sidx = (sy*srcCanvas.width + sx)*4
-      let didx = (y*W + x)*4
-
-      dst.data[didx]   = src.data[sidx]
-      dst.data[didx+1] = src.data[sidx+1]
-      dst.data[didx+2] = src.data[sidx+2]
-      dst.data[didx+3] = 255
-    }
-  }
-
-  dctx.putImageData(dst,0,0)
-
-  return dstCanvas
-}
-  
 </script>
 
 </body>

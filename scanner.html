@@ -314,17 +314,19 @@ function validarMarcadores(TL,TR,BL,BR){
 
 function capturarFrame(){
 
+  if(capturado) return
+
   capturado = true
 
-  // 🔥 salva frame atual (congelado real)
+  // 🔥 captura frame real da tela
   frameCapturado = ctx.getImageData(0,0,canvas.width,canvas.height)
 
   let {TL,TR,BL,BR} = window.marcadores
 
-  // 🔥 redesenha frame congelado (garantia visual)
+  // 🔥 limpa e redesenha frame congelado
   ctx.putImageData(frameCapturado, 0, 0)
 
-  // 🔥 desenha bolhas por cima
+  // 🔥 agora sim desenha overlay definitivo
   desenharMarcacoes(TL,TR,BL,BR)
 
   window.captura = {TL,TR,BL,BR}

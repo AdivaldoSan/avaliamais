@@ -45,7 +45,7 @@ button{
 
 <body>
 
-<h2>Scanner Híbrido (QR + Detecção)</h2>
+<h2>Scanner Híbrido (QR + Detecção)---</h2>
 
 <video id="video" autoplay playsinline style="display:none;"></video>
 <canvas id="canvas"></canvas>
@@ -295,6 +295,13 @@ function processarImagem(frame, marcadores){
   let BL = bottom[0]
   let BR = bottom[1]
 
+  let props = calibrarProporcoes(frame, TL, TR, BL, BR, TOTAL_LINHAS, TOTAL_COLUNAS)
+  
+  let topo = props.topo
+  let base = props.base
+  let esquerda = props.esquerda
+  let direita = props.direita
+
   // =========================
   // QR (ORDEM CORRETA!)
   // =========================
@@ -329,8 +336,8 @@ function processarImagem(frame, marcadores){
 
     for(let j=0;j<TOTAL_COLUNAS;j++){
 
-      let u = (j + 0.5) / TOTAL_COLUNAS
-      let v = (i + 0.5) / TOTAL_LINHAS
+    let u = esquerda + (j+0.5)/TOTAL_COLUNAS * (direita - esquerda)
+    let v = topo + (i+0.5)/TOTAL_LINHAS * (base - topo)
 
       let p = interpolar(u, v, TL, TR, BL, BR)
       
@@ -408,6 +415,94 @@ function interpolar(u, v, TL, TR, BL, BR){
     u*v*BR.y
 
   return {x,y}
+} 
+
+function calibrarProporcoes(frame, TL, TR, BL, BR, TOTAL_LINHAS, TOTAL_COLUNAS){
+
+  let data = frame.data
+  let w = canvas.width
+  let h = canvas.height
+
+  function interp(u,v){
+    return {
+      x:
+        (1-u)*(1-v)*TL.x +
+        u*(1-v)*TR.x +
+        (1-u)*v*BL.x +
+        u*v*BR.x,
+      y:
+        (1-u)*(1-v)*TL.y +
+        u*(1-v)*TR.y +
+        (1-u)*v*BL.y +
+        u*v*BR.y
+    }
+  }
+
+  function densidade(u,v,raio=8){
+    let p = interp(u,v)
+    let soma=0, cont=0
+
+    for(let dx=-raio;dx<=raio;dx++){
+    for(let dy=-raio;dy<=raio;dy++){
+
+      if(dx*dx+dy*dy > raio*raio) continue
+
+      let x = Math.floor(p.x+dx)
+      let y = Math.floor(p.y+dy)
+
+      if(x<0||y<0||x>=w||y>=h) continue
+
+      let idx=(y*w+x)*4
+      cont++
+
+      if(data[idx]===0) soma++
+    }}
+
+    return soma/cont
+  }
+
+  // busca vertical (topo/base)
+  let topo = 0.05
+  let base = 0.95
+
+  for(let v=0.05; v<0.5; v+=0.01){
+    if(densidade(0.5,v) > 0.02){
+      topo = v - 0.02
+      break
+    }
+  }
+
+  for(let v=0.95; v>0.5; v-=0.01){
+    if(densidade(0.5,v) > 0.02){
+      base = v + 0.02
+      break
+    }
+  }
+
+  // busca horizontal (esquerda/direita)
+  let esquerda = 0.05
+  let direita = 0.95
+
+  for(let u=0.05; u<0.5; u+=0.01){
+    if(densidade(u,0.5) > 0.02){
+      esquerda = u - 0.02
+      break
+    }
+  }
+
+  for(let u=0.95; u>0.5; u-=0.01){
+    if(densidade(u,0.5) > 0.02){
+      direita = u + 0.02
+      break
+    }
+  }
+
+  return {
+    topo: Math.max(0, topo),
+    base: Math.min(1, base),
+    esquerda: Math.max(0, esquerda),
+    direita: Math.min(1, direita)
+  }
 }  
 
 </script>

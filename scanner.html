@@ -132,7 +132,28 @@ function parseQR(text){
 /* =========================
 OVERLAY QR
 ========================= */
+function desenharOverlayQR(){
 
+  let w = canvas.width
+  let h = canvas.height
+
+  ctx.fillStyle = "rgba(0,0,0,0.6)"
+  ctx.fillRect(0,0,w,h)
+
+  let size = Math.min(w,h) * 0.5
+
+  let x = (w - size)/2
+  let y = (h - size)/2
+
+  ctx.clearRect(x,y,size,size)
+}
+
+
+
+
+/* =========================
+OVERLAY OMR
+========================= */
 function desenharOverlayOMR(){
 
   let w = canvas.width
@@ -169,30 +190,8 @@ function desenharOverlayOMR(){
     x, y, w: boxW, h: boxH
   }
 }
-/* =========================
-OVERLAY OMR
-========================= */
 
-function desenharOverlayOMR(){
 
-  let w = canvas.width
-  let h = canvas.height
-
-  ctx.fillStyle = "rgba(0,0,0,0.5)"
-  ctx.fillRect(0,0,w,h)
-
-  let boxW = w*0.6
-  let boxH = h*0.7
-
-  let x = (w-boxW)/2
-  let y = (h-boxH)/2
-
-  ctx.clearRect(x,y,boxW,boxH)
-
-  ctx.strokeStyle = "#00ff88"
-  ctx.lineWidth = 3
-  ctx.strokeRect(x,y,boxW,boxH)
-}
 
 /* =========================
 DETECÇÃO DE MARCADORES

@@ -335,7 +335,7 @@ function capturarFrame(){
   ctx.putImageData(frameCapturado, 0, 0)
 
   // 🔥 agora sim desenha overlay definitivo
-  desenharMarcacoes(TL,TR,BL,BR)
+  processarOMR(TL,TR,BL,BR)
 
   window.captura = {TL,TR,BL,BR}
 
@@ -509,65 +509,94 @@ function resetar(){
   framesOK=0
   document.getElementById("ui").innerHTML=""
 }
-function desenharMarcacoes(TL,TR,BL,BR){
+function processarOMR(TL,TR,BL,BR){
 
-  let q = parseInt(dadosQR.Q)
-
-  let altura = Math.hypot(BL.x - TL.x, BL.y - TL.y)
-  let raioLeitura = altura / q * 0.22
-  let raioVisual = raioLeitura * 2
+  let linhas = parseInt(dadosQR.Q)
+  let colunas = 4
 
   let respostas = []
 
-  for(let i=0;i<q;i++){
+  // 🔥 usa frame congelado (igual lab)
+  let frame = frameCapturado
+  let data = frame.data
 
-    let melhor = -1
+  // 🔥 escala dinâmica do raio
+  let altura = Math.hypot(BL.x - TL.x, BL.y - TL.y)
+  let alturaUtil = altura * (base - topo)
+  let dy = alturaUtil / linhas
+
+  let raio = dy * 0.4
+  let raioVisual = raio * 2
+
+  function pontoNaArea(u, v){
+    return {
+      x: (1-u)*(1-v)*TL.x + u*(1-v)*TR.x + (1-u)*v*BL.x + u*v*BR.x,
+      y: (1-u)*(1-v)*TL.y + u*(1-v)*TR.y + (1-u)*v*BL.y + u*v*BR.y
+    }
+  }
+
+  /* =========================
+  LEITURA DAS RESPOSTAS
+  ========================= */
+
+  for(let i=0;i<linhas;i++){
+
+    let linhaResposta = -1
     let maiorArea = 0
 
-    for(let j=0;j<4;j++){
+    for(let j=0;j<colunas;j++){
 
-      let px = (j + 0.5)/4
-      let py = (i + 0.5)/q
+      let u = esquerda + (j+0.5)/colunas*(direita-esquerda)
+      let v = topo + (i+0.5)/linhas*(base-topo)
 
-      let p = pontoNaArea(px,py,TL,TR,BL,BR)
+      let p = pontoNaArea(u, v)
 
       let soma = 0
 
-      for(let dx=-raioLeitura;dx<=raioLeitura;dx++){
-      for(let dy=-raioLeitura;dy<=raioLeitura;dy++){
+      for(let dx=-raio;dx<=raio;dx++){
+      for(let dy2=-raio;dy2<=raio;dy2++){
 
         let x = Math.floor(p.x + dx)
-        let y = Math.floor(p.y + dy)
+        let y = Math.floor(p.y + dy2)
 
-        if(x<0||y<0||x>=canvas.width||y>=canvas.height) continue
+        if(x<0 || y<0 || x>=canvas.width || y>=canvas.height) continue
 
-        let val = ctx.getImageData(x,y,1,1).data[0]
+        let idx = (y*canvas.width + x)*4
 
-        if(val < 50) soma++
+        if(data[idx] < 50){
+          soma++
+        }
+
       }}
 
       if(soma > maiorArea){
         maiorArea = soma
-        melhor = j
+        linhaResposta = j
       }
+
     }
 
-    respostas.push(melhor)
+    respostas.push(linhaResposta)
   }
 
-  // 🔥 DESENHAR IGUAL SEU SCRIPT
+  /* =========================
+  OVERLAY VISUAL (IGUAL LAB)
+  ========================= */
+
+  ctx.putImageData(frameCapturado, 0, 0)
+
   ctx.strokeStyle = "lime"
   ctx.lineWidth = 3
 
-  for(let i=0;i<q;i++){
+  for(let i=0;i<linhas;i++){
 
     let j = respostas[i]
     if(j < 0) continue
 
-    let px = (j + 0.5)/4
-    let py = (i + 0.5)/q
+    let u = esquerda + (j+0.5)/colunas*(direita-esquerda)
+    let v = topo + (i+0.5)/linhas*(base-topo)
 
-    let p = pontoNaArea(px,py,TL,TR,BL,BR)
+    let p = pontoNaArea(u, v)
 
     ctx.beginPath()
     ctx.arc(p.x, p.y, raioVisual, 0, Math.PI*2)
@@ -577,10 +606,9 @@ function desenharMarcacoes(TL,TR,BL,BR){
     ctx.fill()
   }
 
-  // salva para uso depois no confirmar
+  // 🔥 salva para usar no confirmar
   window.respostasDetectadas = respostas
 }
-
 
   
 requestAnimationFrame(loop)

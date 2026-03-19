@@ -279,14 +279,36 @@ function processarImagem(frame, marcadores){
   let minY = Math.min(...ys)
   let maxY = Math.max(...ys)
 
-  let margemX = (maxX-minX)*0.15
-  let margemY = (maxY-minY)*0.20
+  /* =========================
+AUTO AJUSTE GEOMÉTRICO
+========================= */
+
+// dimensões da área
+let largura = maxX - minX
+let altura  = maxY - minY
+
+// 🔹 margem dinâmica
+let margemX = largura * 0.18
+let margemY = altura  * 0.25
+
+// 🔹 espaçamento estimado entre bolhas
+let passoX = (largura - 2*margemX) / TOTAL_COLUNAS
+let passoY = (altura  - 2*margemY) / TOTAL_LINHAS
+
+// 🔹 raio automático (baseado no menor passo)
+let raio = Math.min(passoX, passoY) * 0.32
+
+// 🔹 limites de segurança
+raio = Math.max(8, Math.min(raio, 18))
+
+// 🔹 densidade adaptativa
+let densThreshold = 0.22
 
   let TOTAL_LINHAS = qr.questoes
   let TOTAL_COLUNAS = qr.colunas
 
   let respostas = []
-  let raio = 15
+  
 
   for(let i=0;i<TOTAL_LINHAS;i++){
 
@@ -320,7 +342,7 @@ function processarImagem(frame, marcadores){
 
       let dens = soma/cont
 
-      if(dens > 0.18){
+      if(dens > densThreshold){
 
         respostas[i].push(j)
 

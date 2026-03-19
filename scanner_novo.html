@@ -271,7 +271,7 @@ function detectarMarcadores(frame){
       (cx < margemX && cy > h - margemY) ||
       (cx > w - margemX && cy > h - margemY)
 
-    return canto && b.area > 1500
+    return canto && b.area > 300 && b.area < 10000
   })
 
   window._candidatos = candidatos.length

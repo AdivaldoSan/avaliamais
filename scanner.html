@@ -368,16 +368,27 @@ CAPTURA
 
   capturado = true
 
-  // 🔥 pega marcadores
-  let {TL,TR,BL,BR} = window.marcadores
+  // 🔥 guarda marcadores para usar depois
+  window.captura = {
+    ...window.marcadores
+  }
 
-  // 🔥 roda leitura OMR
+  // 🔥 mostra botões (sem corrigir ainda)
+  document.getElementById("ui").innerHTML = `
+    <button onclick="confirmar()">Confirmar</button>
+    <button onclick="resetar()">Ler novamente</button>
+  `
+}
+
+function confirmar(){
+
+  let {TL,TR,BL,BR} = window.captura
+
+  // 🔥 roda leitura
   let respostas = lerOMR(TL,TR,BL,BR)
 
-  // 🔥 gabarito do QR
   let gabarito = dadosQR.G.split("")
 
-  // 🔥 corrige
   let acertos = 0
 
   for(let i=0;i<respostas.length;i++){
@@ -398,10 +409,6 @@ CAPTURA
       <button onclick="resetar()">Nova leitura</button>
     </div>
   `
-}
-
-function confirmar(){
-  alert("Aqui entra leitura OMR + correção")
 }
 
 function resetar(){

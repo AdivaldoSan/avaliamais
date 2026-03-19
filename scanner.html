@@ -36,8 +36,8 @@ video, canvas{
 
 #ui button{
   flex:1;
-  font-size:20px;
-  padding:18px 0;
+  font-size:28px;
+  padding:27px 0;
   border:none;
   border-radius:12px;
   color:white;
@@ -86,19 +86,27 @@ function loop(){
 
     let frame = ctx.getImageData(0,0,canvas.width,canvas.height)
 
-    if(modo === "QR" || !dadosQR){
+    if(modo === "QR"){
       lerQR(frame)
       desenharOverlayQR()
     }
 
    else if(modo === "OMR" && dadosQR){
 
-      if(!capturado){
-        desenharOverlayOMR()
-        detectarMarcadores(frame)
-      }
-      // 🔥 quando capturado não faz nada (mantém imagem)
-    }
+  if(!capturado){
+
+    desenharOverlayOMR()
+    detectarMarcadores(frame)
+
+  } else {
+
+    // 🔥 CONGELAMENTO REAL
+    ctx.putImageData(frameCapturado, 0, 0)
+
+    let {TL,TR,BL,BR} = window.captura
+    desenharMarcacoes(TL,TR,BL,BR)
+  }
+}
   }
 
   // 🔥 isso TEM que ficar fora de tudo

@@ -74,7 +74,7 @@ navigator.mediaDevices.getUserMedia({
 
 function loop(){
 
-  if(video.readyState === video.HAVE_ENOUGH_DATA){
+  if(video.videoWidth > 0){
 
     canvas.width = video.videoWidth
     canvas.height = video.videoHeight
@@ -85,12 +85,12 @@ function loop(){
 
     let frame = ctx.getImageData(0,0,canvas.width,canvas.height)
 
-    if(modo === "QR"){
+    if(modo === "QR" || !dadosQR){
       lerQR(frame)
       desenharOverlayQR()
     }
 
-    else if(modo === "OMR"){
+   else if(modo === "OMR" && dadosQR){
 
       if(!capturado){
         desenharOverlayOMR()
@@ -491,7 +491,7 @@ function resetar(){
   framesOK=0
   document.getElementById("ui").innerHTML=""
 }
-
+requestAnimationFrame(loop)
 </script>
 </body>
 </html>

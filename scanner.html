@@ -67,6 +67,7 @@ const ctx = canvas.getContext("2d",{willReadFrequently:true})
 
 let modo = "QR"
 let capturado = false
+let framesOK = 0  
 
 let dadosQR = null
 
@@ -345,6 +346,8 @@ function detectarMarcadores(frame){
   let TR = top[1]
   let BL = bot[0]
   let BR = bot[1]
+  
+  window.marcadores = {TL,TR,BL,BR}
 
   // 🔥 DEBUG VISUAL
   ctx.fillStyle = "red"
@@ -361,16 +364,39 @@ function detectarMarcadores(frame){
 /* =========================
 CAPTURA
 ========================= */
-
-function capturarFrame(){
+ function capturarFrame(){
 
   capturado = true
-  modo = "OMR"
 
+  // 🔥 pega marcadores
+  let {TL,TR,BL,BR} = window.marcadores
+
+  // 🔥 roda leitura OMR
+  let respostas = lerOMR(TL,TR,BL,BR)
+
+  // 🔥 gabarito do QR
+  let gabarito = dadosQR.G.split("")
+
+  // 🔥 corrige
+  let acertos = 0
+
+  for(let i=0;i<respostas.length;i++){
+    if(respostas[i] === gabarito[i]){
+      acertos++
+    }
+  }
+
+  let porcentagem = Math.round((acertos / gabarito.length)*100)
+
+  // 🔥 mostra resultado
   document.getElementById("ui").innerHTML = `
-    <button onclick="resetar()">Ler novamente</button>
-    <button onclick="confirmar()">Confirmar</button>
-    
+    <div style="width:100%; text-align:center; color:white;">
+      <div>Acertos: ${acertos}/${gabarito.length} (${porcentagem}%)</div>
+      <div style="margin-top:10px;">Lido: ${respostas.join(" ")}</div>
+      <div style="margin-top:5px;">Gabarito: ${gabarito.join(" ")}</div>
+      <br>
+      <button onclick="resetar()">Nova leitura</button>
+    </div>
   `
 }
 
@@ -413,10 +439,67 @@ function validarMarcadores(TL,TR,BL,BR){
   ctx.strokeRect(a.x,a.y,a.w,a.h)
 
   if(ok){
-    capturarFrame()
+  framesOK++
+}else{
+  framesOK = 0
+}
+
+// 🔥 só captura se estabilizar
+if(framesOK > 5){
+  capturarFrame()
+}
+}  
+
+  function lerOMR(TL,TR,BL,BR){
+
+  let q = parseInt(dadosQR.Q)
+
+  let respostas = []
+
+  // 🔥 usa sua função existente de projeção
+  for(let i=0;i<q;i++){
+
+    let marcadas = []
+
+    for(let c=0;c<4;c++){
+
+      // 🔥 ponto normalizado (0→1)
+      let px = (c + 0.5)/4
+      let py = (i + 0.5)/q
+
+      let p = pontoNaArea(px,py,TL,TR,BL,BR)
+
+      let idx = (Math.floor(p.y)*canvas.width + Math.floor(p.x))*4
+      let val = ctx.getImageData(p.x,p.y,1,1).data[0]
+
+      if(val < 80){
+        marcadas.push(c)
+      }
+    }
+
+    if(marcadas.length === 1){
+      respostas.push(["A","B","C","D"][marcadas[0]])
+    }else{
+      respostas.push("-")
+    }
+  }
+
+  return respostas
+}
+
+function pontoNaArea(px,py,TL,TR,BL,BR){
+
+  let xTop = TL.x + (TR.x - TL.x)*px
+  let yTop = TL.y + (TR.y - TL.y)*px
+
+  let xBot = BL.x + (BR.x - BL.x)*px
+  let yBot = BL.y + (BR.y - BL.y)*px
+
+  return {
+    x: xTop + (xBot - xTop)*py,
+    y: yTop + (yBot - yTop)*py
   }
 }  
-  
 </script>
 
 </body>

@@ -173,13 +173,17 @@ function desenharOverlayOMR(){
   let proporcao = alturaReal / larguraReal
 
   // 🔥 largura base na tela
-  let boxW = w * 0.6
+  let margemTela = 0.75  // 🔥 ajuste fino aqui (0.7 a 0.85)
+
+  let boxW = w * margemTela
   let boxH = boxW * proporcao
 
   // 🔥 ajuste para não estourar tela
-  if(boxH > h * 0.9){
-    boxH = h * 0.9
-    boxW = boxH / proporcao
+  let limiteAltura = 0.75  // 🔥 margem segura (ajuste fino aqui)
+
+  if(boxH > h * limiteAltura){
+      boxH = h * limiteAltura
+      boxW = boxH / proporcao
   }
 
   let x = (w - boxW)/2

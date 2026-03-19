@@ -12,18 +12,38 @@ body{
   font-family:Arial;
 }
 
+/* 🔥 VISOR MAIOR */
 canvas{
-  width:95vw;
-  max-width:500px;
+  width:125vw;
+  max-width:650px;
   margin-top:10px;
   background:#000;
 }
 
+/* 🔥 BOTÕES MAIORES */
 button{
-  padding:10px;
-  margin:5px;
-  font-size:16px;
+  padding:15px 25px;
+  margin:10px;
+  font-size:20px;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
 }
+
+#confirmar{
+  background:#2ecc71;
+}
+
+#refazer{
+  background:#e74c3c;
+}
+
+#gabarito{
+  margin-top:15px;
+  font-size:18px;
+  color:#00ffcc;
+}
+
 </style>
 </head>
 
@@ -37,9 +57,11 @@ button{
 <div id="status">🔴 Iniciando câmera...</div>
 
 <div id="botoes" style="display:none;">
-  <button onclick="confirmar()">✔ Confirmar</button>
-  <button onclick="refazer()">❌ Refazer</button>
+  <button id="confirmar" onclick="confirmar()">✔ Confirmar</button>
+  <button id="refazer" onclick="refazer()">❌ Refazer</button>
 </div>
+
+<div id="gabarito"></div>
 
 <script>
 
@@ -51,24 +73,16 @@ let rodando = true
 let framesEstaveis = 0
 let ultimoCentro = null
 
-/* =========================
-INICIAR CAMERA (TRASEIRA)
-========================= */
-
+/* CAMERA TRASEIRA */
 navigator.mediaDevices.getUserMedia({
-  video: {
-    facingMode: { ideal: "environment" }
-  }
+  video: { facingMode: { ideal: "environment" } }
 })
 .then(stream=>{
   video.srcObject = stream
   loop()
 })
 
-/* =========================
-LOOP PRINCIPAL
-========================= */
-
+/* LOOP */
 function loop(){
 
   if(!rodando) return
@@ -86,7 +100,7 @@ function loop(){
   let frame = ctx.getImageData(0,0,canvas.width,canvas.height)
   let data = frame.data
 
-  // 🔥 THRESHOLD AO VIVO
+  // threshold
   for(let i=0;i<data.length;i+=4){
     let brilho = (data[i]+data[i+1]+data[i+2])/3
     let cor = brilho < 50 ? 0 : 255
@@ -113,7 +127,6 @@ function loop(){
       }else{
         framesEstaveis = 0
       }
-
     }
 
     ultimoCentro = centro
@@ -134,10 +147,7 @@ function loop(){
   requestAnimationFrame(loop)
 }
 
-/* =========================
-CAPTURA
-========================= */
-
+/* CAPTURA */
 function capturar(frame){
 
   rodando = false
@@ -152,10 +162,7 @@ function capturar(frame){
   document.getElementById("botoes").style.display = "block"
 }
 
-/* =========================
-BOTOES
-========================= */
-
+/* BOTÕES */
 function confirmar(){
   alert("Leitura confirmada")
 }
@@ -165,13 +172,11 @@ function refazer(){
   framesEstaveis = 0
   ultimoCentro = null
   document.getElementById("botoes").style.display = "none"
+  document.getElementById("gabarito").innerText = ""
   loop()
 }
 
-/* =========================
-DETECÇÃO MARCADORES
-========================= */
-
+/* DETECTAR MARCADORES */
 function detectarMarcadores(frame){
 
   let data = frame.data
@@ -244,10 +249,7 @@ function detectarMarcadores(frame){
   }))
 }
 
-/* =========================
-CENTRO MÉDIO
-========================= */
-
+/* CENTRO */
 function centroMedio(centros){
 
   let x=0,y=0
@@ -257,16 +259,10 @@ function centroMedio(centros){
     y+=c.y
   })
 
-  return {
-    x:x/centros.length,
-    y:y/centros.length
-  }
+  return {x:x/centros.length, y:y/centros.length}
 }
 
-/* =========================
-PROCESSAMENTO FINAL
-========================= */
-
+/* PROCESSAMENTO */
 function processarImagem(frame){
 
   let data = frame.data
@@ -277,12 +273,10 @@ function processarImagem(frame){
   let blobs = []
 
   function floodFill(x,y){
-
     let stack=[[x,y]]
     let minX=x,maxX=x,minY=y,maxY=y,area=0
 
     while(stack.length){
-
       let [px,py]=stack.pop()
       let idx=py*w+px
 
@@ -343,7 +337,6 @@ function processarImagem(frame){
     y:(b.minY+b.maxY)/2
   }))
 
-  // LINHAS
   pontos.sort((a,b)=>a.y-b.y)
 
   let linhas=[]
@@ -351,16 +344,12 @@ function processarImagem(frame){
 
   pontos.forEach(p=>{
     let linha = linhas.find(l=>Math.abs(l.y-p.y)<tolY)
-    if(linha){
-      linha.pontos.push(p)
-    }else{
-      linhas.push({y:p.y,pontos:[p]})
-    }
+    if(linha) linha.pontos.push(p)
+    else linhas.push({y:p.y,pontos:[p]})
   })
 
   linhas.forEach(l=>l.pontos.sort((a,b)=>a.x-b.x))
 
-  // COLUNAS GLOBAIS
   let todos = pontos.slice().sort((a,b)=>a.x-b.x)
 
   let colunas=[]
@@ -368,11 +357,8 @@ function processarImagem(frame){
 
   todos.forEach(p=>{
     let col = colunas.find(c=>Math.abs(c.x-p.x)<tolX)
-    if(col){
-      col.pontos.push(p)
-    }else{
-      colunas.push({x:p.x,pontos:[p]})
-    }
+    if(col) col.pontos.push(p)
+    else colunas.push({x:p.x,pontos:[p]})
   })
 
   colunas.sort((a,b)=>a.x-b.x)
@@ -386,14 +372,13 @@ function processarImagem(frame){
 
     linha.pontos.forEach(p=>{
 
-      let colunaIndex = colunas.findIndex(c =>
+      let colIndex = colunas.findIndex(c =>
         Math.abs(c.x - p.x) < tolX
       )
 
-      if(colunaIndex === -1) return
+      if(colIndex === -1) return
 
-      let soma=0
-      let cont=0
+      let soma=0, cont=0
 
       for(let dx=-raio;dx<=raio;dx++){
       for(let dy=-raio;dy<=raio;dy++){
@@ -416,21 +401,18 @@ function processarImagem(frame){
 
       if(dens>0.18){
 
-        respostas[i].push(colunaIndex)
+        respostas[i].push(colIndex)
 
-        // 🔥 DESENHA A BOLHA
         ctx.fillStyle="rgba(0,255,0,0.5)"
         ctx.beginPath()
         ctx.arc(p.x,p.y,raio,0,Math.PI*2)
         ctx.fill()
       }
 
-      // centro debug
       ctx.fillStyle="red"
       ctx.fillRect(p.x-2,p.y-2,4,4)
 
     })
-
   })
 
   let letras=["A","B","C","D"]
@@ -440,7 +422,7 @@ function processarImagem(frame){
     return `${i+1}: ${r.map(j=>letras[j]).join(",")}`
   })
 
-  document.getElementById("status").innerText =
+  document.getElementById("gabarito").innerText =
     txt.join(" | ")
 }
 

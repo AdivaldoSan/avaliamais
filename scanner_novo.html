@@ -271,6 +271,9 @@ function processarImagem(frame, marcadores){
   let w = canvas.width
   let h = canvas.height
 
+  // =========================
+  // ÁREA DOS MARCADORES
+  // =========================
   let xs = marcadores.map(m=>m.x)
   let ys = marcadores.map(m=>m.y)
 
@@ -279,85 +282,88 @@ function processarImagem(frame, marcadores){
   let minY = Math.min(...ys)
   let maxY = Math.max(...ys)
 
-  /* =========================
-AUTO AJUSTE GEOMÉTRICO
-========================= */
-
-// dimensões da área
-let largura = maxX - minX
-let altura  = maxY - minY
-
-// 🔹 margem dinâmica
-let margemX = largura * 0.18
-let margemY = altura  * 0.25
-
-// 🔹 espaçamento estimado entre bolhas
-let passoX = (largura - 2*margemX) / TOTAL_COLUNAS
-let passoY = (altura  - 2*margemY) / TOTAL_LINHAS
-
-// 🔹 raio automático (baseado no menor passo)
-let raio = Math.min(passoX, passoY) * 0.32
-
-// 🔹 limites de segurança
-raio = Math.max(8, Math.min(raio, 18))
-
-// 🔹 densidade adaptativa
-let densThreshold = 0.22
-
+  // =========================
+  // QR (ORDEM CORRETA!)
+  // =========================
   let TOTAL_LINHAS = qr.questoes
   let TOTAL_COLUNAS = qr.colunas
 
+  // =========================
+  // AUTO AJUSTE
+  // =========================
+  let largura = maxX - minX
+  let altura  = maxY - minY
+
+  let margemX = largura * 0.18
+  let margemY = altura  * 0.25
+
+  let passoX = (largura - 2*margemX) / TOTAL_COLUNAS
+  let passoY = (altura  - 2*margemY) / TOTAL_LINHAS
+
+  let raio = Math.min(passoX, passoY) * 0.32
+  raio = Math.max(8, Math.min(raio, 18))
+
+  let densThreshold = 0.22
+
+  // =========================
+  // LEITURA
+  // =========================
   let respostas = []
-  
 
   for(let i=0;i<TOTAL_LINHAS;i++){
 
-    respostas[i]=[]
+    respostas[i] = []
 
     for(let j=0;j<TOTAL_COLUNAS;j++){
 
-      let u=(j+0.5)/TOTAL_COLUNAS
-      let v=(i+0.5)/TOTAL_LINHAS
+      let u = (j + 0.5) / TOTAL_COLUNAS
+      let v = (i + 0.5) / TOTAL_LINHAS
 
       let x = minX + margemX + u*(maxX-minX-2*margemX)
       let y = minY + margemY + v*(maxY-minY-2*margemY)
 
-      let soma=0,cont=0
+      let soma = 0
+      let cont = 0
 
-      for(let dx=-raio;dx<=raio;dx++){
-      for(let dy=-raio;dy<=raio;dy++){
+      for(let dx=-raio; dx<=raio; dx++){
+      for(let dy=-raio; dy<=raio; dy++){
 
-        if(Math.sqrt(dx*dx+dy*dy)>raio*0.7) continue
+        if(Math.sqrt(dx*dx+dy*dy) > raio*0.7) continue
 
-        let px=Math.floor(x+dx)
-        let py=Math.floor(y+dy)
+        let px = Math.floor(x+dx)
+        let py = Math.floor(y+dy)
 
-        if(px<0||py<0||px>=w||py>=h) continue
+        if(px<0 || py<0 || px>=w || py>=h) continue
 
-        let idx=(py*w+px)*4
+        let idx = (py*w+px)*4
         cont++
 
         if(data[idx]===0) soma++
       }}
 
-      let dens = soma/cont
+      let dens = soma / cont
 
       if(dens > densThreshold){
 
         respostas[i].push(j)
 
-        ctx.fillStyle="rgba(0,255,0,0.5)"
+        // círculo verde
+        ctx.fillStyle = "rgba(0,255,0,0.5)"
         ctx.beginPath()
         ctx.arc(x,y,raio,0,Math.PI*2)
         ctx.fill()
       }
 
-      ctx.fillStyle="red"
+      // ponto vermelho (debug)
+      ctx.fillStyle = "red"
       ctx.fillRect(x-2,y-2,4,4)
     }
   }
 
-  let letras=["A","B","C","D"]
+  // =========================
+  // RESULTADO
+  // =========================
+  let letras = ["A","B","C","D"]
 
   let txt = respostas.map((r,i)=>{
     if(!r.length) return `${i+1}: -`

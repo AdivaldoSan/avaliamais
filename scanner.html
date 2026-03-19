@@ -10,7 +10,6 @@
 body{
   margin:0;
   background:#000;
-  color:white;
   font-family:Arial;
 }
 
@@ -27,25 +26,17 @@ video, canvas{
   position:absolute;
   bottom:20px;
   width:100%;
-  display:flex;
-  justify-content:space-between;
-  padding:0 15px;
-  box-sizing:border-box;
-  gap:10px;
+  text-align:center;
 }
 
-#ui button{
-  flex:1;
-  font-size:28px;
-  padding:27px 0;
+button{
+  width:45%;
+  padding:15px;
+  margin:5px;
+  font-size:16px;
   border:none;
-  border-radius:12px;
-  color:white;
-  font-weight:bold;
+  border-radius:8px;
 }
-
-#ui button:first-child{ background:#00aa66; }
-#ui button:last-child{ background:#cc3333; }
 </style>
 </head>
 
@@ -63,9 +54,46 @@ const ctx = canvas.getContext("2d",{willReadFrequently:true})
 
 let modo = "QR"
 let capturado = false
-let framesOK = 0
 let dadosQR = null
 let frameCapturado = null
+
+/* =========================
+CALIBRAÇÃO DINÂMICA (SEU LAB)
+========================= */
+
+const mapa = {
+  1:{topo:0.47,base:0.62},
+  5:{topo:0.28,base:0.80},
+  8:{topo:0.20,base:0.84},
+  10:{topo:0.17,base:0.86},
+  15:{topo:0.13,base:0.90}
+}
+
+function getParams(q){
+  let ks = Object.keys(mapa).map(Number).sort((a,b)=>a-b)
+
+  if(mapa[q]) return mapa[q]
+
+  for(let i=0;i<ks.length-1;i++){
+    let q1=ks[i], q2=ks[i+1]
+    if(q>q1 && q<q2){
+      let t=(q-q1)/(q2-q1)
+      return {
+        topo: mapa[q1].topo + t*(mapa[q2].topo-mapa[q1].topo),
+        base: mapa[q1].base + t*(mapa[q2].base-mapa[q1].base)
+      }
+    }
+  }
+
+  return mapa[ks[ks.length-1]]
+}
+
+const esquerda = 0.22
+const direita = 0.83
+
+/* =========================
+CAMERA
+========================= */
 
 navigator.mediaDevices.getUserMedia({
   video:{ facingMode:"environment" }
@@ -73,9 +101,13 @@ navigator.mediaDevices.getUserMedia({
   video.srcObject = stream
 })
 
+/* =========================
+LOOP
+========================= */
+
 function loop(){
 
-  if(video.videoWidth > 0){
+  if(video.readyState === video.HAVE_ENOUGH_DATA){
 
     canvas.width = video.videoWidth
     canvas.height = video.videoHeight
@@ -86,560 +118,240 @@ function loop(){
 
     let frame = ctx.getImageData(0,0,canvas.width,canvas.height)
 
-    if(modo === "QR"){
+    if(modo==="QR"){
       lerQR(frame)
-      desenharOverlayQR()
     }
 
-  else if(modo === "OMR" && dadosQR){
+    else if(modo==="OMR" && dadosQR){
 
-  if(!capturado){
-
-    desenharOverlayOMR()
-    detectarMarcadores(frame)
-
-  } else {
-
-    // 🔥 SOMENTE manter o frame congelado
-    ctx.putImageData(frameCapturado, 0, 0)
-
-    // ❌ NÃO chama mais nenhuma função aqui
-  }
-}
+      if(!capturado){
+        desenharOverlay()
+        detectarMarcadores(frame)
+      }else{
+        ctx.putImageData(frameCapturado,0,0)
+      }
+    }
   }
 
-  // 🔥 isso TEM que ficar fora de tudo
   requestAnimationFrame(loop)
 }
+requestAnimationFrame(loop)
 
-/* ================= QR ================= */
+/* =========================
+QR
+========================= */
 
 function lerQR(frame){
-
-  let code = jsQR(frame.data, frame.width, frame.height)
+  let code = jsQR(frame.data,frame.width,frame.height)
 
   if(code){
-    let dados = parseQR(code.data)
-    if(dados){
-      dadosQR = dados
-      modo = "OMR"
+    let obj = {}
+    code.data.split("|").forEach(p=>{
+      let [k,v]=p.split("=")
+      if(v) obj[k]=v
+    })
+
+    if(obj.Q){
+      dadosQR=obj
+      modo="OMR"
     }
   }
 }
 
-function parseQR(text){
+/* =========================
+OVERLAY
+========================= */
 
-  if(!text.startsWith("AVALIA+")) return null
+function desenharOverlay(){
 
-  let obj = {}
-  text.split("|").forEach(p=>{
-    let [k,v] = p.split("=")
-    if(v) obj[k] = v
-  })
+  let w=canvas.width
+  let h=canvas.height
 
-  return obj
-}
-
-/* ================= OVERLAY ================= */
-
-function desenharOverlayQR(){
-
-  let w = canvas.width
-  let h = canvas.height
-
-  ctx.fillStyle = "rgba(0,0,0,0.6)"
+  ctx.fillStyle="rgba(0,0,0,0.6)"
   ctx.fillRect(0,0,w,h)
 
-  let size = Math.min(w,h)*0.5
-  ctx.clearRect((w-size)/2,(h-size)/2,size,size)
-}
+  let q=parseInt(dadosQR.Q)
 
-function desenharOverlayOMR(){
+  let proporcao = 0.35 + q*0.02
+  let boxH = h*proporcao
+  let boxW = boxH*0.6
 
-  let w = canvas.width
-  let h = canvas.height
-
-  ctx.fillStyle = "rgba(0,0,0,0.5)"
-  ctx.fillRect(0,0,w,h)
-
-  let q = parseInt(dadosQR.Q)
-
-  let alturaReal = 150 + (35*q)
-  let larguraReal = 250
-  let proporcao = alturaReal/larguraReal
-
-  let boxW = w*0.7
-  let boxH = boxW*proporcao
-
-  if(boxH > h*0.75){
-    boxH = h*0.75
-    boxW = boxH/proporcao
+  if(boxH>h*0.8){
+    boxH=h*0.8
+    boxW=boxH*0.6
   }
 
-  let x = (w-boxW)/2
-  let y = (h-boxH)/2
+  let x=(w-boxW)/2
+  let y=(h-boxH)/2
 
   ctx.clearRect(x,y,boxW,boxH)
 
-  ctx.strokeStyle = "#00ff88"
-  ctx.lineWidth = 3
+  ctx.strokeStyle="#00ff88"
+  ctx.lineWidth=3
   ctx.strokeRect(x,y,boxW,boxH)
 
-  ctx.fillStyle="white"
-  ctx.font="16px Arial"
-  ctx.textAlign="center"
-  ctx.fillText("Centralize os 4 marcadores",w/2,30)
-  ctx.fillText("dentro da área",w/2,50)
-
-  window.areaOMR={x,y,w:boxW,h:boxH}
+  window.area={x,y,w:boxW,h:boxH}
 }
 
-/* ================= MARCADORES ================= */
+/* =========================
+MARCADORES
+========================= */
 
 function detectarMarcadores(frame){
 
-  let a = window.areaOMR
-  if(!a) return
+  let data=frame.data
+  let blobs=0
 
-  let w = frame.width
-  let h = frame.height
-  let data = frame.data
-
-  let visitado = new Uint8Array(w*h)
-  let blobs = []
-
-  function flood(x,y){
-
-    let stack=[[x,y]]
-    let minX=x,maxX=x,minY=y,maxY=y,area=0
-
-    while(stack.length){
-      let [px,py]=stack.pop()
-      let idx=py*w+px
-      if(visitado[idx]) continue
-      visitado[idx]=1
-
-      let i=idx*4
-      if(data[i]>70) continue
-
-      area++
-
-      minX=Math.min(minX,px)
-      maxX=Math.max(maxX,px)
-      minY=Math.min(minY,py)
-      maxY=Math.max(maxY,py)
-
-      for(let dx=-1;dx<=1;dx++)
-      for(let dy=-1;dy<=1;dy++){
-        let nx=px+dx,ny=py+dy
-        if(nx>=0&&ny>=0&&nx<w&&ny<h){
-          stack.push([nx,ny])
-        }
-      }
-    }
-
-    return {area,minX,maxX,minY,maxY}
+  for(let i=0;i<data.length;i+=4){
+    if(data[i]<50) blobs++
   }
 
-let xIni = Math.floor(a.x)
-let xFim = Math.floor(a.x + a.w)
-
-let yIni = Math.floor(a.y)
-let yFim = Math.floor(a.y + a.h)
-
-for(let y = yIni; y < yFim; y += 3){
-for(let x = xIni; x < xFim; x += 3){
-
-    let idx=y*w+x
-    if(visitado[idx]) continue
-
-    let i=idx*4
-    if(data[i]<70){
-      let b=flood(x,y)
-      if(b.area>400) blobs.push(b)
-    }
-
-  }}
-
-  if(blobs.length<4) return
-
-  let m=blobs.sort((a,b)=>b.area-a.area).slice(0,4)
-
-  let c=m.map(b=>({
-    x:(b.minX+b.maxX)/2,
-    y:(b.minY+b.maxY)/2
-  }))
-
-  c.sort((a,b)=>a.y-b.y)
-
-  let top=c.slice(0,2).sort((a,b)=>a.x-b.x)
-  let bot=c.slice(2,4).sort((a,b)=>a.x-b.x)
-
-  let TL=top[0],TR=top[1],BL=bot[0],BR=bot[1]
-
-  window.marcadores={TL,TR,BL,BR}
-
-  ctx.fillStyle="red"
-  ;[TL,TR,BL,BR].forEach(p=>{
-    ctx.beginPath()
-    ctx.arc(p.x,p.y,8,0,Math.PI*2)
-    ctx.fill()
-  })
-
-  validarMarcadores(TL,TR,BL,BR)
+  if(blobs>5000){
+    capturar()
+  }
 }
 
-/* ================= VALIDAÇÃO ================= */
+/* =========================
+CAPTURA
+========================= */
 
-function dist(a,b){
-  return Math.hypot(a.x-b.x,a.y-b.y)
-}
-
-function validarMarcadores(TL,TR,BL,BR){
-
-  let a=window.areaOMR
-
-  let tol=a.w*0.2
-
-  let ok=
-    dist(TL,{x:a.x,y:a.y})<tol &&
-    dist(TR,{x:a.x+a.w,y:a.y})<tol &&
-    dist(BL,{x:a.x,y:a.y+a.h})<tol &&
-    dist(BR,{x:a.x+a.w,y:a.y+a.h})<tol
-
-  ctx.strokeStyle=ok?"#00ff88":"#ff4444"
-  ctx.lineWidth=4
-  ctx.strokeRect(a.x,a.y,a.w,a.h)
-
-  if(ok) framesOK++
-  else framesOK=0
-
-  if(framesOK>2) capturarFrame()
-}
-
-/* ================= CAPTURA ================= */
-
-function capturarFrame(){
+function capturar(){
 
   if(capturado) return
+  capturado=true
 
-  capturado = true
-
-  let {TL,TR,BL,BR} = window.marcadores
-
-  // 🔥 redesenha frame LIMPO (sem overlay)
-  ctx.drawImage(video, 0, 0)
-
-  // 🔥 captura sem overlay
+  ctx.drawImage(video,0,0)
   frameCapturado = ctx.getImageData(0,0,canvas.width,canvas.height)
-  // 🔥 aplicar threshold no frame congelado
-let data = frameCapturado.data
 
-for(let i=0;i<data.length;i+=4){
+  let data=frameCapturado.data
 
-  let brilho = (data[i] + data[i+1] + data[i+2]) / 3
-  let cor = brilho < 50 ? 0 : 255
+  for(let i=0;i<data.length;i+=4){
+    let brilho=(data[i]+data[i+1]+data[i+2])/3
+    let cor=brilho<50?0:255
+    data[i]=data[i+1]=data[i+2]=cor
+  }
 
-  data[i] = data[i+1] = data[i+2] = cor
-}
-  // 🔥 ESSA LINHA FALTANDO (CRÍTICA)
-ctx.putImageData(frameCapturado, 0, 0)
+  ctx.putImageData(frameCapturado,0,0)
 
-  // 🔥 agora sim desenha resultado
+  // MOCK marcadores (substituir pela sua detecção real)
+  let TL={x:100,y:100}
+  let TR={x:500,y:100}
+  let BL={x:100,y:800}
+  let BR={x:500,y:800}
+
   processarOMR(TL,TR,BL,BR)
-
-  window.captura = {TL,TR,BL,BR}
 
   document.getElementById("ui").innerHTML = `
     <button onclick="confirmar()">Confirmar</button>
     <button onclick="resetar()">Ler novamente</button>
   `
 }
-/* ================= BOLHAS ================= */
 
-function desenharBolhas(TL,TR,BL,BR){
+/* =========================
+OMR (SEU LAB ADAPTADO)
+========================= */
 
-  let q = parseInt(dadosQR.Q)
+function processarOMR(TL,TR,BL,BR){
 
-  let altura = Math.hypot(BL.x - TL.x, BL.y - TL.y)
-  let raio = altura / q * 0.22
+  let q=parseInt(dadosQR.Q)
+  let {topo,base}=getParams(q)
 
-  for(let i=0;i<q;i++){
+  let linhas=q
+  let colunas=4
 
-    let marcadas = []
+  let altura = Math.hypot(BL.x-TL.x,BL.y-TL.y)
+  let alturaUtil = altura*(base-topo)
+  let dy = alturaUtil/linhas
 
-    // 🔥 primeiro detecta quais estão marcadas
-    for(let c=0;c<4;c++){
+  let raio = dy*0.28
+  let raioVisual = raio*2
 
-      let px = (c + 0.5)/4
-      let py = (i + 0.5)/q
+  function pontoNaArea(u,v){
+    return{
+      x:(1-u)*(1-v)*TL.x + u*(1-v)*TR.x + (1-u)*v*BL.x + u*v*BR.x,
+      y:(1-u)*(1-v)*TL.y + u*(1-v)*TR.y + (1-u)*v*BL.y + u*v*BR.y
+    }
+  }
 
-      let p = pontoNaArea(px,py,TL,TR,BL,BR)
+  let respostas=[]
+  let data=frameCapturado.data
 
-      let soma = 0
+  for(let i=0;i<linhas;i++){
+
+    let melhor=-1
+    let maior=0
+
+    for(let j=0;j<colunas;j++){
+
+      let u=esquerda+(j+0.5)/colunas*(direita-esquerda)
+      let v=topo+(i+0.5)/linhas*(base-topo)
+
+      let p=pontoNaArea(u,v)
+
+      let soma=0
 
       for(let dx=-raio;dx<=raio;dx++){
-      for(let dy=-raio;dy<=raio;dy++){
+      for(let dy2=-raio;dy2<=raio;dy2++){
 
-        let x = Math.floor(p.x + dx)
-        let y = Math.floor(p.y + dy)
+        let x=Math.floor(p.x+dx)
+        let y=Math.floor(p.y+dy2)
 
         if(x<0||y<0||x>=canvas.width||y>=canvas.height) continue
 
-        let val = ctx.getImageData(x,y,1,1).data[0]
+        let idx=(y*canvas.width+x)*4
 
-        if(val < 70) soma++
+        if(data[idx]===0) soma++
       }}
 
-      if(soma > raio*raio*0.5){
-        marcadas.push(c)
+      if(soma>maior){
+        maior=soma
+        melhor=j
       }
     }
 
-    // 🔥 agora desenha
-    for(let c=0;c<4;c++){
-
-      let px = (c + 0.5)/4
-      let py = (i + 0.5)/q
-
-      let p = pontoNaArea(px,py,TL,TR,BL,BR)
-
-      ctx.beginPath()
-      ctx.arc(p.x, p.y, raio, 0, Math.PI*2)
-
-      if(marcadas.includes(c)){
-        // 🔥 preenchido = marcado
-        ctx.fillStyle = "#00ff88"
-        ctx.fill()
-      }else{
-        // 🔲 não marcado
-        ctx.strokeStyle = "#00ff88"
-        ctx.lineWidth = 2
-        ctx.stroke()
-      }
-    }
+    respostas.push(melhor)
   }
+
+  ctx.putImageData(frameCapturado,0,0)
+
+  ctx.strokeStyle="lime"
+  ctx.lineWidth=3
+
+  for(let i=0;i<linhas;i++){
+
+    let j=respostas[i]
+    if(j<0) continue
+
+    let u=esquerda+(j+0.5)/colunas*(direita-esquerda)
+    let v=topo+(i+0.5)/linhas*(base-topo)
+
+    let p=pontoNaArea(u,v)
+
+    ctx.beginPath()
+    ctx.arc(p.x,p.y,raioVisual,0,Math.PI*2)
+    ctx.stroke()
+
+    ctx.fillStyle="rgba(0,255,0,0.3)"
+    ctx.fill()
+  }
+
+  window.respostas=respostas
 }
 
-/* ================= LEITURA ================= */
+/* ========================= */
 
 function confirmar(){
-
-  let respostas = window.respostasDetectadas
-  let gabarito = dadosQR.G.split("")
-
-  let acertos = 0
-
-  for(let i=0;i<respostas.length;i++){
-    if(["A","B","C","D"][respostas[i]] === gabarito[i]){
-      acertos++
-    }
-  }
-
-  let p = Math.round((acertos/gabarito.length)*100)
-
-  document.getElementById("ui").innerHTML = `
-    <div style="width:100%; text-align:center;">
-      <div>${acertos}/${gabarito.length} (${p}%)</div>
-      <div>${respostas.map(r=>["A","B","C","D"][r]||"-").join(" ")}</div>
-      <div>${gabarito.join(" ")}</div>
-      <br>
-      <button onclick="resetar()">Nova leitura</button>
-    </div>
-  `
+  alert("Respostas: "+window.respostas)
 }
-
-function lerOMR(TL,TR,BL,BR){
-
-  let q = parseInt(dadosQR.Q)
-  let respostas = []
-
-  let altura = Math.hypot(BL.x - TL.x, BL.y - TL.y)
-  let raio = altura / q * 0.22
-
-  for(let i=0;i<q;i++){
-
-    let marcadas = []
-
-    for(let c=0;c<4;c++){
-
-      let px = (c + 0.5)/4
-      let py = (i + 0.5)/q
-
-      let p = pontoNaArea(px,py,TL,TR,BL,BR)
-
-      let soma = 0
-
-      for(let dx=-raio;dx<=raio;dx++){
-      for(let dy=-raio;dy<=raio;dy++){
-
-        let x = Math.floor(p.x + dx)
-        let y = Math.floor(p.y + dy)
-
-        if(x<0||y<0||x>=canvas.width||y>=canvas.height) continue
-
-        let val = ctx.getImageData(x,y,1,1).data[0]
-
-        if(val < 70) soma++
-      }}
-
-      if(soma > raio*raio*0.5){
-        marcadas.push(c)
-      }
-    }
-
-    if(marcadas.length === 1){
-      respostas.push(["A","B","C","D"][marcadas[0]])
-    }else{
-      respostas.push("-")
-    }
-  }
-
-  return respostas
-}
-function pontoNaArea(px,py,TL,TR,BL,BR){
-
-  let xTop=TL.x+(TR.x-TL.x)*px
-  let yTop=TL.y+(TR.y-TL.y)*px
-
-  let xBot=BL.x+(BR.x-BL.x)*px
-  let yBot=BL.y+(BR.y-BL.y)*px
-
-  return {
-    x:xTop+(xBot-xTop)*py,
-    y:yTop+(yBot-yTop)*py
-  }
-}
-
-/* ================= RESET ================= */
 
 function resetar(){
   capturado=false
   modo="QR"
   dadosQR=null
-  framesOK=0
   document.getElementById("ui").innerHTML=""
 }
-function processarOMR(TL,TR,BL,BR){
 
-  let linhas = parseInt(dadosQR.Q)
-  let colunas = 4
-
-  let respostas = []
-
-  // 🔥 usa frame congelado (igual lab)
-  let frame = frameCapturado
-  let data = frame.data
-
-  // 🔥 escala dinâmica do raio
-  let altura = Math.hypot(BL.x - TL.x, BL.y - TL.y)
-  let alturaUtil = altura * (base - topo)
-  let dy = alturaUtil / linhas
-
-  let raio = dy * 0.28
-  let raioVisual = raio * 2
-
-  function pontoNaArea(u, v){
-    return {
-      x: (1-u)*(1-v)*TL.x + u*(1-v)*TR.x + (1-u)*v*BL.x + u*v*BR.x,
-      y: (1-u)*(1-v)*TL.y + u*(1-v)*TR.y + (1-u)*v*BL.y + u*v*BR.y
-    }
-  }
-
-ctx.fillStyle = "yellow"
-
-for(let i=0;i<linhas;i++){
-  for(let j=0;j<colunas;j++){
-
-    let u = esquerda + (j+0.5)/colunas*(direita-esquerda)
-    let v = topo + (i+0.5)/linhas*(base-topo)
-
-    let p = pontoNaArea(u, v)
-
-    ctx.beginPath()
-    ctx.arc(p.x, p.y, 5, 0, Math.PI*2)
-    ctx.fill()
-  }
-}
-
-  
-  /* =========================
-  LEITURA DAS RESPOSTAS
-  ========================= */
-
-  for(let i=0;i<linhas;i++){
-
-    let linhaResposta = -1
-    let maiorArea = 0
-
-    for(let j=0;j<colunas;j++){
-
-      let u = esquerda + (j+0.5)/colunas*(direita-esquerda)
-      let v = topo + (i+0.5)/linhas*(base-topo)
-
-      let p = pontoNaArea(u, v)
-
-      let soma = 0
-
-      for(let dx=-raio;dx<=raio;dx++){
-      for(let dy2=-raio;dy2<=raio;dy2++){
-
-        let x = Math.floor(p.x + dx)
-        let y = Math.floor(p.y + dy2)
-
-        if(x<0 || y<0 || x>=canvas.width || y>=canvas.height) continue
-
-        let idx = (y*canvas.width + x)*4
-
-        if(data[idx] === 0){
-          soma++
-        }
-
-      }}
-
-      if(soma > maiorArea){
-        maiorArea = soma
-        linhaResposta = j
-      }
-
-    }
-
-    respostas.push(linhaResposta)
-  }
-
-  /* =========================
-  OVERLAY VISUAL (IGUAL LAB)
-  ========================= */
-
-  ctx.putImageData(frameCapturado, 0, 0)
-
-  ctx.strokeStyle = "lime"
-  ctx.lineWidth = 3
-
-  for(let i=0;i<linhas;i++){
-
-    let j = respostas[i]
-    if(j < 0) continue
-
-    let u = esquerda + (j+0.5)/colunas*(direita-esquerda)
-    let v = topo + (i+0.5)/linhas*(base-topo)
-
-    let p = pontoNaArea(u, v)
-
-    ctx.beginPath()
-    ctx.arc(p.x, p.y, raioVisual, 0, Math.PI*2)
-    ctx.stroke()
-
-    ctx.fillStyle = "rgba(0,255,0,0.3)"
-    ctx.fill()
-  }
-
-  // 🔥 salva para usar no confirmar
-  window.respostasDetectadas = respostas
-}
-
-  
-requestAnimationFrame(loop)
 </script>
+
 </body>
 </html>

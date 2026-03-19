@@ -45,7 +45,7 @@ button{
 
 <body>
 
-<h2>Scanner Híbrido (QR + Detecção)-</h2>
+<h2>Scanner Híbrido (QR + Detecção)---</h2>
 
 <video id="video" autoplay playsinline style="display:none;"></video>
 <canvas id="canvas"></canvas>
@@ -87,7 +87,14 @@ navigator.mediaDevices.getUserMedia({
 })
 .then(stream=>{
   video.srcObject = stream
-  loop()
+  video.onloadedmetadata = () => {
+    video.play()
+    loop()
+  }
+})
+.catch(err=>{
+  document.getElementById("status").innerText =
+    "❌ Erro câmera: " + err.message
 })
 
 /* =========================
@@ -118,8 +125,8 @@ function loop(){
   }
 
   ctx.putImageData(frame,0,0)
-
-  let marcadores = detectarMarcadores(frame)
+  let marcadores = null
+  //let marcadores = detectarMarcadores(frame)
 
   document.getElementById("debug").innerText =
   `Blobs: ${window._blobs || 0} | Candidatos: ${window._candidatos || 0}`

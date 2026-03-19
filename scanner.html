@@ -307,18 +307,20 @@ function validarMarcadores(TL,TR,BL,BR){
 
 function capturarFrame(){
 
-  capturado=true
+  capturado = true
 
-  let {TL,TR,BL,BR}=window.marcadores
+  let {TL,TR,BL,BR} = window.marcadores
 
+  // 🔥 desenha bolhas mantendo proporção
   desenharBolhas(TL,TR,BL,BR)
 
-  window.captura={TL,TR,BL,BR}
+  // 🔥 guarda para confirmar depois
+  window.captura = {TL,TR,BL,BR}
 
-  document.getElementById("ui").innerHTML=`
-    <button onclick="resetar()">Ler novamente</button>
+  // 🔥 mostra botões (mantém layout atual)
+  document.getElementById("ui").innerHTML = `
     <button onclick="confirmar()">Confirmar</button>
-    
+    <button onclick="resetar()">Ler novamente</button>
   `
 }
 
@@ -326,22 +328,25 @@ function capturarFrame(){
 
 function desenharBolhas(TL,TR,BL,BR){
 
-  let q=parseInt(dadosQR.Q)
+  let q = parseInt(dadosQR.Q)
 
-  let altura=Math.hypot(BL.x-TL.x,BL.y-TL.y)
-  let raio=altura/q*0.25
+  // 🔥 escala baseada na altura real
+  let altura = Math.hypot(BL.x - TL.x, BL.y - TL.y)
+
+  let raio = altura / q * 0.22   // ajuste fino aqui
 
   for(let i=0;i<q;i++){
     for(let c=0;c<4;c++){
 
-      let px=(c+0.5)/4
-      let py=(i+0.5)/q
+      let px = (c + 0.5)/4
+      let py = (i + 0.5)/q
 
-      let p=pontoNaArea(px,py,TL,TR,BL,BR)
+      let p = pontoNaArea(px,py,TL,TR,BL,BR)
 
       ctx.beginPath()
-      ctx.arc(p.x,p.y,raio,0,Math.PI*2)
-      ctx.strokeStyle="#00ff88"
+      ctx.arc(p.x, p.y, raio, 0, Math.PI*2)
+      ctx.strokeStyle = "#00ff88"
+      ctx.lineWidth = 2
       ctx.stroke()
     }
   }
@@ -351,23 +356,27 @@ function desenharBolhas(TL,TR,BL,BR){
 
 function confirmar(){
 
-  let {TL,TR,BL,BR}=window.captura
+  let {TL,TR,BL,BR} = window.captura
 
-  let respostas=lerOMR(TL,TR,BL,BR)
-  let gabarito=dadosQR.G.split("")
+  let respostas = lerOMR(TL,TR,BL,BR)
+  let gabarito = dadosQR.G.split("")
 
-  let acertos=0
+  let acertos = 0
+
   for(let i=0;i<respostas.length;i++){
-    if(respostas[i]===gabarito[i]) acertos++
+    if(respostas[i] === gabarito[i]){
+      acertos++
+    }
   }
 
-  let p=Math.round((acertos/gabarito.length)*100)
+  let porcentagem = Math.round((acertos / gabarito.length)*100)
 
-  document.getElementById("ui").innerHTML=`
-    <div style="width:100%;text-align:center">
-      <div>${acertos}/${gabarito.length} (${p}%)</div>
-      <div>${respostas.join(" ")}</div>
-      <div>${gabarito.join(" ")}</div>
+  document.getElementById("ui").innerHTML = `
+    <div style="width:100%; text-align:center;">
+      <div>${acertos}/${gabarito.length} (${porcentagem}%)</div>
+      <div style="margin-top:8px;">${respostas.join(" ")}</div>
+      <div style="margin-top:4px;">${gabarito.join(" ")}</div>
+      <br>
       <button onclick="resetar()">Nova leitura</button>
     </div>
   `
@@ -375,48 +384,52 @@ function confirmar(){
 
 function lerOMR(TL,TR,BL,BR){
 
-  let q=parseInt(dadosQR.Q)
-  let respostas=[]
+  let q = parseInt(dadosQR.Q)
+  let respostas = []
 
-  let altura=Math.hypot(BL.x-TL.x,BL.y-TL.y)
-  let raio=altura/q*0.25
+  let altura = Math.hypot(BL.x - TL.x, BL.y - TL.y)
+  let raio = altura / q * 0.22
 
   for(let i=0;i<q;i++){
 
-    let marcadas=[]
+    let marcadas = []
 
     for(let c=0;c<4;c++){
 
-      let px=(c+0.5)/4
-      let py=(i+0.5)/q
+      let px = (c + 0.5)/4
+      let py = (i + 0.5)/q
 
-      let p=pontoNaArea(px,py,TL,TR,BL,BR)
+      let p = pontoNaArea(px,py,TL,TR,BL,BR)
 
-      let soma=0
+      let soma = 0
 
       for(let dx=-raio;dx<=raio;dx++){
       for(let dy=-raio;dy<=raio;dy++){
 
-        let x=Math.floor(p.x+dx)
-        let y=Math.floor(p.y+dy)
+        let x = Math.floor(p.x + dx)
+        let y = Math.floor(p.y + dy)
 
         if(x<0||y<0||x>=canvas.width||y>=canvas.height) continue
 
-        let idx=(y*canvas.width+x)*4
-        if(ctx.getImageData(x,y,1,1).data[0]<70) soma++
+        let val = ctx.getImageData(x,y,1,1).data[0]
 
+        if(val < 70) soma++
       }}
 
-      if(soma>raio*raio*0.5) marcadas.push(c)
+      if(soma > raio*raio*0.5){
+        marcadas.push(c)
+      }
     }
 
-    if(marcadas.length===1) respostas.push(["A","B","C","D"][marcadas[0]])
-    else respostas.push("-")
+    if(marcadas.length === 1){
+      respostas.push(["A","B","C","D"][marcadas[0]])
+    }else{
+      respostas.push("-")
+    }
   }
 
   return respostas
 }
-
 function pontoNaArea(px,py,TL,TR,BL,BR){
 
   let xTop=TL.x+(TR.x-TL.x)*px

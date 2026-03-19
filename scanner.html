@@ -26,11 +26,28 @@ video, canvas{
 
 #ui{
   position:absolute;
-  bottom:20px;   /* 🔥 fixa no rodapé */
+  bottom:20px;
   width:100%;
   display:flex;
-  justify-content:center;
-  gap:15px;
+  justify-content:space-between;
+  padding:0 15px;   /* 🔥 margem lateral */
+  box-sizing:border-box;
+  gap:10px;
+}
+
+#ui button{
+  flex:1;   /* 🔥 ocupa metade da tela */
+  font-size:18px;
+  padding:18px 0;
+  border:none;
+  border-radius:12px;
+  background:#00aa66;
+  color:white;
+  font-weight:bold;
+}
+
+#ui button:last-child{
+  background:#cc3333;
 }
 </style>
 </head>

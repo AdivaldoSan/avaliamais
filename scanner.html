@@ -342,7 +342,8 @@ for(let i=0;i<data.length;i+=4){
 
   data[i] = data[i+1] = data[i+2] = cor
 }
-  
+  // 🔥 ESSA LINHA FALTANDO (CRÍTICA)
+ctx.putImageData(frameCapturado, 0, 0)
 
   // 🔥 agora sim desenha resultado
   processarOMR(TL,TR,BL,BR)
@@ -535,7 +536,7 @@ function processarOMR(TL,TR,BL,BR){
   let alturaUtil = altura * (base - topo)
   let dy = alturaUtil / linhas
 
-  let raio = dy * 0.4
+  let raio = dy * 0.28
   let raioVisual = raio * 2
 
   function pontoNaArea(u, v){
@@ -573,7 +574,7 @@ function processarOMR(TL,TR,BL,BR){
 
         let idx = (y*canvas.width + x)*4
 
-        if(data[idx] < 50){
+        if(data[idx] === 0){
           soma++
         }
 

@@ -330,12 +330,42 @@ function desenharBolhas(TL,TR,BL,BR){
 
   let q = parseInt(dadosQR.Q)
 
-  // 🔥 escala baseada na altura real
   let altura = Math.hypot(BL.x - TL.x, BL.y - TL.y)
-
-  let raio = altura / q * 0.22   // ajuste fino aqui
+  let raio = altura / q * 0.22
 
   for(let i=0;i<q;i++){
+
+    let marcadas = []
+
+    // 🔥 primeiro detecta quais estão marcadas
+    for(let c=0;c<4;c++){
+
+      let px = (c + 0.5)/4
+      let py = (i + 0.5)/q
+
+      let p = pontoNaArea(px,py,TL,TR,BL,BR)
+
+      let soma = 0
+
+      for(let dx=-raio;dx<=raio;dx++){
+      for(let dy=-raio;dy<=raio;dy++){
+
+        let x = Math.floor(p.x + dx)
+        let y = Math.floor(p.y + dy)
+
+        if(x<0||y<0||x>=canvas.width||y>=canvas.height) continue
+
+        let val = ctx.getImageData(x,y,1,1).data[0]
+
+        if(val < 70) soma++
+      }}
+
+      if(soma > raio*raio*0.5){
+        marcadas.push(c)
+      }
+    }
+
+    // 🔥 agora desenha
     for(let c=0;c<4;c++){
 
       let px = (c + 0.5)/4
@@ -345,9 +375,17 @@ function desenharBolhas(TL,TR,BL,BR){
 
       ctx.beginPath()
       ctx.arc(p.x, p.y, raio, 0, Math.PI*2)
-      ctx.strokeStyle = "#00ff88"
-      ctx.lineWidth = 2
-      ctx.stroke()
+
+      if(marcadas.includes(c)){
+        // 🔥 preenchido = marcado
+        ctx.fillStyle = "#00ff88"
+        ctx.fill()
+      }else{
+        // 🔲 não marcado
+        ctx.strokeStyle = "#00ff88"
+        ctx.lineWidth = 2
+        ctx.stroke()
+      }
     }
   }
 }

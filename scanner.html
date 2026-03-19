@@ -166,18 +166,21 @@ function desenharOverlayOMR(){
 
   let q = parseInt(dadosQR.Q)
 
-  // 🔥 largura fixa proporcional à tela
+  // 🔥 MODELO REAL (medido no gerador)
+  let alturaReal = 150 + (35 * q)
+  let larguraReal = 250
+
+  let proporcao = alturaReal / larguraReal
+
+  // 🔥 largura base na tela
   let boxW = w * 0.6
+  let boxH = boxW * proporcao
 
-  // 🔥 altura baseada no número de questões
-  // referência: 10 questões = proporção base
-  let baseQ = 10
-  let escala = q / baseQ
-
-  let boxH = h * 0.5 * escala
-
-  // 🔥 limites (não deixar sair da tela)
-  boxH = Math.min(boxH, h * 0.85)
+  // 🔥 ajuste para não estourar tela
+  if(boxH > h * 0.9){
+    boxH = h * 0.9
+    boxW = boxH / proporcao
+  }
 
   let x = (w - boxW)/2
   let y = (h - boxH)/2
@@ -185,7 +188,17 @@ function desenharOverlayOMR(){
   // recorte (furo)
   ctx.clearRect(x,y,boxW,boxH)
 
-  // 🔥 salvar área estimada (IMPORTANTE PRO PRÓXIMO PASSO)
+  // 🔥 borda visual (ajuda no alinhamento)
+  ctx.strokeStyle = "#00ff88"
+  ctx.lineWidth = 3
+  ctx.strokeRect(x,y,boxW,boxH)
+
+  // 🔥 debug visual (remover depois)
+  ctx.fillStyle = "white"
+  ctx.font = "28px Arial"
+  ctx.fillText("Q="+q, 30, 50)
+
+  // salva área estimada
   window.areaOMR = {
     x, y, w: boxW, h: boxH
   }

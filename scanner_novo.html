@@ -287,48 +287,57 @@ function processarImagem(frame, marcadores){
   // =========================
   marcadores.sort((a,b)=>a.y-b.y)
   
-  let top = marcadores.slice(0,2).sort((a,b)=>a.x-b.x)
-  let bottom = marcadores.slice(2,4).sort((a,b)=>a.x-b.x)
-  
-  let TL = top[0]
-  let TR = top[1]
-  let BL = bottom[0]
-  let BR = bottom[1]
- // =========================
-  // QR (ORDEM CORRETA!)
-  // =========================
-  let TOTAL_LINHAS = qr.questoes
-  let TOTAL_COLUNAS = qr.colunas
-  let props = calibrarProporcoes(frame, TL, TR, BL, BR, TOTAL_LINHAS, TOTAL_COLUNAS)
-  
-  let topo = props.topo
-  let base = props.base
-  let esquerda = props.esquerda
-  let direita = props.direita
+   // =========================
+// ORGANIZAR MARCADORES
+// =========================
+marcadores.sort((a,b)=>a.y-b.y)
 
- 
+let top = marcadores.slice(0,2).sort((a,b)=>a.x-b.x)
+let bottom = marcadores.slice(2,4).sort((a,b)=>a.x-b.x)
 
-  // =========================
-  // AUTO AJUSTE
-  // =========================
-  let largura = maxX - minX
-  let altura  = maxY - minY
+let TL = top[0]
+let TR = top[1]
+let BL = bottom[0]
+let BR = bottom[1]
 
-  let margemX = largura * 0.18
-  let margemY = altura  * 0.25
+// =========================
+// CANVAS TEMPORÁRIO
+// =========================
+let tempCanvas = document.createElement("canvas")
+tempCanvas.width = canvas.width
+tempCanvas.height = canvas.height
 
-  let passoX = (largura - 2*margemX) / TOTAL_COLUNAS
-  let passoY = (altura  - 2*margemY) / TOTAL_LINHAS
+let tctx = tempCanvas.getContext("2d")
+tctx.putImageData(frame,0,0)
 
-  let raio = Math.min(passoX, passoY) * 0.32
-  raio = Math.max(8, Math.min(raio, 18))
+// =========================
+// APLICAR WARP
+// =========================
+let warp = warpImagem(tempCanvas, TL, TR, BL, BR)
 
-  let densThreshold = 0.22
+// desenha resultado na tela
+ctx.drawImage(warp,0,0)
 
-  // =========================
-  // LEITURA
-  // =========================
-  let respostas = []
+// novos dados
+let warpCtx = warp.getContext("2d")
+let imageData = warpCtx.getImageData(0,0,warp.width,warp.height)
+
+let data = imageData.data
+let w = warp.width
+let h = warp.height
+
+// =========================
+// QR
+// =========================
+let TOTAL_LINHAS = qr.questoes
+let TOTAL_COLUNAS = qr.colunas
+
+// =========================
+// RAIO FIXO (AGORA ESTÁVEL)
+// =========================
+let raio = Math.min(w/TOTAL_COLUNAS, h/TOTAL_LINHAS) * 0.25
+
+let densThreshold = 0.20
 
   for(let i=0;i<TOTAL_LINHAS;i++){
 
@@ -341,8 +350,8 @@ function processarImagem(frame, marcadores){
 
       let p = interpolar(u, v, TL, TR, BL, BR)
       
-      let x = p.x
-      let y = p.y
+     let x = (j + 0.5) * (w / TOTAL_COLUNAS)
+      let y = (i + 0.5) * (h / TOTAL_LINHAS)
 
       let soma = 0
       let cont = 0
@@ -505,6 +514,62 @@ function calibrarProporcoes(frame, TL, TR, BL, BR, TOTAL_LINHAS, TOTAL_COLUNAS){
   }
 }  
 
+function warpImagem(srcCanvas, TL, TR, BL, BR, W=800, H=1200){
+
+  let dstCanvas = document.createElement("canvas")
+  dstCanvas.width = W
+  dstCanvas.height = H
+  let dctx = dstCanvas.getContext("2d")
+
+  // transformação aproximada (bilinear)
+  let img = srcCanvas
+
+  let src = srcCanvas.getContext("2d").getImageData(0,0,srcCanvas.width,srcCanvas.height)
+  let dst = dctx.createImageData(W,H)
+
+  function interp(u,v){
+    return {
+      x:
+        (1-u)*(1-v)*TL.x +
+        u*(1-v)*TR.x +
+        (1-u)*v*BL.x +
+        u*v*BR.x,
+      y:
+        (1-u)*(1-v)*TL.y +
+        u*(1-v)*TR.y +
+        (1-u)*v*BL.y +
+        u*v*BR.y
+    }
+  }
+
+  for(let y=0;y<H;y++){
+    for(let x=0;x<W;x++){
+
+      let u = x / W
+      let v = y / H
+
+      let p = interp(u,v)
+
+      let sx = Math.floor(p.x)
+      let sy = Math.floor(p.y)
+
+      if(sx<0||sy<0||sx>=srcCanvas.width||sy>=srcCanvas.height) continue
+
+      let sidx = (sy*srcCanvas.width + sx)*4
+      let didx = (y*W + x)*4
+
+      dst.data[didx]   = src.data[sidx]
+      dst.data[didx+1] = src.data[sidx+1]
+      dst.data[didx+2] = src.data[sidx+2]
+      dst.data[didx+3] = 255
+    }
+  }
+
+  dctx.putImageData(dst,0,0)
+
+  return dstCanvas
+}
+  
 </script>
 
 </body>

@@ -45,7 +45,7 @@ button{
 
 <body>
 
-<h2>Scanner Híbrido (QR + Detecção)---</h2>
+<h2>Scanner Híbrido (QR + Detecção)-</h2>
 
 <video id="video" autoplay playsinline style="display:none;"></video>
 <canvas id="canvas"></canvas>
@@ -294,7 +294,11 @@ function processarImagem(frame, marcadores){
   let TR = top[1]
   let BL = bottom[0]
   let BR = bottom[1]
-
+ // =========================
+  // QR (ORDEM CORRETA!)
+  // =========================
+  let TOTAL_LINHAS = qr.questoes
+  let TOTAL_COLUNAS = qr.colunas
   let props = calibrarProporcoes(frame, TL, TR, BL, BR, TOTAL_LINHAS, TOTAL_COLUNAS)
   
   let topo = props.topo
@@ -302,11 +306,7 @@ function processarImagem(frame, marcadores){
   let esquerda = props.esquerda
   let direita = props.direita
 
-  // =========================
-  // QR (ORDEM CORRETA!)
-  // =========================
-  let TOTAL_LINHAS = qr.questoes
-  let TOTAL_COLUNAS = qr.colunas
+ 
 
   // =========================
   // AUTO AJUSTE
@@ -442,8 +442,8 @@ function calibrarProporcoes(frame, TL, TR, BL, BR, TOTAL_LINHAS, TOTAL_COLUNAS){
     let p = interp(u,v)
     let soma=0, cont=0
 
-    for(let dx=-raio;dx<=raio;dx++){
-    for(let dy=-raio;dy<=raio;dy++){
+     for(let dx=-raio;dx<=raio;dx+=2){
+     for(let dy=-raio;dy<=raio;dy+=2){
 
       if(dx*dx+dy*dy > raio*raio) continue
 
@@ -465,7 +465,7 @@ function calibrarProporcoes(frame, TL, TR, BL, BR, TOTAL_LINHAS, TOTAL_COLUNAS){
   let topo = 0.05
   let base = 0.95
 
-  for(let v=0.05; v<0.5; v+=0.01){
+  for(let v=0.05; v<0.5; v+=0.03){
     if(densidade(0.5,v) > 0.02){
       topo = v - 0.02
       break
@@ -483,7 +483,7 @@ function calibrarProporcoes(frame, TL, TR, BL, BR, TOTAL_LINHAS, TOTAL_COLUNAS){
   let esquerda = 0.05
   let direita = 0.95
 
-  for(let u=0.05; u<0.5; u+=0.01){
+  for(let u=0.1; u<0.5; u+=0.03){
     if(densidade(u,0.5) > 0.02){
       esquerda = u - 0.02
       break

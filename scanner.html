@@ -546,6 +546,23 @@ function processarOMR(TL,TR,BL,BR){
     }
   }
 
+ctx.fillStyle = "yellow"
+
+for(let i=0;i<linhas;i++){
+  for(let j=0;j<colunas;j++){
+
+    let u = esquerda + (j+0.5)/colunas*(direita-esquerda)
+    let v = topo + (i+0.5)/linhas*(base-topo)
+
+    let p = pontoNaArea(u, v)
+
+    ctx.beginPath()
+    ctx.arc(p.x, p.y, 5, 0, Math.PI*2)
+    ctx.fill()
+  }
+}
+
+  
   /* =========================
   LEITURA DAS RESPOSTAS
   ========================= */

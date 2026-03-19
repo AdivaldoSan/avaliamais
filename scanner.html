@@ -332,6 +332,17 @@ function capturarFrame(){
 
   // 🔥 captura sem overlay
   frameCapturado = ctx.getImageData(0,0,canvas.width,canvas.height)
+  // 🔥 aplicar threshold no frame congelado
+let data = frameCapturado.data
+
+for(let i=0;i<data.length;i+=4){
+
+  let brilho = (data[i] + data[i+1] + data[i+2]) / 3
+  let cor = brilho < 50 ? 0 : 255
+
+  data[i] = data[i+1] = data[i+2] = cor
+}
+  
 
   // 🔥 agora sim desenha resultado
   processarOMR(TL,TR,BL,BR)

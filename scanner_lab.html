@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Scanner Gabarito</title>
+<title>Scanner Profissional</title>
 
 <style>
 body{
@@ -12,303 +12,155 @@ body{
   font-family:Arial;
 }
 
-canvas{
-  width:900px;
-  max-width:95vw;
+video, canvas{
+  width:95vw;
+  max-width:500px;
   margin-top:10px;
-  background:#000;
+}
+
+button{
+  padding:10px;
+  margin:5px;
+  font-size:16px;
 }
 </style>
 </head>
 
 <body>
 
-<h2>Scanner de Gabarito.</h2>
+<h2>Scanner de Gabarito</h2>
 
-<input type="file" accept="image/*" onchange="carregarImagem(event)">
-<br><br>
-<button onclick="processar()">Processar</button>
-
+<video id="video" autoplay></video>
 <canvas id="canvas"></canvas>
-  
-<div id="resultado" style="margin-top:10px;font-size:20px;"></div>  
+
+<div id="status">🔴 Aguardando...</div>
+
+<div id="botoes" style="display:none;">
+  <button onclick="confirmar()">✔ Confirmar</button>
+  <button onclick="refazer()">❌ Refazer</button>
+</div>
 
 <script>
 
-let img = null
+let video = document.getElementById("video")
+let canvas = document.getElementById("canvas")
+let ctx = canvas.getContext("2d")
 
-const canvas = document.getElementById("canvas")
-const ctx = canvas.getContext("2d", { willReadFrequently: true })
+let estado = "AO_VIVO" // AO_VIVO | CAPTURADO
 
-/* =========================
-CONFIG
-========================= */
-
-const THRESHOLD = 50
-
-let linhas = 10
-const colunas = 4
-
-// 🔥 AJUSTES FINOS (IMPORTANTE)
-const offsetTopo = 0.18
-const alturaUtil = 0.70
-
-/* ========================= */
-
-function carregarImagem(e){
-
-  const file = e.target.files[0]
-  if(!file) return
-
-  img = new Image()
-
-  img.onload = () => {
-    canvas.width = img.width
-    canvas.height = img.height
-    ctx.drawImage(img,0,0)
-  }
-
-  img.src = URL.createObjectURL(file)
-}
-
-/* ========================= */
-
-function processar(){
-
-if(!img) return
-
-ctx.drawImage(img,0,0)
-
-let frame = ctx.getImageData(0,0,canvas.width,canvas.height)
-let data = frame.data
+let ultimoFrame = null
 
 /* =========================
-THRESHOLD
+INICIAR CAMERA
 ========================= */
 
-for(let i=0;i<data.length;i+=4){
-
-  let brilho = (data[i]+data[i+1]+data[i+2])/3
-  let cor = brilho < THRESHOLD ? 0 : 255
-
-  data[i]=data[i+1]=data[i+2]=cor
-}
-
-ctx.putImageData(frame,0,0)
+navigator.mediaDevices.getUserMedia({video:true})
+.then(stream=>{
+  video.srcObject = stream
+  loop()
+})
 
 /* =========================
-FLOOD FILL
+LOOP PRINCIPAL
 ========================= */
 
-let w = canvas.width
-let h = canvas.height
+let framesEstaveis = 0
+let ultimoCentro = null
 
-let visitado = new Uint8Array(w*h)
-let blobs = []
+function loop(){
 
-function floodFill(x,y){
+  if(estado === "AO_VIVO"){
 
-  let stack = [[x,y]]
+    canvas.width = video.videoWidth
+    canvas.height = video.videoHeight
 
-  let minX=x, maxX=x
-  let minY=y, maxY=y
-  let area=0
+    ctx.drawImage(video,0,0)
 
-  while(stack.length){
+    let frame = ctx.getImageData(0,0,canvas.width,canvas.height)
 
-    let [px,py] = stack.pop()
-    let idx = py*w + px
+    let marcadores = detectarMarcadores(frame)
 
-    if(visitado[idx]) continue
-    visitado[idx]=1
+    if(marcadores){
 
-    let i = idx*4
-    if(frame.data[i] !== 0) continue
+      let centro = centroMedio(marcadores)
 
-    area++
+      if(ultimoCentro){
+        let dist = Math.hypot(
+          centro.x - ultimoCentro.x,
+          centro.y - ultimoCentro.y
+        )
 
-    minX = Math.min(minX, px)
-    maxX = Math.max(maxX, px)
-    minY = Math.min(minY, py)
-    maxY = Math.max(maxY, py)
-
-    for(let dx=-1;dx<=1;dx++){
-    for(let dy=-1;dy<=1;dy++){
-
-      let nx=px+dx
-      let ny=py+dy
-
-      if(nx>=0 && ny>=0 && nx<w && ny<h){
-        stack.push([nx,ny])
+        if(dist < 2){
+          framesEstaveis++
+        }else{
+          framesEstaveis = 0
+        }
       }
 
-    }}
-  }
+      ultimoCentro = centro
 
-  return {area,minX,maxX,minY,maxY}
-}
-
-/* ========================= */
-
-for(let y=0;y<h;y+=2){
-for(let x=0;x<w;x+=2){
-
-  let idx = y*w+x
-  if(visitado[idx]) continue
-
-  let i = idx*4
-
-  if(frame.data[i]===0){
-    let blob = floodFill(x,y)
-    if(blob.area > 200) blobs.push(blob)
-  }
-
-}}
-
-/* =========================
-MARCADORES
-========================= */
-
-let maiores = blobs
-.sort((a,b)=>b.area-a.area)
-.slice(0,4)
-
-if(maiores.length < 4){
-  alert("Marcadores não detectados")
-  return
-}
-
-let centros = maiores.map(b=>({
-  x:(b.minX+b.maxX)/2,
-  y:(b.minY+b.maxY)/2
-}))
-
-centros.sort((a,b)=>a.y-b.y)
-
-let top = centros.slice(0,2)
-let bottom = centros.slice(2,4)
-
-top.sort((a,b)=>a.x-b.x)
-bottom.sort((a,b)=>a.x-b.x)
-
-let TL = top[0]
-let TR = top[1]
-let BL = bottom[0]
-let BR = bottom[1]
-
-/* =========================
-LEITURA HÍBRIDA (CORRIGIDA)
-========================= */
-
-let respostas = []
-
-for(let i=0;i<linhas;i++){
-
- let areas = []
-
-  // 🔥 NOVO t (corrigido)
-  let t = offsetTopo + ((i + 0.5) / linhas) * alturaUtil
-
-  let pontoEsq = {
-    x: TL.x + (BL.x - TL.x) * t,
-    y: TL.y + (BL.y - TL.y) * t
-  }
-
-  let pontoDir = {
-    x: TR.x + (BR.x - TR.x) * t,
-    y: TR.y + (BR.y - TR.y) * t
-  }
-
-  for(let j=0;j<colunas;j++){
-
-    let u = (j + 0.5) / colunas
-
-    let px = pontoEsq.x + (pontoDir.x - pontoEsq.x) * u
-    let py = pontoEsq.y + (pontoDir.y - pontoEsq.y) * u
-
-    let raio = 18
-    let soma = 0
-
-    for(let dx=-raio;dx<=raio;dx++){
-    for(let dy=-raio;dy<=raio;dy++){
-
-      let x = Math.floor(px + dx)
-      let y = Math.floor(py + dy)
-
-      if(x<0 || y<0 || x>=canvas.width || y>=canvas.height) continue
-
-      let idx = (y*canvas.width + x)*4
-
-      if(frame.data[idx] === 0){
-        soma++
+      if(framesEstaveis > 8){
+        capturar(frame)
+        return
       }
 
-    }}
+      document.getElementById("status").innerText = "🟡 Estabilizando..."
 
-    areas.push(soma)
+    }else{
+      document.getElementById("status").innerText = "🔴 Ajuste o enquadramento"
+    }
   }
 
-  // 🔥 LIMIAR (evita falso positivo)
-let max = Math.max(...areas)
-let segundo = areas.sort((a,b)=>b-a)[1]
-
-// diferença relativa
-if(max > segundo * 1.5){
-  melhor = areas.indexOf(max)
-}else{
-  melhor = -1
-}
-
-  respostas.push(melhor)
+  requestAnimationFrame(loop)
 }
 
 /* =========================
-OVERLAY
+CAPTURA
 ========================= */
 
-ctx.strokeStyle = "lime"
-ctx.lineWidth = 3
+function capturar(frame){
 
-for(let i=0;i<linhas;i++){
+  estado = "CAPTURADO"
 
-  let j = respostas[i]
-  if(j < 0) continue
+  ultimoFrame = frame
 
-  let t = offsetTopo + ((i + 0.5) / linhas) * alturaUtil
+  // processa usando seu algoritmo
+  processarImagem(frame)
 
-  let pontoEsq = {
-    x: TL.x + (BL.x - TL.x) * t,
-    y: TL.y + (BL.y - TL.y) * t
-  }
-
-  let pontoDir = {
-    x: TR.x + (BR.x - TR.x) * t,
-    y: TR.y + (BR.y - TR.y) * t
-  }
-
-  let u = (j + 0.5) / colunas
-
-  let px = pontoEsq.x + (pontoDir.x - pontoEsq.x) * u
-  let py = pontoEsq.y + (pontoDir.y - pontoEsq.y) * u
-
-  ctx.beginPath()
-  ctx.arc(px, py, 28, 0, Math.PI*2)
-  ctx.stroke()
-  ctx.fillStyle = "rgba(0,255,0,0.3)"
-  ctx.fill()
+  document.getElementById("status").innerText = "🟢 Conferir leitura"
+  document.getElementById("botoes").style.display = "block"
 }
 
 /* =========================
-RESULTADO
+CONFIRMAR / REFAZER
 ========================= */
 
-let letras = ["A","B","C","D"]
+function confirmar(){
+  alert("Leitura confirmada")
+  // aqui você salva / envia / integra QR
+}
 
-let final = respostas.map(r => letras[r] || "-")
+function refazer(){
+  estado = "AO_VIVO"
+  framesEstaveis = 0
+  document.getElementById("botoes").style.display = "none"
+}
 
-document.getElementById("resultado").innerText =
-"Gabarito: " + final.join(" ")
+/* =========================
+FUNÇÕES BASE (SIMPLIFICADAS)
+========================= */
 
+function detectarMarcadores(frame){
+  // você reaproveita seu floodFill aqui
+  return true // placeholder
+}
+
+function centroMedio(marcadores){
+  return {x:200,y:200}
+}
+
+function processarImagem(frame){
+  // cola aqui seu algoritmo completo (o que já fizemos)
 }
 
 </script>

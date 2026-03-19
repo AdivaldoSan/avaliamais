@@ -367,62 +367,74 @@ let BR = bottom[1]
 
 
 
-
 function warpImagem(srcCanvas, TL, TR, BL, BR, W=800, H=1200){
 
   let dest = document.createElement("canvas")
   dest.width = W
   dest.height = H
 
-  let dctx = dest.getContext("2d")
+  let ctx = dest.getContext("2d")
 
-  let srcCtx = srcCanvas.getContext("2d")
-  let srcData = srcCtx.getImageData(0,0,srcCanvas.width,srcCanvas.height)
+  // mapeamento por triângulos (mais estável que bilinear)
 
-  let dstData = dctx.createImageData(W,H)
+  function drawTriangle(sx1,sy1, sx2,sy2, sx3,sy3,
+                        dx1,dy1, dx2,dy2, dx3,dy3){
 
-  let s = srcData.data
-  let d = dstData.data
+    ctx.save()
 
-  for(let y=0;y<H;y++){
-    for(let x=0;x<W;x++){
+    ctx.beginPath()
+    ctx.moveTo(dx1,dy1)
+    ctx.lineTo(dx2,dy2)
+    ctx.lineTo(dx3,dy3)
+    ctx.closePath()
+    ctx.clip()
 
-      let u = x / W
-      let v = y / H
+    let denom = (sx1*(sy2 - sy3) + sx2*(sy3 - sy1) + sx3*(sy1 - sy2))
 
-      // interpolação bilinear dos cantos
-      let sx =
-        TL.x*(1-u)*(1-v) +
-        TR.x*(u)*(1-v) +
-        BL.x*(1-u)*(v) +
-        BR.x*(u)*(v)
+    let a = (dx1*(sy2 - sy3) + dx2*(sy3 - sy1) + dx3*(sy1 - sy2)) / denom
+    let b = (dx1*(sx3 - sx2) + dx2*(sx1 - sx3) + dx3*(sx2 - sx1)) / denom
+    let c = (dx1*(sx2*sy3 - sx3*sy2) +
+             dx2*(sx3*sy1 - sx1*sy3) +
+             dx3*(sx1*sy2 - sx2*sy1)) / denom
 
-      let sy =
-        TL.y*(1-u)*(1-v) +
-        TR.y*(u)*(1-v) +
-        BL.y*(1-u)*(v) +
-        BR.y*(u)*(v)
+    let d = (dy1*(sy2 - sy3) + dy2*(sy3 - sy1) + dy3*(sy1 - sy2)) / denom
+    let e = (dy1*(sx3 - sx2) + dy2*(sx1 - sx3) + dy3*(sx2 - sx1)) / denom
+    let f = (dy1*(sx2*sy3 - sx3*sy2) +
+             dy2*(sx3*sy1 - sx1*sy3) +
+             dy3*(sx1*sy2 - sx2*sy1)) / denom
 
-      let px = Math.floor(sx)
-      let py = Math.floor(sy)
+    ctx.transform(a, d, b, e, c, f)
 
-      if(px>=0 && py>=0 && px<srcCanvas.width && py<srcCanvas.height){
+    ctx.drawImage(srcCanvas,0,0)
 
-        let si = (py*srcCanvas.width + px)*4
-        let di = (y*W + x)*4
-
-        d[di]   = s[si]
-        d[di+1] = s[si+1]
-        d[di+2] = s[si+2]
-        d[di+3] = 255
-      }
-    }
+    ctx.restore()
   }
 
-  dctx.putImageData(dstData,0,0)
+  // TRIÂNGULO 1
+  drawTriangle(
+    TL.x,TL.y,
+    TR.x,TR.y,
+    BL.x,BL.y,
+
+    0,0,
+    W,0,
+    0,H
+  )
+
+  // TRIÂNGULO 2
+  drawTriangle(
+    BR.x,BR.y,
+    TR.x,TR.y,
+    BL.x,BL.y,
+
+    W,H,
+    W,0,
+    0,H
+  )
 
   return dest
 }
+
 
 function confirmar(){
   alert("Leitura confirmada")

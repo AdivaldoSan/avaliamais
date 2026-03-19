@@ -233,8 +233,14 @@ function detectarMarcadores(frame){
     return {area,minX,maxX,minY,maxY}
   }
 
-  for(let y=a.y;y<a.y+a.h;y+=3){
-  for(let x=a.x;x<a.x+a.w;x+=3){
+let xIni = Math.floor(a.x)
+let xFim = Math.floor(a.x + a.w)
+
+let yIni = Math.floor(a.y)
+let yFim = Math.floor(a.y + a.h)
+
+for(let y = yIni; y < yFim; y += 3){
+for(let x = xIni; x < xFim; x += 3){
 
     let idx=y*w+x
     if(visitado[idx]) continue

@@ -12,10 +12,11 @@ body{
   font-family:Arial;
 }
 
-video, canvas{
+canvas{
   width:95vw;
   max-width:500px;
   margin-top:10px;
+  background:#000;
 }
 
 button{
@@ -30,10 +31,10 @@ button{
 
 <h2>Scanner de Gabarito</h2>
 
-<video id="video" autoplay></video>
+<video id="video" autoplay playsinline style="display:none;"></video>
 <canvas id="canvas"></canvas>
 
-<div id="status">🔴 Aguardando...</div>
+<div id="status">🔴 Iniciando câmera...</div>
 
 <div id="botoes" style="display:none;">
   <button onclick="confirmar()">✔ Confirmar</button>
@@ -46,12 +47,12 @@ let video = document.getElementById("video")
 let canvas = document.getElementById("canvas")
 let ctx = canvas.getContext("2d")
 
-let estado = "AO_VIVO" // AO_VIVO | CAPTURADO
-
-let ultimoFrame = null
+let rodando = true
+let framesEstaveis = 0
+let ultimoCentro = null
 
 /* =========================
-INICIAR CAMERA
+INICIAR CAMERA (TRASEIRA)
 ========================= */
 
 navigator.mediaDevices.getUserMedia({
@@ -68,10 +69,9 @@ navigator.mediaDevices.getUserMedia({
 LOOP PRINCIPAL
 ========================= */
 
-let framesEstaveis = 0
-let ultimoCentro = null
-
 function loop(){
+
+  if(!rodando) return
 
   if(video.videoWidth === 0){
     requestAnimationFrame(loop)
@@ -81,7 +81,6 @@ function loop(){
   canvas.width = video.videoWidth
   canvas.height = video.videoHeight
 
-  // desenha frame da câmera
   ctx.drawImage(video,0,0)
 
   let frame = ctx.getImageData(0,0,canvas.width,canvas.height)
@@ -89,89 +88,95 @@ function loop(){
 
   // 🔥 THRESHOLD AO VIVO
   for(let i=0;i<data.length;i+=4){
-
     let brilho = (data[i]+data[i+1]+data[i+2])/3
     let cor = brilho < 50 ? 0 : 255
-
     data[i]=data[i+1]=data[i+2]=cor
   }
 
   ctx.putImageData(frame,0,0)
 
+  let marcadores = detectarMarcadores(frame)
+
+  if(marcadores){
+
+    let centro = centroMedio(marcadores)
+
+    if(ultimoCentro){
+
+      let dist = Math.hypot(
+        centro.x - ultimoCentro.x,
+        centro.y - ultimoCentro.y
+      )
+
+      if(dist < 2){
+        framesEstaveis++
+      }else{
+        framesEstaveis = 0
+      }
+
+    }
+
+    ultimoCentro = centro
+
+    document.getElementById("status").innerText =
+      `🟡 Estabilizando... (${framesEstaveis})`
+
+    if(framesEstaveis > 8){
+      capturar(frame)
+      return
+    }
+
+  }else{
+    document.getElementById("status").innerText =
+      "🔴 Posicione o gabarito"
+  }
+
   requestAnimationFrame(loop)
 }
+
 /* =========================
 CAPTURA
 ========================= */
 
 function capturar(frame){
 
-  estado = "CAPTURADO"
+  rodando = false
 
-  ultimoFrame = frame
+  ctx.putImageData(frame,0,0)
 
-  // processa usando seu algoritmo
   processarImagem(frame)
 
-  document.getElementById("status").innerText = "🟢 Conferir leitura"
+  document.getElementById("status").innerText =
+    "🟢 Conferir leitura"
+
   document.getElementById("botoes").style.display = "block"
 }
 
 /* =========================
-CONFIRMAR / REFAZER
+BOTOES
 ========================= */
 
 function confirmar(){
   alert("Leitura confirmada")
-  // aqui você salva / envia / integra QR
 }
 
 function refazer(){
-  estado = "AO_VIVO"
+  rodando = true
   framesEstaveis = 0
+  ultimoCentro = null
   document.getElementById("botoes").style.display = "none"
+  loop()
 }
 
 /* =========================
-FUNÇÕES BASE (SIMPLIFICADAS)
+DETECÇÃO MARCADORES
 ========================= */
 
 function detectarMarcadores(frame){
-  // você reaproveita seu floodFill aqui
-  return true // placeholder
-}
-
-function centroMedio(centros){
-
-  let x = 0
-  let y = 0
-
-  centros.forEach(c=>{
-    x += c.x
-    y += c.y
-  })
-
-  return {
-    x: x / centros.length,
-    y: y / centros.length
-  }
-}
-
-function processarImagem(frame){
-  // cola aqui seu algoritmo completo (o que já fizemos)
-}
-  function detectarMarcadoresReal(frame){
 
   let data = frame.data
   let w = canvas.width
   let h = canvas.height
-
-  // binariza (igual seu código)
-  for(let i=0;i<data.length;i+=4){
-    let brilho = (data[i]+data[i+1]+data[i+2])/3
-    let cor = brilho < 50 ? 0 : 255
-    data[i]=data[i+1]=data[i+2]=cor
-  }
 
   let visitado = new Uint8Array(w*h)
   let blobs = []
@@ -233,12 +238,40 @@ function processarImagem(frame){
 
   let maiores = blobs.slice(0,4)
 
-  let centros = maiores.map(b=>({
+  return maiores.map(b=>({
     x:(b.minX+b.maxX)/2,
     y:(b.minY+b.maxY)/2
   }))
+}
 
-  return centros
+/* =========================
+CENTRO MÉDIO
+========================= */
+
+function centroMedio(centros){
+
+  let x=0,y=0
+
+  centros.forEach(c=>{
+    x+=c.x
+    y+=c.y
+  })
+
+  return {
+    x:x/centros.length,
+    y:y/centros.length
+  }
+}
+
+/* =========================
+PROCESSAMENTO FINAL
+========================= */
+
+function processarImagem(frame){
+
+  // 👉 aqui você cola seu algoritmo COMPLETO de leitura de bolhas
+  console.log("Processando leitura...")
+
 }
 
 </script>

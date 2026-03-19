@@ -90,16 +90,18 @@ function loop(){
       desenharOverlayQR()
     }
 
-    else if(modo === "OMR"){
+   else if(modo === "OMR"){
 
-      desenharOverlayOMR()
+  if(!capturado){
 
-      if(!capturado){
-        detectarMarcadores(frame)
-      }
-    }
+    desenharOverlayOMR()
+    detectarMarcadores(frame)
+
+  }else{
+    // 🔥 não redesenha overlay após captura
+    // mantém frame + bolhas visíveis
   }
-
+}
   requestAnimationFrame(loop)
 }
 requestAnimationFrame(loop)

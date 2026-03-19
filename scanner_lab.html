@@ -73,51 +73,33 @@ let ultimoCentro = null
 
 function loop(){
 
-  if(estado === "AO_VIVO"){
-
-    canvas.width = video.videoWidth
-    canvas.height = video.videoHeight
-
-    ctx.drawImage(video,0,0)
-
-    let frame = ctx.getImageData(0,0,canvas.width,canvas.height)
-
-    let marcadores = detectarMarcadoresReal(frame)
-
-    if(marcadores){
-
-      let centro = centroMedio(marcadores)
-
-      if(ultimoCentro){
-        let dist = Math.hypot(
-          centro.x - ultimoCentro.x,
-          centro.y - ultimoCentro.y
-        )
-
-        if(dist < 2){
-          framesEstaveis++
-        }else{
-          framesEstaveis = 0
-        }
-      }
-
-      ultimoCentro = centro
-
-      if(framesEstaveis > 8){
-        capturar(frame)
-        return
-      }
-
-      document.getElementById("status").innerText = "🟡 Estabilizando..."
-
-    }else{
-      document.getElementById("status").innerText = "🔴 Ajuste o enquadramento"
-    }
+  if(video.videoWidth === 0){
+    requestAnimationFrame(loop)
+    return
   }
+
+  canvas.width = video.videoWidth
+  canvas.height = video.videoHeight
+
+  // desenha frame da câmera
+  ctx.drawImage(video,0,0)
+
+  let frame = ctx.getImageData(0,0,canvas.width,canvas.height)
+  let data = frame.data
+
+  // 🔥 THRESHOLD AO VIVO
+  for(let i=0;i<data.length;i+=4){
+
+    let brilho = (data[i]+data[i+1]+data[i+2])/3
+    let cor = brilho < 50 ? 0 : 255
+
+    data[i]=data[i+1]=data[i+2]=cor
+  }
+
+  ctx.putImageData(frame,0,0)
 
   requestAnimationFrame(loop)
 }
-
 /* =========================
 CAPTURA
 ========================= */

@@ -304,10 +304,22 @@ function processarImagem(frame, marcadores){
   // ORGANIZAR CANTOS
   // =========================
 
-  let TL = marcadores.reduce((p,c)=> (c.x + c.y < p.x + p.y ? c : p))
-  let BR = marcadores.reduce((p,c)=> (c.x + c.y > p.x + p.y ? c : p))
-  let TR = marcadores.reduce((p,c)=> (c.x - c.y > p.x - p.y ? c : p))
-  let BL = marcadores.reduce((p,c)=> (c.x - c.y < p.x - p.y ? c : p))
+  // ordenar por Y (topo → base)
+marcadores.sort((a,b)=>a.y - b.y)
+
+// dois de cima e dois de baixo
+let top = marcadores.slice(0,2)
+let bottom = marcadores.slice(2,4)
+
+// ordenar cada par por X (esquerda → direita)
+top.sort((a,b)=>a.x - b.x)
+bottom.sort((a,b)=>a.x - b.x)
+
+// agora sim fixo
+let TL = top[0]
+let TR = top[1]
+let BL = bottom[0]
+let BR = bottom[1]
 
   // =========================
   // WARP PADRONIZADO

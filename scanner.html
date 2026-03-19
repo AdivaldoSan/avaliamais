@@ -91,7 +91,7 @@ function loop(){
       desenharOverlayQR()
     }
 
-   else if(modo === "OMR" && dadosQR){
+  else if(modo === "OMR" && dadosQR){
 
   if(!capturado){
 
@@ -100,11 +100,10 @@ function loop(){
 
   } else {
 
-    // 🔥 CONGELAMENTO REAL
+    // 🔥 SOMENTE manter o frame congelado
     ctx.putImageData(frameCapturado, 0, 0)
 
-    let {TL,TR,BL,BR} = window.captura
-    desenharMarcacoes(TL,TR,BL,BR)
+    // ❌ NÃO chama mais nenhuma função aqui
   }
 }
   }

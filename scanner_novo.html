@@ -148,31 +148,72 @@ function detectarMarcadores(frame){
     for(let x=0;x<w;x+=4){
       let idx=y*w+x
       if(visitado[idx]) continue
+
       let i=idx*4
       if(data[i]===0){
         let b=flood(x,y)
-        if(b.area>500) blobs.push(b)
+        if(b.area>800 && b.area<20000){
+          blobs.push(b)
+        }
       }
     }
   }
 
   window._blobs = blobs.length
 
+  // calcular centro
   let candidatos = blobs.map(b=>({
     ...b,
     cx:(b.minX+b.maxX)/2,
     cy:(b.minY+b.maxY)/2
   }))
 
-  candidatos.sort((a,b)=>b.area-a.area)
+  // FILTRO POR REGIÃO DE CANTO (ESSENCIAL)
+  candidatos = candidatos.filter(b=>{
+    let margemX = w*0.2
+    let margemY = h*0.2
 
-  if(candidatos.length < 4) return null
+    return (
+      (b.cx < margemX && b.cy < margemY) || // TL
+      (b.cx > w-margemX && b.cy < margemY) || // TR
+      (b.cx < margemX && b.cy > h-margemY) || // BL
+      (b.cx > w-margemX && b.cy > h-margemY)   // BR
+    )
+  })
 
   window._candidatos = candidatos.length
 
-  return candidatos.slice(0,4)
-}
+  if(candidatos.length !== 4) return null
 
+  // ordenar
+  candidatos.sort((a,b)=>a.cy - b.cy)
+
+  let top = candidatos.slice(0,2)
+  let bottom = candidatos.slice(2,4)
+
+  top.sort((a,b)=>a.cx - b.cx)
+  bottom.sort((a,b)=>a.cx - b.cx)
+
+  let TL = top[0]
+  let TR = top[1]
+  let BL = bottom[0]
+  let BR = bottom[1]
+
+  // VALIDAÇÃO GEOMÉTRICA (CHAVE)
+  let larguraTopo = TR.cx - TL.cx
+  let larguraBase = BR.cx - BL.cx
+  let alturaEsq = BL.cy - TL.cy
+  let alturaDir = BR.cy - TR.cy
+
+  let tolerancia = 0.4
+
+  let larguraOK = Math.abs(larguraTopo - larguraBase)/larguraTopo < tolerancia
+  let alturaOK = Math.abs(alturaEsq - alturaDir)/alturaEsq < tolerancia
+
+  if(!larguraOK || !alturaOK) return null
+
+  return candidatos
+}
 /* PROCESSAMENTO */
 function processarImagem(frame, marcadores){
 

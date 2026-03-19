@@ -433,7 +433,7 @@ function validarMarcadores(TL,TR,BL,BR){
   let cantoBL = {x:a.x, y:a.y+a.h}
   let cantoBR = {x:a.x+a.w, y:a.y+a.h}
 
-  let tol = a.w * 0.12
+  let tol = a.w * 0.20
 
   let ok =
     dist(TL,cantoTL) < tol &&
@@ -451,10 +451,14 @@ function validarMarcadores(TL,TR,BL,BR){
   framesOK = 0
 }
 
+
 // 🔥 só captura se estabilizar
-if(framesOK > 5){
+if(framesOK > 2){
   capturarFrame()
 }
+ctx.fillStyle = "yellow"
+ctx.font = "20px Arial"
+ctx.fillText("OK: " + framesOK, 50, 100)
 }  
 
   function lerOMR(TL,TR,BL,BR){

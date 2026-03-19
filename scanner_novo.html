@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Scanner Híbrido</title>
+
+<style>
+body{
+  background:#111;
+  color:white;
+  text-align:center;
+  font-family:Arial;
+}
+
+canvas{
+  width:125vw;
+  max-width:650px;
+  margin-top:10px;
+  background:#000;
+}
+
+button{
+  padding:15px 25px;
+  margin:10px;
+  font-size:20px;
+  border:none;
+  border-radius:8px;
+}
+
+#confirmar{background:#2ecc71;}
+#refazer{background:#e74c3c;}
+
+#gabarito{
+  margin-top:15px;
+  font-size:18px;
+  color:#00ffcc;
+}
+</style>
+</head>
+
+<body>
+
+<h2>Scanner Híbrido (QR + Detecção)</h2>
+
+<video id="video" autoplay playsinline style="display:none;"></video>
+<canvas id="canvas"></canvas>
+
+<div id="status">🔴 Iniciando...</div>
+
+<div id="botoes" style="display:none;">
+  <button id="confirmar" onclick="confirmar()">✔ Confirmar</button>
+  <button id="refazer" onclick="refazer()">❌ Refazer</button>
+</div>
+
+<div id="gabarito"></div>
+
+<script>
+
+let video = document.getElementById("video")
+let canvas = document.getElementById("canvas")
+let ctx = canvas.getContext("2d")
+
+let rodando = true
+let framesEstaveis = 0
+let ultimoCentro = null
+
+/* =========================
+SIMULAÇÃO QR (SUBSTITUIR DEPOIS)
+========================= */
+let qr = {
+  questoes: 10,
+  colunas: 4
+}
+
+/* =========================
+CAMERA
+========================= */
+navigator.mediaDevices.getUserMedia({
+  video:{ facingMode:{ ideal:"environment" } }
+})
+.then(stream=>{
+  video.srcObject = stream
+  loop()
+})
+
+/* =========================
+LOOP
+========================= */
+function loop(){
+
+  if(!rodando) return
+
+  if(video.videoWidth === 0){
+    requestAnimationFrame(loop)
+    return
+  }
+
+  canvas.width = video.videoWidth
+  canvas.height = video.videoHeight
+
+  ctx.drawImage(video,0,0)
+
+  let frame = ctx.getImageData(0,0,canvas.width,canvas.height)
+  let data = frame.data
+
+  // threshold
+  for(let i=0;i<data.length;i+=4){
+    let brilho = (data[i]+data[i+1]+data[i+2])/3
+    let cor = brilho < 50 ? 0 : 255
+    data[i]=data[i+1]=data[i+2]=cor
+  }
+
+  ctx.putImageData(frame,0,0)
+
+  let marcadores = detectarMarcadores(frame)
+
+  if(marcadores){
+
+    let centro = centroMedio(marcadores)
+
+    if(ultimoCentro){
+      let dist = Math.hypot(
+        centro.x-ultimoCentro.x,
+        centro.y-ultimoCentro.y
+      )
+      framesEstaveis = dist < 2 ? framesEstaveis+1 : 0
+    }
+
+    ultimoCentro = centro
+
+    document.getElementById("status").innerText =
+      `🟡 Estabilizando (${framesEstaveis})`
+
+    if(framesEstaveis > 8){
+      capturar(frame, marcadores)
+      return
+    }
+
+  }else{
+    document.getElementById("status").innerText =
+      "🔴 Posicione o gabarito"
+  }
+
+  requestAnimationFrame(loop)
+}
+
+/* =========================
+CAPTURA
+========================= */
+function capturar(frame, marcadores){
+
+  rodando = false
+
+  ctx.putImageData(frame,0,0)
+
+  processarImagem(frame, marcadores)
+
+  document.getElementById("status").innerText =
+    "🟢 Conferir leitura"
+
+  document.getElementById("botoes").style.display="block"
+}
+
+/* =========================
+REFazer
+========================= */
+function refazer(){
+  rodando = true
+  framesEstaveis = 0
+  ultimoCentro = null
+  document.getElementById("botoes").style.display="none"
+  document.getElementById("gabarito").innerText=""
+  loop()
+}
+
+/* =========================
+DETECTAR MARCADORES
+========================= */
+function detectarMarcadores(frame){
+
+  let data = frame.data
+  let w = canvas.width
+  let h = canvas.height
+
+  let visitado = new Uint8Array(w*h)
+  let blobs = []
+
+  function floodFill(x,y){
+
+    let stack=[[x,y]]
+    let minX=x,maxX=x,minY=y,maxY=y,area=0
+
+    while(stack.length){
+
+      let [px,py]=stack.pop()
+      let idx=py*w+px
+
+      if(visitado[idx]) continue
+      visitado[idx]=1
+
+      let i=idx*4
+      if(data[i]!==0) continue
+
+      area++
+
+      minX=Math.min(minX,px)
+      maxX=Math.max(maxX,px)
+      minY=Math.min(minY,py)
+      maxY=Math.max(maxY,py)
+
+      for(let dx=-1;dx<=1;dx++){
+      for(let dy=-1;dy<=1;dy++){
+        let nx=px+dx
+        let ny=py+dy
+        if(nx>=0&&ny>=0&&nx<w&&ny<h){
+          stack.push([nx,ny])
+        }
+      }}
+    }
+
+    return {area,minX,maxX,minY,maxY}
+  }
+
+  for(let y=0;y<h;y+=4){
+  for(let x=0;x<w;x+=4){
+
+    let idx=y*w+x
+    if(visitado[idx]) continue
+
+    let i=idx*4
+
+    if(data[i]===0){
+      let b=floodFill(x,y)
+      if(b.area>500) blobs.push(b)
+    }
+
+  }}
+
+  blobs.sort((a,b)=>b.area-a.area)
+
+  if(blobs.length < 4) return null
+
+  let maiores = blobs.slice(0,4)
+
+  return maiores.map(b=>({
+    x:(b.minX+b.maxX)/2,
+    y:(b.minY+b.maxY)/2
+  }))
+}
+
+/* =========================
+CENTRO
+========================= */
+function centroMedio(cs){
+  let x=0,y=0
+  cs.forEach(c=>{x+=c.x;y+=c.y})
+  return {x:x/cs.length,y:y/cs.length}
+}
+
+/* =========================
+PROCESSAMENTO HÍBRIDO
+========================= */
+function processarImagem(frame, marcadores){
+
+  let data = frame.data
+  let w = canvas.width
+  let h = canvas.height
+
+  let xs = marcadores.map(m=>m.x)
+  let ys = marcadores.map(m=>m.y)
+
+  let minX = Math.min(...xs)
+  let maxX = Math.max(...xs)
+  let minY = Math.min(...ys)
+  let maxY = Math.max(...ys)
+
+  let margemX = (maxX-minX)*0.15
+  let margemY = (maxY-minY)*0.20
+
+  let TOTAL_LINHAS = qr.questoes
+  let TOTAL_COLUNAS = qr.colunas
+
+  let respostas = []
+  let raio = 15
+
+  for(let i=0;i<TOTAL_LINHAS;i++){
+
+    respostas[i]=[]
+
+    for(let j=0;j<TOTAL_COLUNAS;j++){
+
+      let u=(j+0.5)/TOTAL_COLUNAS
+      let v=(i+0.5)/TOTAL_LINHAS
+
+      let x = minX + margemX + u*(maxX-minX-2*margemX)
+      let y = minY + margemY + v*(maxY-minY-2*margemY)
+
+      let soma=0,cont=0
+
+      for(let dx=-raio;dx<=raio;dx++){
+      for(let dy=-raio;dy<=raio;dy++){
+
+        if(Math.sqrt(dx*dx+dy*dy)>raio*0.7) continue
+
+        let px=Math.floor(x+dx)
+        let py=Math.floor(y+dy)
+
+        if(px<0||py<0||px>=w||py>=h) continue
+
+        let idx=(py*w+px)*4
+        cont++
+
+        if(data[idx]===0) soma++
+      }}
+
+      let dens = soma/cont
+
+      if(dens > 0.18){
+
+        respostas[i].push(j)
+
+        ctx.fillStyle="rgba(0,255,0,0.5)"
+        ctx.beginPath()
+        ctx.arc(x,y,raio,0,Math.PI*2)
+        ctx.fill()
+      }
+
+      ctx.fillStyle="red"
+      ctx.fillRect(x-2,y-2,4,4)
+    }
+  }
+
+  let letras=["A","B","C","D"]
+
+  let txt = respostas.map((r,i)=>{
+    if(!r.length) return `${i+1}: -`
+    return `${i+1}: ${r.map(j=>letras[j]).join(",")}`
+  })
+
+  document.getElementById("gabarito").innerText =
+    txt.join(" | ")
+}
+
+function confirmar(){
+  alert("Leitura confirmada")
+}
+
+</script>
+
+</body>
+</html>

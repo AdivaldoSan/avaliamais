@@ -283,6 +283,19 @@ function processarImagem(frame, marcadores){
   let maxY = Math.max(...ys)
 
   // =========================
+  // ORGANIZAR MARCADORES (TL, TR, BL, BR)
+  // =========================
+  marcadores.sort((a,b)=>a.y-b.y)
+  
+  let top = marcadores.slice(0,2).sort((a,b)=>a.x-b.x)
+  let bottom = marcadores.slice(2,4).sort((a,b)=>a.x-b.x)
+  
+  let TL = top[0]
+  let TR = top[1]
+  let BL = bottom[0]
+  let BR = bottom[1]
+
+  // =========================
   // QR (ORDEM CORRETA!)
   // =========================
   let TOTAL_LINHAS = qr.questoes
@@ -319,8 +332,10 @@ function processarImagem(frame, marcadores){
       let u = (j + 0.5) / TOTAL_COLUNAS
       let v = (i + 0.5) / TOTAL_LINHAS
 
-      let x = minX + margemX + u*(maxX-minX-2*margemX)
-      let y = minY + margemY + v*(maxY-minY-2*margemY)
+      let p = interpolar(u, v, TL, TR, BL, BR)
+      
+      let x = p.x
+      let y = p.y
 
       let soma = 0
       let cont = 0
@@ -377,6 +392,23 @@ function processarImagem(frame, marcadores){
 function confirmar(){
   alert("Leitura confirmada")
 }
+
+function interpolar(u, v, TL, TR, BL, BR){
+
+  let x =
+    (1-u)*(1-v)*TL.x +
+    u*(1-v)*TR.x +
+    (1-u)*v*BL.x +
+    u*v*BR.x
+
+  let y =
+    (1-u)*(1-v)*TL.y +
+    u*(1-v)*TR.y +
+    (1-u)*v*BL.y +
+    u*v*BR.y
+
+  return {x,y}
+}  
 
 </script>
 

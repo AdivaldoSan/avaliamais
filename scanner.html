@@ -65,6 +65,7 @@ let modo = "QR"
 let capturado = false
 let framesOK = 0
 let dadosQR = null
+let frameCapturado = null
 
 navigator.mediaDevices.getUserMedia({
   video:{ facingMode:"environment" }
@@ -315,21 +316,24 @@ function capturarFrame(){
 
   capturado = true
 
+  // 🔥 salva frame atual (congelado real)
+  frameCapturado = ctx.getImageData(0,0,canvas.width,canvas.height)
+
   let {TL,TR,BL,BR} = window.marcadores
 
-  // 🔥 desenha bolhas mantendo proporção
-  desenharBolhas(TL,TR,BL,BR)
+  // 🔥 redesenha frame congelado (garantia visual)
+  ctx.putImageData(frameCapturado, 0, 0)
 
-  // 🔥 guarda para confirmar depois
+  // 🔥 desenha bolhas por cima
+  desenharMarcacoes(TL,TR,BL,BR)
+
   window.captura = {TL,TR,BL,BR}
 
-  // 🔥 mostra botões (mantém layout atual)
   document.getElementById("ui").innerHTML = `
     <button onclick="confirmar()">Confirmar</button>
     <button onclick="resetar()">Ler novamente</button>
   `
 }
-
 /* ================= BOLHAS ================= */
 
 function desenharBolhas(TL,TR,BL,BR){
@@ -400,26 +404,24 @@ function desenharBolhas(TL,TR,BL,BR){
 
 function confirmar(){
 
-  let {TL,TR,BL,BR} = window.captura
-
-  let respostas = lerOMR(TL,TR,BL,BR)
+  let respostas = window.respostasDetectadas
   let gabarito = dadosQR.G.split("")
 
   let acertos = 0
 
   for(let i=0;i<respostas.length;i++){
-    if(respostas[i] === gabarito[i]){
+    if(["A","B","C","D"][respostas[i]] === gabarito[i]){
       acertos++
     }
   }
 
-  let porcentagem = Math.round((acertos / gabarito.length)*100)
+  let p = Math.round((acertos/gabarito.length)*100)
 
   document.getElementById("ui").innerHTML = `
     <div style="width:100%; text-align:center;">
-      <div>${acertos}/${gabarito.length} (${porcentagem}%)</div>
-      <div style="margin-top:8px;">${respostas.join(" ")}</div>
-      <div style="margin-top:4px;">${gabarito.join(" ")}</div>
+      <div>${acertos}/${gabarito.length} (${p}%)</div>
+      <div>${respostas.map(r=>["A","B","C","D"][r]||"-").join(" ")}</div>
+      <div>${gabarito.join(" ")}</div>
       <br>
       <button onclick="resetar()">Nova leitura</button>
     </div>
@@ -497,6 +499,80 @@ function resetar(){
   framesOK=0
   document.getElementById("ui").innerHTML=""
 }
+function desenharMarcacoes(TL,TR,BL,BR){
+
+  let q = parseInt(dadosQR.Q)
+
+  let altura = Math.hypot(BL.x - TL.x, BL.y - TL.y)
+  let raioLeitura = altura / q * 0.22
+  let raioVisual = raioLeitura * 2
+
+  let respostas = []
+
+  for(let i=0;i<q;i++){
+
+    let melhor = -1
+    let maiorArea = 0
+
+    for(let j=0;j<4;j++){
+
+      let px = (j + 0.5)/4
+      let py = (i + 0.5)/q
+
+      let p = pontoNaArea(px,py,TL,TR,BL,BR)
+
+      let soma = 0
+
+      for(let dx=-raioLeitura;dx<=raioLeitura;dx++){
+      for(let dy=-raioLeitura;dy<=raioLeitura;dy++){
+
+        let x = Math.floor(p.x + dx)
+        let y = Math.floor(p.y + dy)
+
+        if(x<0||y<0||x>=canvas.width||y>=canvas.height) continue
+
+        let val = ctx.getImageData(x,y,1,1).data[0]
+
+        if(val < 50) soma++
+      }}
+
+      if(soma > maiorArea){
+        maiorArea = soma
+        melhor = j
+      }
+    }
+
+    respostas.push(melhor)
+  }
+
+  // 🔥 DESENHAR IGUAL SEU SCRIPT
+  ctx.strokeStyle = "lime"
+  ctx.lineWidth = 3
+
+  for(let i=0;i<q;i++){
+
+    let j = respostas[i]
+    if(j < 0) continue
+
+    let px = (j + 0.5)/4
+    let py = (i + 0.5)/q
+
+    let p = pontoNaArea(px,py,TL,TR,BL,BR)
+
+    ctx.beginPath()
+    ctx.arc(p.x, p.y, raioVisual, 0, Math.PI*2)
+    ctx.stroke()
+
+    ctx.fillStyle = "rgba(0,255,0,0.3)"
+    ctx.fill()
+  }
+
+  // salva para uso depois no confirmar
+  window.respostasDetectadas = respostas
+}
+
+
+  
 requestAnimationFrame(loop)
 </script>
 </body>

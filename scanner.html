@@ -26,6 +26,7 @@ video, canvas{
 
 #ui{
   position:absolute;
+  bottom:20px;   /* 🔥 fixa no rodapé */
   width:100%;
   display:flex;
   justify-content:center;
@@ -211,10 +212,13 @@ function desenharOverlayOMR(){
   ctx.font = "22px Arial"
   ctx.textAlign = "center"
   
-  ctx.fillText(
-  "Centralize os 4 marcadores dentro da área",
-  canvas.width / 2,
-  40
+  ctx.fillStyle = "white"
+  ctx.font = "16px Arial"   // 🔥 menor
+  ctx.textAlign = "center"
+  
+  // 🔥 quebra manual simples
+  ctx.fillText("Centralize os 4 marcadores", canvas.width/2, 30)
+  ctx.fillText("dentro da área", canvas.width/2, 50)
   )
   
 
@@ -235,9 +239,7 @@ function desenharOverlayOMR(){
 
   // 🔥 posiciona UI logo abaixo do retângulo
   let ui = document.getElementById("ui")
-
-  ui.style.top = (y + boxH + 10) + "px"
-  ui.style.bottom = "auto"
+  
 }
 
 

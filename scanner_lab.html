@@ -194,8 +194,10 @@ function ativarCalibracao(){
 
   canvas.onclick = function(e){
 
-    let x = e.offsetX
-    let y = e.offsetY
+    const rect = canvas.getBoundingClientRect()
+
+let x = (e.clientX - rect.left) * (canvas.width / rect.width)
+let y = (e.clientY - rect.top) * (canvas.height / rect.height)
 
     let nx = x / canvas.width
     let ny = y / canvas.height

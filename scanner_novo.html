@@ -169,72 +169,149 @@ function capturarFrame(quadrados){
 
   cv.imshow(canvas,dst)
 
-  // 🔥 AGORA SIM: DETECTAR GRADE (APÓS WARP)
-  detectarGrade(dst)
+  // 🔥 NOVO: DETECTAR BOLHAS
+  detectarBolhas(dst)
 
   document.getElementById("status").innerText =
-    "Conferir leitura"
+    "🟢 Conferir leitura"
 }
 
 /* ========================= */
-function detectarGrade(mat){
+function detectarBolhas(mat){
 
-  let gray=new cv.Mat()
-  let bin=new cv.Mat()
+  let gray = new cv.Mat()
+  let blur = new cv.Mat()
+  let bin = new cv.Mat()
 
-  cv.cvtColor(mat,gray,cv.COLOR_RGBA2GRAY)
+  cv.cvtColor(mat, gray, cv.COLOR_RGBA2GRAY)
+  cv.GaussianBlur(gray, blur, new cv.Size(5,5), 0)
 
   cv.adaptiveThreshold(
-    gray,bin,255,
+    blur, bin, 255,
     cv.ADAPTIVE_THRESH_MEAN_C,
     cv.THRESH_BINARY_INV,
-    15,2
+    11, 2
   )
 
-  let linhas=[]
-  let cols=[]
+  let contours = new cv.MatVector()
+  let hierarchy = new cv.Mat()
 
-  for(let y=0;y<bin.rows;y++){
-    let soma=0
-    for(let x=0;x<bin.cols;x++){
-      soma+=bin.ucharPtr(y,x)[0]
-    }
-    linhas.push(soma)
+  cv.findContours(bin, contours, hierarchy,
+    cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+
+  let bolhas = []
+
+  for(let i=0;i<contours.size();i++){
+
+    let cnt = contours.get(i)
+    let area = cv.contourArea(cnt)
+
+    if(area < 80 || area > 2000) continue
+
+    let rect = cv.boundingRect(cnt)
+    let ratio = rect.width / rect.height
+
+    if(ratio < 0.7 || ratio > 1.3) continue
+
+    bolhas.push({
+      x: rect.x + rect.width/2,
+      y: rect.y + rect.height/2,
+      w: rect.width,
+      h: rect.height
+    })
   }
 
-  for(let x=0;x<bin.cols;x++){
-    let soma=0
-    for(let y=0;y<bin.rows;y++){
-      soma+=bin.ucharPtr(y,x)[0]
-    }
-    cols.push(soma)
-  }
+  // ===== AGRUPAR LINHAS =====
+  bolhas.sort((a,b)=>a.y - b.y)
 
-  function picos(arr){
-    let res=[]
-    let lim=Math.max(...arr)*0.5
+  let linhas = []
+  let tol = 20
 
-    for(let i=1;i<arr.length-1;i++){
-      if(arr[i]>lim && arr[i]>arr[i-1] && arr[i]>arr[i+1]){
-        res.push(i)
+  bolhas.forEach(b=>{
+
+    let achou = false
+
+    for(let l of linhas){
+      if(Math.abs(l[0].y - b.y) < tol){
+        l.push(b)
+        achou = true
+        break
       }
     }
-    return res
-  }
 
-  let ys=picos(linhas).slice(0,10)
-  let xs=picos(cols).slice(0,4)
-
-  ctx.fillStyle="red"
-
-  ys.forEach(y=>{
-    xs.forEach(x=>{
-      ctx.fillRect(x-4,y-4,8,8)
-    })
+    if(!achou) linhas.push([b])
   })
 
+  linhas.forEach(l=>l.sort((a,b)=>a.x - b.x))
+
+  // ===== INTENSIDADE =====
+  function intensidade(b){
+
+    let margem = 0.25
+
+    let x = Math.floor(b.x - b.w/2 + b.w*margem)
+    let y = Math.floor(b.y - b.h/2 + b.h*margem)
+    let w = Math.floor(b.w*(1-2*margem))
+    let h = Math.floor(b.h*(1-2*margem))
+
+    let roi = mat.roi(new cv.Rect(x,y,w,h))
+
+    let g = new cv.Mat()
+    cv.cvtColor(roi, g, cv.COLOR_RGBA2GRAY)
+
+    let t = new cv.Mat()
+    cv.threshold(g, t, 0,255,
+      cv.THRESH_BINARY_INV + cv.THRESH_OTSU)
+
+    let total = w*h
+    let pretos = cv.countNonZero(t)
+
+    g.delete()
+    t.delete()
+    roi.delete()
+
+    return pretos / total
+  }
+
+  let respostas = []
+
+  linhas.forEach((linha,i)=>{
+
+    let melhor = -1
+    let maior = 0
+
+    linha.forEach((b,j)=>{
+
+      let score = intensidade(b)
+
+      if(score > maior){
+        maior = score
+        melhor = j
+      }
+
+    })
+
+    if(maior < 0.15){
+      respostas.push("-")
+    }else{
+      respostas.push(["A","B","C","D"][melhor])
+    }
+
+    // debug visual
+    linha.forEach((b,j)=>{
+      ctx.fillStyle = (j===melhor && maior>=0.15) ? "lime" : "red"
+      ctx.fillRect(b.x-4, b.y-4, 8, 8)
+    })
+
+  })
+
+  console.log("Respostas:", respostas.join(" "))
+
   gray.delete()
+  blur.delete()
   bin.delete()
+  contours.delete()
+  hierarchy.delete()
 }
 
 /* ========================= */
@@ -255,6 +332,7 @@ function ordenar(q){
 function refazer(){
   capturado=false
   framesOK=0
+  document.getElementById("status").innerText = "Reiniciando..."
 }
 
 </script>

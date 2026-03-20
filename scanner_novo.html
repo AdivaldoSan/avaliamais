@@ -31,6 +31,12 @@ input{
 
 <h2>Scanner Inteligente</h2>
 
+<div style="margin:10px;">
+  <button onclick="diminuir()">-</button>
+  <span id="qtdQuestoes">10</span>
+  <button onclick="aumentar()">+</button>
+</div>
+
 <div>
   Gabarito: <input id="gabarito" placeholder="Ex: A B C D A">
 </div>
@@ -77,6 +83,26 @@ cv.onRuntimeInitialized=()=>{
   pronto=true
   iniciar()
 }
+
+function atualizarDisplay(){
+  document.getElementById("qtdQuestoes").innerText = TEMPLATE.questoes
+}
+
+function aumentar(){
+  if(TEMPLATE.questoes < 20){
+    TEMPLATE.questoes++
+    atualizarDisplay()
+  }
+}
+
+function diminuir(){
+  if(TEMPLATE.questoes > 1){
+    TEMPLATE.questoes--
+    atualizarDisplay()
+  }
+}
+
+atualizarDisplay()
 
 function iniciar(){
   navigator.mediaDevices.getUserMedia({

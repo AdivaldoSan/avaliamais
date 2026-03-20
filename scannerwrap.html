@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Scanner Inteligente - Leitura Paramétrica</title>
+<title>Scanner Inteligente</title>
 
 <style>
 body{
@@ -16,7 +16,12 @@ canvas{
   max-width:650px;
 }
 button{
-  padding:12px 20px;
+  padding:10px 16px;
+  margin:5px;
+  font-size:18px;
+}
+#qtdBox{
+  font-size:22px;
   margin:10px;
 }
 </style>
@@ -26,11 +31,18 @@ button{
 
 <h2>Scanner Inteligente</h2>
 
+<div id="qtdBox">
+  <button onclick="alterarQtd(-1)">➖</button>
+  <span id="qtdLabel">10</span>
+  <button onclick="alterarQtd(1)">➕</button>
+</div>
+
 <video id="video" autoplay playsinline style="display:none;"></video>
 <canvas id="canvas"></canvas>
 
 <div id="status">Iniciando...</div>
 <div id="respostas" style="margin-top:10px;font-size:18px;"></div>
+
 <button onclick="refazer()">Refazer</button>
 
 <script src="https://docs.opencv.org/4.x/opencv.js"></script>
@@ -45,47 +57,88 @@ let pronto=false
 let capturado=false
 let framesOK=0
 
+// ==============================
+// TEMPLATE
 const TEMPLATE = {
-  colunas: [0.3051, 0.4486, 0.5913, 0.7344],
-  topo: 0.2122,
-  base: 0.8072,
+  colunas: [0.30, 0.45, 0.58, 0.73],
   questoes: 10
 }
 
+// ==============================
+// CONTROLE DE QTD
+function alterarQtd(delta){
+
+  let nova = TEMPLATE.questoes + delta
+
+  if(nova < 1) nova = 1
+  if(nova > 15) nova = 15
+
+  TEMPLATE.questoes = nova
+
+  document.getElementById("qtdLabel").innerText = nova
+  document.getElementById("status").innerText =
+    "Qtd: " + nova
+}
+
+// ==============================
+// TOPO/BASE POR INTERPOLAÇÃO
+function getTopoBase(qtd){
+
+  const pontos = [
+    {q:1,  topo:0.5307, base:0.5307},
+    {q:5,  topo:0.3248, base:0.7137},
+    {q:6,  topo:0.2908, base:0.7396},
+    {q:8,  topo:0.2508, base:0.7811},
+    {q:10, topo:0.2158, base:0.8090},
+    {q:15, topo:0.1607, base:0.8563}
+  ]
+
+  let exato = pontos.find(p => p.q === qtd)
+  if(exato) return exato
+
+  if(qtd < pontos[0].q) return pontos[0]
+  if(qtd > pontos[pontos.length-1].q) return pontos[pontos.length-1]
+
+  for(let i=0;i<pontos.length-1;i++){
+
+    let p1 = pontos[i]
+    let p2 = pontos[i+1]
+
+    if(qtd > p1.q && qtd < p2.q){
+
+      let t = (qtd - p1.q) / (p2.q - p1.q)
+
+      return {
+        topo: p1.topo + t*(p2.topo - p1.topo),
+        base: p1.base + t*(p2.base - p1.base)
+      }
+    }
+  }
+}
+
+// ==============================
 cv.onRuntimeInitialized=()=>{
   pronto=true
   iniciar()
 }
 
 function iniciar(){
-
-  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
-    document.getElementById("status").innerText =
-      "❌ getUserMedia não suportado"
-    return
-  }
-
   navigator.mediaDevices.getUserMedia({
-    video:{
-      facingMode:{ ideal:"environment" }
-    }
+    video:{facingMode:{ideal:"environment"}}
   })
   .then(stream=>{
-    video.srcObject = stream
-
-    video.onloadedmetadata = ()=>{
+    video.srcObject=stream
+    video.onloadedmetadata=()=>{
       video.play()
-      document.getElementById("status").innerText = "📷 Câmera ativa"
       loop()
     }
   })
   .catch(err=>{
-    console.error(err)
-
     document.getElementById("status").innerText =
-      "❌ Erro câmera: " + err.name
+      "Erro câmera"
   })
 }
+
 // ==============================
 function loop(){
 
@@ -201,73 +254,23 @@ function capturarFrame(quadrados){
 }
 
 // ==============================
-// 🔥 NOVA FUNÇÃO (AUTO TOPO/BASE)
-function detectarTopoBase(mat){
-
-  let gray = new cv.Mat()
-  let bin = new cv.Mat()
-
-  cv.cvtColor(mat, gray, cv.COLOR_RGBA2GRAY)
-
-  cv.threshold(gray, bin, 0,255,
-    cv.THRESH_BINARY_INV + cv.THRESH_OTSU)
-
-  let alturas = []
-
-  for(let y=0;y<bin.rows;y++){
-    let soma = 0
-    for(let x=0;x<bin.cols;x+=5){
-      if(bin.ucharPtr(y,x)[0] > 0) soma++
-    }
-    alturas.push(soma)
-  }
-
-  let limite = Math.max(...alturas) * 0.3
-
-  let inicio = alturas.findIndex(v=>v > limite)
-  let fim = alturas.length - 1 - [...alturas].reverse().findIndex(v=>v > limite)
-
-  gray.delete()
-  bin.delete()
-
-  if(inicio < 0 || fim < 0){
-    return null
-  }
-
-  return {
-    topo: inicio / mat.rows,
-    base: fim / mat.rows
-  }
-}
-
-// ==============================
 function lerRespostas(mat){
 
-  let respostas = []
+  let qtd = TEMPLATE.questoes
+  let tb = getTopoBase(qtd)
 
-  // 🔥 USO INTELIGENTE (com fallback)
-  let ajuste = detectarTopoBase(mat)
+  let topo = tb.topo
+  let base = tb.base
 
-  let topo = ajuste ? ajuste.topo : TEMPLATE.topo
-  let base = ajuste ? ajuste.base : TEMPLATE.base
+  let passo = (qtd > 1) ? (base - topo)/(qtd-1) : 0
 
-  let passo = 0
+  let respostas=[]
 
-  if(TEMPLATE.questoes > 1){
-    passo = (base - topo) / (TEMPLATE.questoes - 1)
-  }
+  for(let i=0;i<qtd;i++){
 
-  for(let i=0;i<TEMPLATE.questoes;i++){
+    let y = (qtd === 1) ? topo : topo + i*passo
 
-    let y
-
-    if(TEMPLATE.questoes === 1){
-      y = (topo + base) / 2
-    }else{
-      y = topo + i * passo
-    }
-
-    let valores = []
+    let valores=[]
 
     for(let j=0;j<4;j++){
 
@@ -278,25 +281,21 @@ function lerRespostas(mat){
 
       let size = 18
 
-      let x0 = Math.max(px - size, 0)
-      let y0 = Math.max(py - size, 0)
+      let roi = mat.roi(new cv.Rect(
+        Math.max(px-size,0),
+        Math.max(py-size,0),
+        size*2,
+        size*2
+      ))
 
-      let w = Math.min(size*2, mat.cols - x0)
-      let h = Math.min(size*2, mat.rows - y0)
+      let gray=new cv.Mat()
+      cv.cvtColor(roi,gray,cv.COLOR_RGBA2GRAY)
 
-      let roi = mat.roi(new cv.Rect(x0,y0,w,h))
+      let t=new cv.Mat()
+      cv.threshold(gray,t,0,255,
+        cv.THRESH_BINARY_INV+cv.THRESH_OTSU)
 
-      let gray = new cv.Mat()
-      cv.cvtColor(roi, gray, cv.COLOR_RGBA2GRAY)
-
-      let t = new cv.Mat()
-      cv.threshold(gray, t, 0,255,
-        cv.THRESH_BINARY_INV + cv.THRESH_OTSU)
-
-      let total = w*h
-      let pretos = cv.countNonZero(t)
-
-      let intensidade = pretos / total
+      let intensidade=cv.countNonZero(t)/(roi.rows*roi.cols)
 
       valores.push(intensidade)
 
@@ -305,33 +304,31 @@ function lerRespostas(mat){
       roi.delete()
     }
 
-    let max = Math.max(...valores)
-    let index = valores.indexOf(max)
+    let max=Math.max(...valores)
+    let idx=valores.indexOf(max)
 
-    let resposta = "-"
+    let resp="-"
 
-    let ordenado = [...valores].sort((a,b)=>b-a)
+    let ordenado=[...valores].sort((a,b)=>b-a)
 
-    if(max > 0.25 && (ordenado[0]-ordenado[1]) > 0.08){
-      resposta = ["A","B","C","D"][index]
+    if(max>0.25 && (ordenado[0]-ordenado[1])>0.08){
+      resp=["A","B","C","D"][idx]
 
-      let cx = TEMPLATE.colunas[index] * mat.cols
-      let cy = y * mat.rows
+      let cx=TEMPLATE.colunas[idx]*mat.cols
+      let cy=y*mat.rows
 
       ctx.beginPath()
-      ctx.arc(cx, cy, 12, 0, Math.PI * 2)
-      ctx.lineWidth = 3
-      ctx.strokeStyle = "lime"
+      ctx.arc(cx,cy,12,0,Math.PI*2)
+      ctx.strokeStyle="lime"
+      ctx.lineWidth=3
       ctx.stroke()
     }
 
-    respostas.push(resposta)
+    respostas.push(resp)
   }
 
   document.getElementById("respostas").innerText =
-    "Respostas: " + respostas.join(" ")
-
-  console.log("RESPOSTAS:", respostas.join(" "))
+    "Respostas: "+respostas.join(" ")
 }
 
 // ==============================
@@ -352,7 +349,7 @@ function ordenar(q){
 function refazer(){
   capturado=false
   framesOK=0
-  document.getElementById("status").innerText = "Reiniciando..."
+  document.getElementById("status").innerText="Reiniciando..."
 }
 
 </script>

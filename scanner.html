@@ -30,6 +30,7 @@ button{
 <canvas id="canvas"></canvas>
 
 <div id="status">Iniciando...</div>
+<div id="respostas" style="margin-top:10px;font-size:18px;"></div>
 <button onclick="refazer()">Refazer</button>
 
 <script src="https://docs.opencv.org/4.x/opencv.js"></script>
@@ -233,8 +234,8 @@ function lerRespostas(mat){
       roi.delete()
 
       // DEBUG VISUAL
-      ctx.fillStyle = "red"
-      ctx.fillRect(px-3, py-3, 6, 6)
+      //ctx.fillStyle = "red"
+      //ctx.fillRect(px-3, py-3, 6, 6)
     }
 
     // decisão
@@ -248,16 +249,21 @@ function lerRespostas(mat){
     if(max > 0.25 && (ordenado[0]-ordenado[1]) > 0.08){
       resposta = ["A","B","C","D"][index]
 
-      ctx.fillStyle = "lime"
-      ctx.fillRect(
-        TEMPLATE.colunas[index]*canvas.width-5,
-        (TEMPLATE.topo + i*passo)*canvas.height-5,
-        10,10
-      )
+    let cx = TEMPLATE.colunas[index] * canvas.width
+let cy = (TEMPLATE.topo + i * passo) * canvas.height
+
+ctx.beginPath()
+ctx.arc(cx, cy, 12, 0, Math.PI * 2)
+ctx.lineWidth = 3
+ctx.strokeStyle = "lime"
+ctx.stroke()
     }
 
     respostas.push(resposta)
   }
+
+document.getElementById("respostas").innerText =
+  "Respostas: " + respostas.join(" ")
 
   console.log("RESPOSTAS:", respostas.join(" "))
 }

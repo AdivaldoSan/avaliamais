@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Scanner Inteligente FINAL</title>
+
+<style>
+/* ==============================
+   ESTILO GLOBAL DA APLICAÇÃO
+   ============================== */
+body{
+  background:#111;
+  color:white;
+  text-align:center;
+  font-family:Arial;
+}
+
+/* Canvas onde ocorre:
+   - exibição da câmera
+   - warp (600x900)
+   - desenho das bolhas verdes */
+canvas{
+  width:100%;
+  max-width:650px;
+}
+
+/* Botões de controle */
+button{
+  padding:10px 16px;
+  margin:5px;
+}
+
+/* Campo de entrada do gabarito manual */
+input{
+  padding:8px;
+  width:200px;
+  text-align:center;
+}
+
+/* Controle visual da quantidade de questões */
+#qtdBox{
+  font-size:22px;
+  margin:10px;
+}
+</style>
+</head>
+
+<body>
+
+<h2>Scanner Inteligente</h2>
+
+<!-- ==============================
+     CONTROLE DE QUANTIDADE DE QUESTÕES
+     ============================== -->
+<div id="qtdBox">
+  <button onclick="alterarQtd(-1)">➖</button>
+  <span id="qtdLabel">10</span>
+  <button onclick="alterarQtd(1)">➕</button>
+</div>
+
+<!-- ==============================
+     ENTRADA MANUAL DO GABARITO
+     (FUTURO: substituir por QR Code)
+     ============================== -->
+<div>
+  Gabarito:
+  <input id="gabaritoInput" placeholder="Ex: A B C D A">
+</div>
+
+<br>
+
+<!-- ==============================
+     STREAM DA CÂMERA (oculto)
+     ============================== -->
+<video id="video" autoplay playsinline style="display:none;"></video>
+
+<!-- ==============================
+     CANVAS PRINCIPAL
+     ============================== -->
+<canvas id="canvas"></canvas>
+
+<!-- STATUS DO SISTEMA -->
+<div id="status">Iniciando...</div>
+
+<!-- RESULTADO PARCIAL (leitura do aluno) -->
+<div id="respostas" style="margin-top:10px;"></div>
+
+<!-- CONTROLES -->
+<button onclick="lerNovamente()">Ler novamente</button>
+<button onclick="confirmar()">Confirmar</button>
+<button onclick="refazer()">Refazer</button>
+
+<!-- RESULTADO FINAL -->
+<div id="resultado"></div>
+
+<script src="https://docs.opencv.org/4.x/opencv.js"></script>
+
+<script>
+
+/* ==============================
+   VARIÁVEIS GLOBAIS
+   ============================== */
+let video = document.getElementById("video")
+let canvas = document.getElementById("canvas")
+let ctx = canvas.getContext("2d")
+
+let pronto=false
+let capturado=false
+let framesOK=0
+let ultimaImagem=null
+let respostasLidas=[]
+
+/* ==============================
+   TEMPLATE FIXO DO GABARITO
+   - colunas: posições X das alternativas
+   - questoes: quantidade atual
+   ============================== */
+const TEMPLATE = {
+  colunas: [0.30, 0.45, 0.58, 0.73],
+  questoes: 10
+}
+
+/* ==============================
+   CONTROLE DE QUANTIDADE DE QUESTÕES
+   ============================== */
+function alterarQtd(delta){
+  let nova = TEMPLATE.questoes + delta
+  if(nova < 1) nova = 1
+  if(nova > 15) nova = 15
+  TEMPLATE.questoes = nova
+  document.getElementById("qtdLabel").innerText = nova
+}
+
+/* ==============================
+   INTERPOLAÇÃO TOPO/BASE
+   - ajusta espaçamento vertical conforme Q
+   - evita desalinhamento das bolhas
+   ============================== */
+function getTopoBase(qtd){
+
+  const pontos = [
+    {q:1,  topo:0.5307, base:0.5307},
+    {q:5,  topo:0.3248, base:0.7137},
+    {q:6,  topo:0.2908, base:0.7396},
+    {q:8,  topo:0.2508, base:0.7811},
+    {q:10, topo:0.2158, base:0.8090},
+    {q:15, topo:0.1607, base:0.8563}
+  ]
+
+  let exato = pontos.find(p => p.q === qtd)
+  if(exato) return exato
+
+  for(let i=0;i<pontos.length-1;i++){
+    let p1 = pontos[i]
+    let p2 = pontos[i+1]
+
+    if(qtd > p1.q && qtd < p2.q){
+      let t = (qtd - p1.q) / (p2.q - p1.q)
+      return {
+        topo: p1.topo + t*(p2.topo - p1.topo),
+        base: p1.base + t*(p2.base - p1.base)
+      }
+    }
+  }
+
+  return pontos[pontos.length-1]
+}
+
+/* ==============================
+   INICIALIZAÇÃO DO OPENCV
+   ============================== */
+cv.onRuntimeInitialized=()=>{
+  pronto=true
+  iniciar()
+}
+
+/* ==============================
+   INICIALIZAÇÃO DA CÂMERA
+   ============================== */
+function iniciar(){
+  navigator.mediaDevices.getUserMedia({
+    video:{facingMode:"environment"}
+  }).then(stream=>{
+    video.srcObject=stream
+    video.onloadedmetadata=()=>{
+      video.play()
+      loop()
+    }
+  })
+}
+
+/* ==============================
+   LOOP PRINCIPAL
+   - captura frame
+   - detecta marcadores
+   - aguarda estabilidade
+   ============================== */
+function loop(){
+
+  if(!pronto || capturado){
+    requestAnimationFrame(loop)
+    return
+  }
+
+  canvas.width=video.videoWidth
+  canvas.height=video.videoHeight
+
+  ctx.drawImage(video,0,0)
+
+  let src=cv.imread(canvas)
+  let gray=new cv.Mat()
+  let bin=new cv.Mat()
+
+  cv.cvtColor(src,gray,cv.COLOR_RGBA2GRAY)
+
+  cv.adaptiveThreshold(
+    gray,bin,255,
+    cv.ADAPTIVE_THRESH_MEAN_C,
+    cv.THRESH_BINARY_INV,
+    11,2
+  )
+
+  let contours=new cv.MatVector()
+  let hierarchy=new cv.Mat()
+
+  cv.findContours(bin,contours,hierarchy,
+    cv.RETR_EXTERNAL,cv.CHAIN_APPROX_SIMPLE)
+
+  let quadrados=[]
+
+  for(let i=0;i<contours.size();i++){
+    let cnt=contours.get(i)
+    let area=cv.contourArea(cnt)
+    if(area<500) continue
+
+    let peri=cv.arcLength(cnt,true)
+    let approx=new cv.Mat()
+    cv.approxPolyDP(cnt,approx,0.02*peri,true)
+
+    if(approx.rows===4){
+      quadrados.push(cv.boundingRect(approx))
+    }
+  }
+
+  quadrados.forEach(r=>{
+    ctx.strokeStyle="yellow"
+    ctx.strokeRect(r.x,r.y,r.width,r.height)
+  })
+
+  if(quadrados.length===4){
+    framesOK++
+    if(framesOK>6){
+      capturarFrame(quadrados)
+    }
+  }else{
+    framesOK=0
+  }
+
+  src.delete(); gray.delete(); bin.delete()
+  contours.delete(); hierarchy.delete()
+
+  requestAnimationFrame(loop)
+}
+
+/* ==============================
+   CAPTURA + WARP (600x900 FIXO)
+   ============================== */
+function capturarFrame(quadrados){
+
+  capturado=true
+
+  let frame = ctx.getImageData(0,0,canvas.width,canvas.height)
+  let src = cv.matFromImageData(frame)
+
+  let p = ordenar(quadrados)
+
+  let largura=600
+  let altura=900
+
+  let srcTri=cv.matFromArray(4,1,cv.CV_32FC2,[
+    p.TL.x,p.TL.y,
+    p.TR.x+p.TR.width,p.TR.y,
+    p.BL.x,p.BL.y+p.BL.height,
+    p.BR.x+p.BR.width,p.BR.y+p.BR.height
+  ])
+
+  let dstTri=cv.matFromArray(4,1,cv.CV_32FC2,[
+    0,0, largura,0, 0,altura, largura,altura
+  ])
+
+  let M=cv.getPerspectiveTransform(srcTri,dstTri)
+  let dst=new cv.Mat()
+
+  cv.warpPerspective(src,dst,M,new cv.Size(largura,altura))
+
+  cv.imshow(canvas,dst)
+
+  ultimaImagem = dst.clone()
+
+  lerRespostas(dst)
+
+  document.getElementById("status").innerText =
+    "🟢 Conferir leitura"
+}
+
+/* ==============================
+   LEITURA DAS BOLHAS (CORE)
+   ============================== */
+function lerRespostas(mat){
+
+  let qtd = TEMPLATE.questoes
+  let tb = getTopoBase(qtd)
+
+  let topo = tb.topo
+  let base = tb.base
+  let passo = qtd>1 ? (base-topo)/(qtd-1) : 0
+
+  respostasLidas=[]
+
+  for(let i=0;i<qtd;i++){
+
+    let y = (qtd===1)? topo : topo + i*passo
+
+    let valores=[]
+
+    for(let j=0;j<4;j++){
+
+      let x=TEMPLATE.colunas[j]
+      let px=Math.floor(x*mat.cols)
+      let py=Math.floor(y*mat.rows)
+
+      let roi = mat.roi(new cv.Rect(px-15,py-15,30,30))
+
+      let gray=new cv.Mat()
+      cv.cvtColor(roi,gray,cv.COLOR_RGBA2GRAY)
+
+      let t=new cv.Mat()
+      cv.threshold(gray,t,0,255,
+        cv.THRESH_BINARY_INV+cv.THRESH_OTSU)
+
+      valores.push(cv.countNonZero(t)/(30*30))
+
+      gray.delete(); t.delete(); roi.delete()
+    }
+
+    let max=Math.max(...valores)
+    let idx=valores.indexOf(max)
+
+    let resp="-"
+
+    let ordenado=[...valores].sort((a,b)=>b-a)
+
+    if(max>0.25 && (ordenado[0]-ordenado[1])>0.08){
+
+      resp=["A","B","C","D"][idx]
+
+      /* ==============================
+         DESENHO DA BOLHA VERDE
+         ============================== */
+      let cx = TEMPLATE.colunas[idx] * mat.cols
+      let cy = y * mat.rows
+
+      ctx.beginPath()
+      ctx.arc(cx, cy, 12, 0, Math.PI * 2)
+      ctx.lineWidth = 3
+      ctx.strokeStyle = "lime"
+      ctx.stroke()
+    }
+
+    respostasLidas.push(resp)
+  }
+
+  document.getElementById("respostas").innerText =
+    "Aluno: "+respostasLidas.join(" ")
+}
+
+/* ==============================
+   RELER SEM NOVA CAPTURA
+   ============================== */
+function lerNovamente(){
+  if(ultimaImagem){
+    cv.imshow(canvas,ultimaImagem)
+    lerRespostas(ultimaImagem)
+  }
+}
+
+/* ==============================
+   COMPARAÇÃO COM GABARITO
+   ============================== */
+function confirmar(){
+
+  let gabarito = document.getElementById("gabaritoInput").value
+    .toUpperCase()
+    .replace(/[^ABCD]/g,"")
+    .split("")
+
+  let html="Aluno: "+respostasLidas.join(" ")+"<br>"
+  html+="Gabarito: "+gabarito.join(" ")+"<br><br>"
+
+  let acertos=0
+
+  for(let i=0;i<gabarito.length;i++){
+    if(respostasLidas[i]===gabarito[i]){
+      html+="✅ "
+      acertos++
+    }else{
+      html+="❌ "
+    }
+  }
+
+  html+="<br><br>Acertos: "+acertos
+
+  document.getElementById("resultado").innerHTML=html
+}
+
+/* ==============================
+   ORDENAÇÃO DOS MARCADORES (warp)
+   ============================== */
+function ordenar(q){
+  q.sort((a,b)=>a.y-b.y)
+  let top=q.slice(0,2)
+  let bottom=q.slice(2,4)
+  top.sort((a,b)=>a.x-b.x)
+  bottom.sort((a,b)=>a.x-b.x)
+  return {TL:top[0],TR:top[1],BL:bottom[0],BR:bottom[1]}
+}
+
+/* ==============================
+   RESET DO PROCESSO
+   ============================== */
+function refazer(){
+  capturado=false
+  framesOK=0
+  respostasLidas=[]
+  document.getElementById("resultado").innerHTML=""
+}
+
+/* ==============================
+   [FUTURO - QR CODE]
+   - leitura automática do gabarito
+   - leitura da quantidade de questões
+   - chave criptografada
+   ============================== */
+
+/* ==============================
+   [FUTURO - VALIDAÇÃO DE CHAVE]
+   - impedir fraude de gabarito
+   ============================== */
+
+/* ==============================
+   [FUTURO - BACKEND]
+   - envio de resultados
+   - integração com banco
+   ============================== */
+
+</script>
+
+</body>
+</html>

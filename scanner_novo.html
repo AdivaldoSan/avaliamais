@@ -2,17 +2,22 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Scanner Inteligente</title>
+<title>Scanner Final Inteligente</title>
 
 <style>
 body{
   background:#111;
   color:white;
   text-align:center;
+  font-family:Arial;
 }
 canvas{
   width:100%;
   max-width:650px;
+}
+button{
+  padding:12px 20px;
+  margin:10px;
 }
 </style>
 </head>
@@ -24,6 +29,9 @@ canvas{
 <video id="video" autoplay playsinline style="display:none;"></video>
 <canvas id="canvas"></canvas>
 
+<div id="status">Iniciando...</div>
+<button onclick="refazer()">Refazer</button>
+
 <script src="https://docs.opencv.org/4.x/opencv.js"></script>
 
 <script>
@@ -33,6 +41,8 @@ let canvas = document.getElementById("canvas")
 let ctx = canvas.getContext("2d")
 
 let pronto=false
+let capturado=false
+let framesOK=0
 
 cv.onRuntimeInitialized=()=>{
   pronto=true
@@ -51,9 +61,10 @@ function iniciar(){
   })
 }
 
+/* ========================= */
 function loop(){
 
-  if(!pronto){
+  if(!pronto || capturado){
     requestAnimationFrame(loop)
     return
   }
@@ -73,14 +84,115 @@ function loop(){
     gray,bin,255,
     cv.ADAPTIVE_THRESH_MEAN_C,
     cv.THRESH_BINARY_INV,
+    11,2
+  )
+
+  let contours=new cv.MatVector()
+  let hierarchy=new cv.Mat()
+
+  cv.findContours(bin,contours,hierarchy,
+    cv.RETR_EXTERNAL,cv.CHAIN_APPROX_SIMPLE)
+
+  let quadrados=[]
+
+  for(let i=0;i<contours.size();i++){
+
+    let cnt=contours.get(i)
+    let area=cv.contourArea(cnt)
+
+    if(area<500) continue
+
+    let peri=cv.arcLength(cnt,true)
+    let approx=new cv.Mat()
+
+    cv.approxPolyDP(cnt,approx,0.02*peri,true)
+
+    if(approx.rows===4){
+      let r=cv.boundingRect(approx)
+      quadrados.push(r)
+    }
+  }
+
+  quadrados.forEach(r=>{
+    ctx.strokeStyle="yellow"
+    ctx.strokeRect(r.x,r.y,r.width,r.height)
+  })
+
+  if(quadrados.length===4){
+    framesOK++
+
+    if(framesOK>6){
+      capturarFrame(quadrados)
+    }
+
+  }else{
+    framesOK=0
+  }
+
+  src.delete()
+  gray.delete()
+  bin.delete()
+  contours.delete()
+  hierarchy.delete()
+
+  requestAnimationFrame(loop)
+}
+
+/* ========================= */
+function capturarFrame(quadrados){
+
+  capturado=true
+
+  let frame = ctx.getImageData(0,0,canvas.width,canvas.height)
+  let src = cv.matFromImageData(frame)
+
+  let p = ordenar(quadrados)
+
+  let largura=600
+  let altura=900
+
+  let srcTri=cv.matFromArray(4,1,cv.CV_32FC2,[
+    p.TL.x,p.TL.y,
+    p.TR.x+p.TR.width,p.TR.y,
+    p.BL.x,p.BL.y+p.BL.height,
+    p.BR.x+p.BR.width,p.BR.y+p.BR.height
+  ])
+
+  let dstTri=cv.matFromArray(4,1,cv.CV_32FC2,[
+    0,0, largura,0, 0,altura, largura,altura
+  ])
+
+  let M=cv.getPerspectiveTransform(srcTri,dstTri)
+  let dst=new cv.Mat()
+
+  cv.warpPerspective(src,dst,M,new cv.Size(largura,altura))
+
+  cv.imshow(canvas,dst)
+
+  // 🔥 AGORA SIM: DETECTAR GRADE (APÓS WARP)
+  detectarGrade(dst)
+
+  document.getElementById("status").innerText =
+    "Conferir leitura"
+}
+
+/* ========================= */
+function detectarGrade(mat){
+
+  let gray=new cv.Mat()
+  let bin=new cv.Mat()
+
+  cv.cvtColor(mat,gray,cv.COLOR_RGBA2GRAY)
+
+  cv.adaptiveThreshold(
+    gray,bin,255,
+    cv.ADAPTIVE_THRESH_MEAN_C,
+    cv.THRESH_BINARY_INV,
     15,2
   )
 
-  // =========================
-  // PROJEÇÃO HORIZONTAL
-  // =========================
-
   let linhas=[]
+  let cols=[]
 
   for(let y=0;y<bin.rows;y++){
     let soma=0
@@ -90,62 +202,59 @@ function loop(){
     linhas.push(soma)
   }
 
-  // =========================
-  // PROJEÇÃO VERTICAL
-  // =========================
-
-  let colunas=[]
-
   for(let x=0;x<bin.cols;x++){
     let soma=0
     for(let y=0;y<bin.rows;y++){
       soma+=bin.ucharPtr(y,x)[0]
     }
-    colunas.push(soma)
+    cols.push(soma)
   }
 
-  // =========================
-  // PEGAR PICOS (simples)
-  // =========================
-
-  function pegarPicos(arr, limite){
-
-    let picos=[]
+  function picos(arr){
+    let res=[]
+    let lim=Math.max(...arr)*0.5
 
     for(let i=1;i<arr.length-1;i++){
-      if(arr[i] > limite &&
-         arr[i] > arr[i-1] &&
-         arr[i] > arr[i+1]){
-        picos.push(i)
+      if(arr[i]>lim && arr[i]>arr[i-1] && arr[i]>arr[i+1]){
+        res.push(i)
       }
     }
-
-    return picos
+    return res
   }
 
-  let limL = Math.max(...linhas)*0.5
-  let limC = Math.max(...colunas)*0.5
-
-  let ys = pegarPicos(linhas, limL)
-  let xs = pegarPicos(colunas, limC)
-
-  // =========================
-  // DESENHAR GRADE REAL
-  // =========================
+  let ys=picos(linhas).slice(0,10)
+  let xs=picos(cols).slice(0,4)
 
   ctx.fillStyle="red"
 
-  ys.slice(0,10).forEach(y=>{
-    xs.slice(0,4).forEach(x=>{
+  ys.forEach(y=>{
+    xs.forEach(x=>{
       ctx.fillRect(x-4,y-4,8,8)
     })
   })
 
-  src.delete()
   gray.delete()
   bin.delete()
+}
 
-  requestAnimationFrame(loop)
+/* ========================= */
+function ordenar(q){
+
+  q.sort((a,b)=>a.y-b.y)
+
+  let top=q.slice(0,2)
+  let bottom=q.slice(2,4)
+
+  top.sort((a,b)=>a.x-b.x)
+  bottom.sort((a,b)=>a.x-b.x)
+
+  return {TL:top[0],TR:top[1],BL:bottom[0],BR:bottom[1]}
+}
+
+/* ========================= */
+function refazer(){
+  capturado=false
+  framesOK=0
 }
 
 </script>

@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Scanner Profissional</title>
+<title>Scanner Final Inteligente</title>
 
 <style>
 body{
@@ -11,57 +11,28 @@ body{
   text-align:center;
   font-family:Arial;
 }
-
-/* 🔥 VISOR MAIOR */
 canvas{
-  width:125vw;
-  max-width:750px;
-  margin-top:10px;
-  background:#000;
+  width:100%;
+  max-width:650px;
 }
-
-/* 🔥 BOTÕES MAIORES */
 button{
-  padding:15px 35px;
+  padding:12px 20px;
   margin:10px;
-  font-size:28px;
-  border:none;
-  border-radius:8px;
-  cursor:pointer;
 }
-
-#confirmar{
-  background:#2ecc71;
-}
-
-#refazer{
-  background:#e74c3c;
-}
-
-#gabarito{
-  margin-top:15px;
-  font-size:18px;
-  color:#00ffcc;
-}
-
 </style>
 </head>
 
 <body>
 
-<h2>Scanner de Gabarito</h2>
+<h2>Scanner Inteligente</h2>
 
 <video id="video" autoplay playsinline style="display:none;"></video>
 <canvas id="canvas"></canvas>
 
-<div id="status">🔴 Iniciando câmera...</div>
+<div id="status">Iniciando...</div>
+<button onclick="refazer()">Refazer</button>
 
-<div id="botoes" style="display:none;">
-  <button id="confirmar" onclick="confirmar()">✔ Confirmar</button>
-  <button id="refazer" onclick="refazer()">❌ Refazer</button>
-</div>
-
-<div id="gabarito"></div>
+<script src="https://docs.opencv.org/4.x/opencv.js"></script>
 
 <script>
 
@@ -69,361 +40,314 @@ let video = document.getElementById("video")
 let canvas = document.getElementById("canvas")
 let ctx = canvas.getContext("2d")
 
-let rodando = true
-let framesEstaveis = 0
-let ultimoCentro = null
+let pronto=false
+let capturado=false
+let framesOK=0
 
-/* CAMERA TRASEIRA */
-navigator.mediaDevices.getUserMedia({
-  video: { facingMode: { ideal: "environment" } }
-})
-.then(stream=>{
-  video.srcObject = stream
-  loop()
-})
+cv.onRuntimeInitialized=()=>{
+  pronto=true
+  iniciar()
+}
 
-/* LOOP */
+function iniciar(){
+  navigator.mediaDevices.getUserMedia({
+    video:{facingMode:"environment"}
+  }).then(stream=>{
+    video.srcObject=stream
+    video.onloadedmetadata=()=>{
+      video.play()
+      loop()
+    }
+  })
+}
+
+/* ========================= */
 function loop(){
 
-  if(!rodando) return
-
-  if(video.videoWidth === 0){
+  if(!pronto || capturado){
     requestAnimationFrame(loop)
     return
   }
 
-  canvas.width = video.videoWidth
-  canvas.height = video.videoHeight
+  canvas.width=video.videoWidth
+  canvas.height=video.videoHeight
 
   ctx.drawImage(video,0,0)
 
-  let frame = ctx.getImageData(0,0,canvas.width,canvas.height)
-  let data = frame.data
+  let src=cv.imread(canvas)
+  let gray=new cv.Mat()
+  let bin=new cv.Mat()
 
-  // threshold
-  for(let i=0;i<data.length;i+=4){
-    let brilho = (data[i]+data[i+1]+data[i+2])/3
-    let cor = brilho < 50 ? 0 : 255
-    data[i]=data[i+1]=data[i+2]=cor
+  cv.cvtColor(src,gray,cv.COLOR_RGBA2GRAY)
+
+  cv.adaptiveThreshold(
+    gray,bin,255,
+    cv.ADAPTIVE_THRESH_MEAN_C,
+    cv.THRESH_BINARY_INV,
+    11,2
+  )
+
+  let contours=new cv.MatVector()
+  let hierarchy=new cv.Mat()
+
+  cv.findContours(bin,contours,hierarchy,
+    cv.RETR_EXTERNAL,cv.CHAIN_APPROX_SIMPLE)
+
+  let quadrados=[]
+
+  for(let i=0;i<contours.size();i++){
+
+    let cnt=contours.get(i)
+    let area=cv.contourArea(cnt)
+
+    if(area<500) continue
+
+    let peri=cv.arcLength(cnt,true)
+    let approx=new cv.Mat()
+
+    cv.approxPolyDP(cnt,approx,0.02*peri,true)
+
+    if(approx.rows===4){
+      let r=cv.boundingRect(approx)
+      quadrados.push(r)
+    }
   }
 
-  ctx.putImageData(frame,0,0)
+  quadrados.forEach(r=>{
+    ctx.strokeStyle="yellow"
+    ctx.strokeRect(r.x,r.y,r.width,r.height)
+  })
 
-  let marcadores = detectarMarcadores(frame)
-
-  if(marcadores){
-
-    let centro = centroMedio(marcadores)
-
-    if(ultimoCentro){
-
-      let dist = Math.hypot(
-        centro.x - ultimoCentro.x,
-        centro.y - ultimoCentro.y
-      )
-
-      if(dist < 2){
-        framesEstaveis++
-      }else{
-        framesEstaveis = 0
-      }
+  if(quadrados.length===4){
+    framesOK++
+    if(framesOK>6){
+      capturarFrame(quadrados)
     }
-
-    ultimoCentro = centro
-
-    document.getElementById("status").innerText =
-      `🟡 Estabilizando... (${framesEstaveis})`
-
-    if(framesEstaveis > 8){
-      capturar(frame)
-      return
-    }
-
   }else{
-    document.getElementById("status").innerText =
-      "🔴 Posicione o gabarito"
+    framesOK=0
   }
+
+  src.delete()
+  gray.delete()
+  bin.delete()
+  contours.delete()
+  hierarchy.delete()
 
   requestAnimationFrame(loop)
 }
 
-/* CAPTURA */
-function capturar(frame){
+/* ========================= */
+function capturarFrame(quadrados){
 
-  rodando = false
+  capturado=true
 
-  ctx.putImageData(frame,0,0)
+  let frame = ctx.getImageData(0,0,canvas.width,canvas.height)
+  let src = cv.matFromImageData(frame)
 
-  processarImagem(frame)
+  let p = ordenar(quadrados)
+
+  let largura=600
+  let altura=900
+
+  let srcTri=cv.matFromArray(4,1,cv.CV_32FC2,[
+    p.TL.x,p.TL.y,
+    p.TR.x+p.TR.width,p.TR.y,
+    p.BL.x,p.BL.y+p.BL.height,
+    p.BR.x+p.BR.width,p.BR.y+p.BR.height
+  ])
+
+  let dstTri=cv.matFromArray(4,1,cv.CV_32FC2,[
+    0,0, largura,0, 0,altura, largura,altura
+  ])
+
+  let M=cv.getPerspectiveTransform(srcTri,dstTri)
+  let dst=new cv.Mat()
+
+  cv.warpPerspective(src,dst,M,new cv.Size(largura,altura))
+
+  cv.imshow(canvas,dst)
+
+  detectarBolhas(dst)
 
   document.getElementById("status").innerText =
     "🟢 Conferir leitura"
-
-  document.getElementById("botoes").style.display = "block"
 }
 
-/* BOTÕES */
-function confirmar(){
-  alert("Leitura confirmada")
-}
+/* ========================= */
+function detectarBolhas(mat){
 
-function refazer(){
-  rodando = true
-  framesEstaveis = 0
-  ultimoCentro = null
-  document.getElementById("botoes").style.display = "none"
-  document.getElementById("gabarito").innerText = ""
-  loop()
-}
+  let gray = new cv.Mat()
+  let blur = new cv.Mat()
+  let bin = new cv.Mat()
 
-/* DETECTAR MARCADORES */
-function detectarMarcadores(frame){
+  cv.cvtColor(mat, gray, cv.COLOR_RGBA2GRAY)
+  cv.GaussianBlur(gray, blur, new cv.Size(5,5), 0)
 
-  let data = frame.data
-  let w = canvas.width
-  let h = canvas.height
-
-  let visitado = new Uint8Array(w*h)
-  let blobs = []
-
-  function floodFill(x,y){
-
-    let stack=[[x,y]]
-    let minX=x,maxX=x,minY=y,maxY=y,area=0
-
-    while(stack.length){
-
-      let [px,py]=stack.pop()
-      let idx=py*w+px
-
-      if(visitado[idx]) continue
-      visitado[idx]=1
-
-      let i=idx*4
-      if(data[i]!==0) continue
-
-      area++
-
-      minX=Math.min(minX,px)
-      maxX=Math.max(maxX,px)
-      minY=Math.min(minY,py)
-      maxY=Math.max(maxY,py)
-
-      for(let dx=-1;dx<=1;dx++){
-      for(let dy=-1;dy<=1;dy++){
-        let nx=px+dx
-        let ny=py+dy
-        if(nx>=0&&ny>=0&&nx<w&&ny<h){
-          stack.push([nx,ny])
-        }
-      }}
-    }
-
-    return {area,minX,maxX,minY,maxY}
-  }
-
-  for(let y=0;y<h;y+=4){
-  for(let x=0;x<w;x+=4){
-
-    let idx=y*w+x
-    if(visitado[idx]) continue
-
-    let i=idx*4
-
-    if(data[i]===0){
-      let b=floodFill(x,y)
-      if(b.area>500) blobs.push(b)
-    }
-
-  }}
-
-  blobs.sort((a,b)=>b.area-a.area)
-
-  if(blobs.length < 4) return null
-
-  let maiores = blobs.slice(0,4)
-
-  return maiores.map(b=>({
-    x:(b.minX+b.maxX)/2,
-    y:(b.minY+b.maxY)/2
-  }))
-}
-
-/* CENTRO */
-function centroMedio(centros){
-
-  let x=0,y=0
-
-  centros.forEach(c=>{
-    x+=c.x
-    y+=c.y
-  })
-
-  return {x:x/centros.length, y:y/centros.length}
-}
-
-/* PROCESSAMENTO */
-function processarImagem(frame){
-
-  let data = frame.data
-  let w = canvas.width
-  let h = canvas.height
-
-  let visitado = new Uint8Array(w*h)
-  let blobs = []
-
-  function floodFill(x,y){
-    let stack=[[x,y]]
-    let minX=x,maxX=x,minY=y,maxY=y,area=0
-
-    while(stack.length){
-      let [px,py]=stack.pop()
-      let idx=py*w+px
-
-      if(visitado[idx]) continue
-      visitado[idx]=1
-
-      let i=idx*4
-      if(data[i]!==0) continue
-
-      area++
-
-      minX=Math.min(minX,px)
-      maxX=Math.max(maxX,px)
-      minY=Math.min(minY,py)
-      maxY=Math.max(maxY,py)
-
-      for(let dx=-1;dx<=1;dx++){
-      for(let dy=-1;dy<=1;dy++){
-        let nx=px+dx
-        let ny=py+dy
-        if(nx>=0&&ny>=0&&nx<w&&ny<h){
-          stack.push([nx,ny])
-        }
-      }}
-    }
-
-    return {area,minX,maxX,minY,maxY}
-  }
-
-  for(let y=0;y<h;y+=2){
-  for(let x=0;x<w;x+=2){
-
-    let idx=y*w+x
-    if(visitado[idx]) continue
-
-    let i=idx*4
-
-    if(data[i]===0){
-      let b=floodFill(x,y)
-      if(b.area>200) blobs.push(b)
-    }
-
-  }}
-
-  blobs.sort((a,b)=>b.area-a.area)
-
-  let candidatos = blobs.slice(4)
-
-  let areas = candidatos.map(b=>b.area).sort((a,b)=>a-b)
-  let mediana = areas[Math.floor(areas.length/2)]
-
-  let bolhas = candidatos.filter(b =>
-    b.area > mediana*0.5 && b.area < mediana*1.8
+  cv.adaptiveThreshold(
+    blur, bin, 255,
+    cv.ADAPTIVE_THRESH_MEAN_C,
+    cv.THRESH_BINARY_INV,
+    11, 2
   )
 
-  let pontos = bolhas.map(b=>({
-    x:(b.minX+b.maxX)/2,
-    y:(b.minY+b.maxY)/2
-  }))
+  let contours = new cv.MatVector()
+  let hierarchy = new cv.Mat()
 
-  pontos.sort((a,b)=>a.y-b.y)
+  cv.findContours(bin, contours, hierarchy,
+    cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
 
-  let linhas=[]
-  let tolY=20
+  let bolhas = []
 
-  pontos.forEach(p=>{
-    let linha = linhas.find(l=>Math.abs(l.y-p.y)<tolY)
-    if(linha) linha.pontos.push(p)
-    else linhas.push({y:p.y,pontos:[p]})
+  for(let i=0;i<contours.size();i++){
+
+    let cnt = contours.get(i)
+    let area = cv.contourArea(cnt)
+
+    if(area < 80 || area > 2000) continue
+
+    let rect = cv.boundingRect(cnt)
+    let ratio = rect.width / rect.height
+
+    if(ratio < 0.7 || ratio > 1.3) continue
+
+    bolhas.push({
+      x: rect.x + rect.width/2,
+      y: rect.y + rect.height/2,
+      w: rect.width,
+      h: rect.height
+    })
+  }
+
+  // ===== FILTRO LATERAL =====
+  let largura = mat.cols
+  bolhas = bolhas.filter(b => 
+    b.x > largura * 0.2 && 
+    b.x < largura * 0.8
+  )
+
+  // ===== AGRUPAR LINHAS =====
+  bolhas.sort((a,b)=>a.y - b.y)
+
+  let linhas = []
+  let tol = 20
+
+  bolhas.forEach(b=>{
+
+    let achou = false
+
+    for(let l of linhas){
+      if(Math.abs(l[0].y - b.y) < tol){
+        l.push(b)
+        achou = true
+        break
+      }
+    }
+
+    if(!achou) linhas.push([b])
   })
 
-  linhas.forEach(l=>l.pontos.sort((a,b)=>a.x-b.x))
+  // ===== LIMITAR 10 QUESTÕES =====
+  linhas = linhas.slice(0,10)
 
-  let todos = pontos.slice().sort((a,b)=>a.x-b.x)
-
-  let colunas=[]
-  let tolX=25
-
-  todos.forEach(p=>{
-    let col = colunas.find(c=>Math.abs(c.x-p.x)<tolX)
-    if(col) col.pontos.push(p)
-    else colunas.push({x:p.x,pontos:[p]})
+  // ===== ORDENAR E LIMITAR COLUNAS =====
+  linhas = linhas.map(linha=>{
+    linha.sort((a,b)=>a.x - b.x)
+    return linha.slice(0,4)
   })
 
-  colunas.sort((a,b)=>a.x-b.x)
+  // ===== INTENSIDADE =====
+  function intensidade(b){
 
-  let respostas=[]
-  let raio=15
+    let margem = 0.25
+
+    let x = Math.floor(b.x - b.w/2 + b.w*margem)
+    let y = Math.floor(b.y - b.h/2 + b.h*margem)
+    let w = Math.floor(b.w*(1-2*margem))
+    let h = Math.floor(b.h*(1-2*margem))
+
+    let roi = mat.roi(new cv.Rect(x,y,w,h))
+
+    let g = new cv.Mat()
+    cv.cvtColor(roi, g, cv.COLOR_RGBA2GRAY)
+
+    let t = new cv.Mat()
+    cv.threshold(g, t, 0,255,
+      cv.THRESH_BINARY_INV + cv.THRESH_OTSU)
+
+    let total = w*h
+    let pretos = cv.countNonZero(t)
+
+    g.delete()
+    t.delete()
+    roi.delete()
+
+    return pretos / total
+  }
+
+  let respostas = []
 
   linhas.forEach((linha,i)=>{
 
-    respostas[i]=[]
+    let dados = linha.map((b,j)=>({
+      index: j,
+      val: intensidade(b),
+      b: b
+    }))
 
-    linha.pontos.forEach(p=>{
+    dados.sort((a,b)=>b.val - a.val)
 
-      let colIndex = colunas.findIndex(c =>
-        Math.abs(c.x - p.x) < tolX
-      )
+    let melhor = dados[0]
+    let segundo = dados[1]
 
-      if(colIndex === -1) return
+    let resposta = "-"
 
-      let soma=0, cont=0
+    if(
+      melhor.val >= 0.25 && 
+      (melhor.val - segundo.val) >= 0.08
+    ){
+      resposta = ["A","B","C","D"][melhor.index]
+    }
 
-      for(let dx=-raio;dx<=raio;dx++){
-      for(let dy=-raio;dy<=raio;dy++){
+    respostas.push(resposta)
 
-        if(Math.sqrt(dx*dx+dy*dy)>raio*0.7) continue
+    dados.forEach(d=>{
+      ctx.fillStyle = (d.index === melhor.index && resposta !== "-")
+        ? "lime"
+        : "red"
 
-        let x=Math.floor(p.x+dx)
-        let y=Math.floor(p.y+dy)
-
-        if(x<0||y<0||x>=canvas.width||y>=canvas.height) continue
-
-        let idx=(y*canvas.width+x)*4
-        cont++
-
-        if(data[idx]===0) soma++
-
-      }}
-
-      let dens=soma/cont
-
-      if(dens>0.18){
-
-        respostas[i].push(colIndex)
-
-        ctx.fillStyle="rgba(0,255,0,0.5)"
-        ctx.beginPath()
-        ctx.arc(p.x,p.y,raio,0,Math.PI*2)
-        ctx.fill()
-      }
-
-      ctx.fillStyle="red"
-      ctx.fillRect(p.x-2,p.y-2,4,4)
-
+      ctx.fillRect(d.b.x-4, d.b.y-4, 8, 8)
     })
+
   })
 
-  let letras=["A","B","C","D"]
+  console.log("Respostas:", respostas.join(" "))
 
-  let txt = respostas.map((r,i)=>{
-    if(!r.length) return `${i+1}: -`
-    return `${i+1}: ${r.map(j=>letras[j]).join(",")}`
-  })
+  gray.delete()
+  blur.delete()
+  bin.delete()
+  contours.delete()
+  hierarchy.delete()
+}
 
-  document.getElementById("gabarito").innerText =
-    txt.join(" | ")
+/* ========================= */
+function ordenar(q){
+
+  q.sort((a,b)=>a.y-b.y)
+
+  let top=q.slice(0,2)
+  let bottom=q.slice(2,4)
+
+  top.sort((a,b)=>a.x-b.x)
+  bottom.sort((a,b)=>a.x-b.x)
+
+  return {TL:top[0],TR:top[1],BL:bottom[0],BR:bottom[1]}
+}
+
+/* ========================= */
+function refazer(){
+  capturado=false
+  framesOK=0
+  document.getElementById("status").innerText = "Reiniciando..."
 }
 
 </script>

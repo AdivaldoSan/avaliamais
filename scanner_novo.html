@@ -16,13 +16,19 @@ canvas{
   max-width:650px;
 }
 button{
-  padding:10px 18px;
+  padding:10px 16px;
   margin:5px;
+  font-size:16px;
 }
 input{
   padding:8px;
-  width:200px;
+  width:220px;
   text-align:center;
+  font-size:16px;
+}
+#qtdBox{
+  font-size:22px;
+  margin:10px;
 }
 </style>
 </head>
@@ -31,14 +37,15 @@ input{
 
 <h2>Scanner Inteligente</h2>
 
-<div style="margin:10px;">
-  <button onclick="diminuir()">-</button>
-  <span id="qtdQuestoes">10</span>
-  <button onclick="aumentar()">+</button>
+<div id="qtdBox">
+  <button onclick="alterarQtd(-1)">➖</button>
+  <span id="qtdLabel">10</span>
+  <button onclick="alterarQtd(1)">➕</button>
 </div>
 
 <div>
-  Gabarito: <input id="gabarito" placeholder="Ex: A B C D A">
+  Gabarito:
+  <input id="gabaritoInput" placeholder="Ex: A B C D A">
 </div>
 
 <br>
@@ -47,14 +54,15 @@ input{
 <canvas id="canvas"></canvas>
 
 <div id="status">Iniciando...</div>
+<div id="respostas" style="margin-top:10px;font-size:18px;"></div>
 
 <div>
-  <button onclick="lerNovamente()">Ler novamente</button>
-  <button onclick="confirmar()">Confirmar</button>
-  <button onclick="refazer()">Refazer tudo</button>
+  <button onclick="lerNovamente()">🔄 Ler novamente</button>
+  <button onclick="confirmar()">✔ Confirmar</button>
+  <button onclick="refazer()">❌ Refazer</button>
 </div>
 
-<div id="resultadoFinal" style="margin-top:15px;"></div>
+<div id="resultado" style="margin-top:15px;font-size:18px;"></div>
 
 <script src="https://docs.opencv.org/4.x/opencv.js"></script>
 
@@ -70,12 +78,60 @@ let framesOK=0
 let ultimaImagem=null
 let respostasLidas=[]
 
-// TEMPLATE FIXO
+// TEMPLATE
 const TEMPLATE = {
-  colunas: [0.305,0.447,0.583,0.732],
-  topo: 0.21,
-  base: 0.81,
+  colunas: [0.30, 0.45, 0.58, 0.73],
   questoes: 10
+}
+
+// ==============================
+// CONTROLE QTD
+function alterarQtd(delta){
+
+  let nova = TEMPLATE.questoes + delta
+
+  if(nova < 1) nova = 1
+  if(nova > 15) nova = 15
+
+  TEMPLATE.questoes = nova
+
+  document.getElementById("qtdLabel").innerText = nova
+  document.getElementById("status").innerText = "Qtd: " + nova
+}
+
+// ==============================
+// INTERPOLAÇÃO
+function getTopoBase(qtd){
+
+  const pontos = [
+    {q:1,  topo:0.5307, base:0.5307},
+    {q:5,  topo:0.3248, base:0.7137},
+    {q:6,  topo:0.2908, base:0.7396},
+    {q:8,  topo:0.2508, base:0.7811},
+    {q:10, topo:0.2158, base:0.8090},
+    {q:15, topo:0.1607, base:0.8563}
+  ]
+
+  let exato = pontos.find(p => p.q === qtd)
+  if(exato) return exato
+
+  for(let i=0;i<pontos.length-1;i++){
+
+    let p1 = pontos[i]
+    let p2 = pontos[i+1]
+
+    if(qtd > p1.q && qtd < p2.q){
+
+      let t = (qtd - p1.q) / (p2.q - p1.q)
+
+      return {
+        topo: p1.topo + t*(p2.topo - p1.topo),
+        base: p1.base + t*(p2.base - p1.base)
+      }
+    }
+  }
+
+  return pontos[pontos.length-1]
 }
 
 // ==============================
@@ -84,30 +140,11 @@ cv.onRuntimeInitialized=()=>{
   iniciar()
 }
 
-function atualizarDisplay(){
-  document.getElementById("qtdQuestoes").innerText = TEMPLATE.questoes
-}
-
-function aumentar(){
-  if(TEMPLATE.questoes < 20){
-    TEMPLATE.questoes++
-    atualizarDisplay()
-  }
-}
-
-function diminuir(){
-  if(TEMPLATE.questoes > 1){
-    TEMPLATE.questoes--
-    atualizarDisplay()
-  }
-}
-
-atualizarDisplay()
-
 function iniciar(){
   navigator.mediaDevices.getUserMedia({
-    video:{facingMode:"environment"}
-  }).then(stream=>{
+    video:{facingMode:{ideal:"environment"}}
+  })
+  .then(stream=>{
     video.srcObject=stream
     video.onloadedmetadata=()=>{
       video.play()
@@ -184,8 +221,11 @@ function loop(){
     framesOK=0
   }
 
-  src.delete(); gray.delete(); bin.delete()
-  contours.delete(); hierarchy.delete()
+  src.delete()
+  gray.delete()
+  bin.delete()
+  contours.delete()
+  hierarchy.delete()
 
   requestAnimationFrame(loop)
 }
@@ -232,13 +272,19 @@ function capturarFrame(quadrados){
 // ==============================
 function lerRespostas(mat){
 
+  let qtd = TEMPLATE.questoes
+  let tb = getTopoBase(qtd)
+
+  let topo = tb.topo
+  let base = tb.base
+
+  let passo = (qtd > 1) ? (base - topo)/(qtd-1) : 0
+
   respostasLidas = []
 
-  let passo = (TEMPLATE.base - TEMPLATE.topo) / (TEMPLATE.questoes - 1)
+  for(let i=0;i<qtd;i++){
 
-  for(let i=0;i<TEMPLATE.questoes;i++){
-
-    let y = TEMPLATE.topo + i * passo
+    let y = (qtd === 1) ? topo : topo + i*passo
 
     let valores=[]
 
@@ -249,7 +295,14 @@ function lerRespostas(mat){
       let px = Math.floor(x * mat.cols)
       let py = Math.floor(y * mat.rows)
 
-      let roi = mat.roi(new cv.Rect(px-15,py-15,30,30))
+      let size = 15
+
+      let x0 = Math.max(px-size,0)
+      let y0 = Math.max(py-size,0)
+      let w = Math.min(size*2, mat.cols - x0)
+      let h = Math.min(size*2, mat.rows - y0)
+
+      let roi = mat.roi(new cv.Rect(x0,y0,w,h))
 
       let gray=new cv.Mat()
       cv.cvtColor(roi,gray,cv.COLOR_RGBA2GRAY)
@@ -258,15 +311,16 @@ function lerRespostas(mat){
       cv.threshold(gray,t,0,255,
         cv.THRESH_BINARY_INV+cv.THRESH_OTSU)
 
-      let intensidade = cv.countNonZero(t)/(30*30)
+      let intensidade=cv.countNonZero(t)/(w*h)
 
       valores.push(intensidade)
 
-      gray.delete(); t.delete(); roi.delete()
+      gray.delete()
+      t.delete()
+      roi.delete()
     }
 
-    // NORMALIZAÇÃO
-    let media = valores.reduce((a,b)=>a+b,0)/4
+    let media = Math.max(valores.reduce((a,b)=>a+b,0)/4,0.01)
     let norm = valores.map(v=>v/media)
 
     let ordenado=[...norm].sort((a,b)=>b-a)
@@ -277,6 +331,7 @@ function lerRespostas(mat){
     let resp="_"
 
     if(max>1.15 && (max-segundo)>0.08){
+
       let idx=norm.indexOf(max)
       resp=["A","B","C","D"][idx]
 
@@ -285,15 +340,16 @@ function lerRespostas(mat){
 
       ctx.beginPath()
       ctx.arc(cx,cy,12,0,Math.PI*2)
-      ctx.lineWidth=3
       ctx.strokeStyle="lime"
+      ctx.lineWidth=3
       ctx.stroke()
     }
 
     respostasLidas.push(resp)
   }
 
-  console.log("LIDO:",respostasLidas.join(" "))
+  document.getElementById("respostas").innerText =
+    "Aluno: "+respostasLidas.join(" ")
 }
 
 // ==============================
@@ -307,7 +363,7 @@ function lerNovamente(){
 // ==============================
 function confirmar(){
 
-  let gabarito = document.getElementById("gabarito").value
+  let gabarito = document.getElementById("gabaritoInput").value
     .toUpperCase()
     .replace(/[^ABCD]/g,"")
     .split("")
@@ -320,7 +376,8 @@ function confirmar(){
   let acertos=0
 
   for(let i=0;i<gabarito.length;i++){
-    if(respostasLidas[i]===gabarito[i]){
+
+    if(respostasLidas[i] === gabarito[i]){
       html+="✅ "
       acertos++
     }else{
@@ -330,7 +387,7 @@ function confirmar(){
 
   html += "<br><br>Acertos: "+acertos
 
-  document.getElementById("resultadoFinal").innerHTML = html
+  document.getElementById("resultado").innerHTML = html
 }
 
 // ==============================
@@ -352,7 +409,8 @@ function refazer(){
   capturado=false
   framesOK=0
   respostasLidas=[]
-  document.getElementById("resultadoFinal").innerHTML=""
+  document.getElementById("resultado").innerHTML=""
+  document.getElementById("status").innerText="Reiniciando..."
 }
 
 </script>

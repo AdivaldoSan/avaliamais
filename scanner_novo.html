@@ -120,11 +120,9 @@ function loop(){
 
   if(quadrados.length===4){
     framesOK++
-
     if(framesOK>6){
       capturarFrame(quadrados)
     }
-
   }else{
     framesOK=0
   }
@@ -169,7 +167,6 @@ function capturarFrame(quadrados){
 
   cv.imshow(canvas,dst)
 
-  // 🔥 NOVO: DETECTAR BOLHAS
   detectarBolhas(dst)
 
   document.getElementById("status").innerText =
@@ -221,6 +218,13 @@ function detectarBolhas(mat){
     })
   }
 
+  // ===== FILTRO LATERAL =====
+  let largura = mat.cols
+  bolhas = bolhas.filter(b => 
+    b.x > largura * 0.2 && 
+    b.x < largura * 0.8
+  )
+
   // ===== AGRUPAR LINHAS =====
   bolhas.sort((a,b)=>a.y - b.y)
 
@@ -242,7 +246,14 @@ function detectarBolhas(mat){
     if(!achou) linhas.push([b])
   })
 
-  linhas.forEach(l=>l.sort((a,b)=>a.x - b.x))
+  // ===== LIMITAR 10 QUESTÕES =====
+  linhas = linhas.slice(0,10)
+
+  // ===== ORDENAR E LIMITAR COLUNAS =====
+  linhas = linhas.map(linha=>{
+    linha.sort((a,b)=>a.x - b.x)
+    return linha.slice(0,4)
+  })
 
   // ===== INTENSIDADE =====
   function intensidade(b){
@@ -277,41 +288,37 @@ function detectarBolhas(mat){
 
   linhas.forEach((linha,i)=>{
 
-  // calcula intensidade de cada bolha
-  let dados = linha.map((b,j)=>({
-    index: j,
-    val: intensidade(b),
-    b: b
-  }))
+    let dados = linha.map((b,j)=>({
+      index: j,
+      val: intensidade(b),
+      b: b
+    }))
 
-  // ordena da mais forte pra mais fraca
-  dados.sort((a,b)=>b.val - a.val)
+    dados.sort((a,b)=>b.val - a.val)
 
-  let melhor = dados[0]
-  let segundo = dados[1]
+    let melhor = dados[0]
+    let segundo = dados[1]
 
-  let resposta = "-"
+    let resposta = "-"
 
-  // validação mais robusta
-  if(
-    melhor.val >= 0.25 && 
-    (melhor.val - segundo.val) >= 0.08
-  ){
-    resposta = ["A","B","C","D"][melhor.index]
-  }
+    if(
+      melhor.val >= 0.25 && 
+      (melhor.val - segundo.val) >= 0.08
+    ){
+      resposta = ["A","B","C","D"][melhor.index]
+    }
 
-  respostas.push(resposta)
+    respostas.push(resposta)
 
-  // debug visual
-  dados.forEach(d=>{
-    ctx.fillStyle = (d.index === melhor.index && resposta !== "-")
-      ? "lime"
-      : "red"
+    dados.forEach(d=>{
+      ctx.fillStyle = (d.index === melhor.index && resposta !== "-")
+        ? "lime"
+        : "red"
 
-    ctx.fillRect(d.b.x-4, d.b.y-4, 8, 8)
+      ctx.fillRect(d.b.x-4, d.b.y-4, 8, 8)
+    })
+
   })
-
-})
 
   console.log("Respostas:", respostas.join(" "))
 

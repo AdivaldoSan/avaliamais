@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Scanner Híbrido</title>
+<title>Scanner Gabarito</title>
 
 <style>
 body{
@@ -11,25 +11,29 @@ body{
   text-align:center;
   font-family:Arial;
 }
+
 canvas{
   width:100%;
   max-width:650px;
   margin-top:10px;
   background:#000;
 }
-button{
-  padding:20px;
-  margin:10px;
-  font-size:18px;
+
+#status{
+  font-size:28px;
+  margin-top:10px;
 }
-#status{font-size:28px;}
-#debug{font-size:14px;color:#aaa;}
+
+#debug{
+  font-size:14px;
+  color:#aaa;
+}
 </style>
 </head>
 
 <body>
 
-<h2>Scanner Híbrido</h2>
+<h2>Scanner Gabarito</h2>
 
 <video id="video" autoplay playsinline style="display:none;"></video>
 <canvas id="canvas"></canvas>
@@ -43,10 +47,12 @@ let video = document.getElementById("video")
 let canvas = document.getElementById("canvas")
 let ctx = canvas.getContext("2d")
 
+let framesEstaveis = 0
 let rodando = true
-let qr = { questoes:10, colunas:4 }
 
-/* CAMERA */
+/* =========================
+CAMERA
+========================= */
 navigator.mediaDevices.getUserMedia({
   video:{ facingMode:"environment" }
 })
@@ -57,8 +63,14 @@ navigator.mediaDevices.getUserMedia({
     loop()
   }
 })
+.catch(err=>{
+  document.getElementById("status").innerText =
+    "Erro câmera: " + err.message
+})
 
-/* LOOP */
+/* =========================
+LOOP
+========================= */
 function loop(){
 
   if(!rodando) return
@@ -76,7 +88,7 @@ function loop(){
   let frame = ctx.getImageData(0,0,canvas.width,canvas.height)
   let data = frame.data
 
-  // binarização
+  // threshold
   for(let i=0;i<data.length;i+=4){
     let brilho = (data[i]+data[i+1]+data[i+2])/3
     let cor = brilho < 80 ? 0 : 255
@@ -85,192 +97,119 @@ function loop(){
 
   ctx.putImageData(frame,0,0)
 
-  let marcadores = detectarMarcadores(frame)
+  let ret = detectarRetangulo(frame)
 
-  document.getElementById("debug").innerText =
-    `Blobs: ${window._blobs||0} | Candidatos: ${window._candidatos||0}`
+  if(ret){
 
-  if(marcadores){
-    processarImagem(frame, marcadores)
-    rodando = false
-    document.getElementById("status").innerText = "🟢 Capturado"
-    return
+    desenharRetangulo(ret)
+
+    framesEstaveis++
+    document.getElementById("status").innerText =
+      "🟡 Detectado - estabilizando " + framesEstaveis
+
+    if(framesEstaveis > 10){
+      capturar(frame, ret)
+      return
+    }
+
+  }else{
+    framesEstaveis = 0
+    document.getElementById("status").innerText =
+      "🔴 Posicione o gabarito"
   }
 
   requestAnimationFrame(loop)
 }
 
-/* DETECÇÃO */
-function detectarMarcadores(frame){
+/* =========================
+DETECÇÃO POR BORDA
+========================= */
+function detectarRetangulo(frame){
 
   let data = frame.data
   let w = canvas.width
   let h = canvas.height
 
-  let visitado = new Uint8Array(w*h)
-  let blobs = []
+  let minX=99999,maxX=0,minY=99999,maxY=0
+  let count = 0
 
-  function flood(x,y){
-    let stack=[[x,y]]
-    let minX=x,maxX=x,minY=y,maxY=y,area=0
+  for(let y=1;y<h-1;y+=2){
+    for(let x=1;x<w-1;x+=2){
 
-    while(stack.length){
-      let [px,py]=stack.pop()
-      let idx=py*w+px
-      if(visitado[idx]) continue
-      visitado[idx]=1
+      let i = (y*w+x)*4
 
-      let i=idx*4
-      if(data[i]!==0) continue
+      let atual = data[i]
+      let direita = data[i+4]
+      let baixo = data[i+w*4]
 
-      area++
+      if(Math.abs(atual - direita) > 120 ||
+         Math.abs(atual - baixo) > 120){
 
-      minX=Math.min(minX,px)
-      maxX=Math.max(maxX,px)
-      minY=Math.min(minY,py)
-      maxY=Math.max(maxY,py)
+        count++
 
-      for(let dx=-1;dx<=1;dx++){
-        for(let dy=-1;dy<=1;dy++){
-          let nx=px+dx
-          let ny=py+dy
-          if(nx>=0&&ny>=0&&nx<w&&ny<h){
-            stack.push([nx,ny])
-          }
-        }
-      }
-    }
-
-    return {area,minX,maxX,minY,maxY}
-  }
-
-  for(let y=0;y<h;y+=4){
-    for(let x=0;x<w;x+=4){
-      let idx=y*w+x
-      if(visitado[idx]) continue
-
-      let i=idx*4
-      if(data[i]===0){
-        let b=flood(x,y)
-
-        if(b.area>800 && b.area<20000){
-
-  let largura = b.maxX - b.minX
-  let altura = b.maxY - b.minY
-
-  let proporcao = largura / altura
-
-  // só aceita formato próximo de quadrado
-  if(proporcao > 0.6 && proporcao < 1.4){
-    blobs.push(b)
-  }
-
-}
-
+        if(x<minX) minX=x
+        if(x>maxX) maxX=x
+        if(y<minY) minY=y
+        if(y>maxY) maxY=y
       }
     }
   }
 
-  window._blobs = blobs.length
+  document.getElementById("debug").innerText =
+    "Pontos borda: " + count
 
-  // calcular centro
-  let candidatos = blobs.map(b=>({
-    ...b,
-    cx:(b.minX+b.maxX)/2,
-    cy:(b.minY+b.maxY)/2
-  }))
+  if(count < 500) return null
 
-  // FILTRO POR REGIÃO DE CANTO (ESSENCIAL)
-  candidatos = candidatos.filter(b=>{
-    let margemX = w*0.2
-    let margemY = h*0.2
+  let largura = maxX - minX
+  let altura = maxY - minY
 
-    return (
-      (b.cx < margemX && b.cy < margemY) || // TL
-      (b.cx > w-margemX && b.cy < margemY) || // TR
-      (b.cx < margemX && b.cy > h-margemY) || // BL
-      (b.cx > w-margemX && b.cy > h-margemY)   // BR
-    )
-  })
+  if(largura < w*0.3 || altura < h*0.3) return null
 
-  window._candidatos = candidatos.length
-
-  if(candidatos.length !== 4) return null
-
-  // ordenar
-  candidatos.sort((a,b)=>a.cy - b.cy)
-
-  let top = candidatos.slice(0,2)
-  let bottom = candidatos.slice(2,4)
-
-  top.sort((a,b)=>a.cx - b.cx)
-  bottom.sort((a,b)=>a.cx - b.cx)
-
-  let TL = top[0]
-  let TR = top[1]
-  let BL = bottom[0]
-  let BR = bottom[1]
-
-  // VALIDAÇÃO GEOMÉTRICA (CHAVE)
-  let larguraTopo = TR.cx - TL.cx
-  let larguraBase = BR.cx - BL.cx
-  let alturaEsq = BL.cy - TL.cy
-  let alturaDir = BR.cy - TR.cy
-
-  let tolerancia = 0.4
-
-  let larguraOK = Math.abs(larguraTopo - larguraBase)/larguraTopo < tolerancia
-  let alturaOK = Math.abs(alturaEsq - alturaDir)/alturaEsq < tolerancia
-
-  if(!larguraOK || !alturaOK) return null
-
-  return candidatos
-}
-/* PROCESSAMENTO */
-function processarImagem(frame, marcadores){
-
-  // ordenar por posição
-  marcadores.sort((a,b)=>a.cy - b.cy)
-
-  let top = marcadores.slice(0,2)
-  let bottom = marcadores.slice(2,4)
-
-  top.sort((a,b)=>a.cx - b.cx)
-  bottom.sort((a,b)=>a.cx - b.cx)
-
-  let TL = { x: top[0].minX, y: top[0].minY }
-  let TR = { x: top[1].maxX, y: top[1].minY }
-  let BL = { x: bottom[0].minX, y: bottom[0].maxY }
-  let BR = { x: bottom[1].maxX, y: bottom[1].maxY }
-
-  let temp = document.createElement("canvas")
-  temp.width = canvas.width
-  temp.height = canvas.height
-  temp.getContext("2d").putImageData(frame,0,0)
-
-  let warp = warpImagem(temp, TL, TR, BL, BR, 800, 1200)
-
-  ctx.clearRect(0,0,canvas.width,canvas.height)
-  ctx.drawImage(warp,0,0)
+  return {
+    TL:{x:minX,y:minY},
+    TR:{x:maxX,y:minY},
+    BL:{x:minX,y:maxY},
+    BR:{x:maxX,y:maxY}
+  }
 }
 
-/* WARP */
-function warpImagem(src, TL, TR, BL, BR, W, H){
+/* =========================
+DESENHO VISUAL
+========================= */
+function desenharRetangulo(r){
 
-  let dst = document.createElement("canvas")
-  dst.width=W
-  dst.height=H
+  ctx.strokeStyle = "lime"
+  ctx.lineWidth = 4
 
-  let ctx = dst.getContext("2d")
+  ctx.beginPath()
+  ctx.moveTo(r.TL.x, r.TL.y)
+  ctx.lineTo(r.TR.x, r.TR.y)
+  ctx.lineTo(r.BR.x, r.BR.y)
+  ctx.lineTo(r.BL.x, r.BL.y)
+  ctx.closePath()
+  ctx.stroke()
+}
 
-  ctx.drawImage(src,
-    TL.x, TL.y,
-    TR.x-TL.x,
-    BL.y-TL.y,
-    0,0,W,H
-  )
+/* =========================
+CAPTURA
+========================= */
+function capturar(frame, r){
 
-  return dst
+  rodando = false
+
+  ctx.strokeStyle = "yellow"
+  ctx.lineWidth = 6
+
+  ctx.beginPath()
+  ctx.moveTo(r.TL.x, r.TL.y)
+  ctx.lineTo(r.TR.x, r.TR.y)
+  ctx.lineTo(r.BR.x, r.BR.y)
+  ctx.lineTo(r.BL.x, r.BL.y)
+  ctx.closePath()
+  ctx.stroke()
+
+  document.getElementById("status").innerText =
+    "🟢 Capturado"
 }
 
 </script>

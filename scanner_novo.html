@@ -277,33 +277,41 @@ function detectarBolhas(mat){
 
   linhas.forEach((linha,i)=>{
 
-    let melhor = -1
-    let maior = 0
+  // calcula intensidade de cada bolha
+  let dados = linha.map((b,j)=>({
+    index: j,
+    val: intensidade(b),
+    b: b
+  }))
 
-    linha.forEach((b,j)=>{
+  // ordena da mais forte pra mais fraca
+  dados.sort((a,b)=>b.val - a.val)
 
-      let score = intensidade(b)
+  let melhor = dados[0]
+  let segundo = dados[1]
 
-      if(score > maior){
-        maior = score
-        melhor = j
-      }
+  let resposta = "-"
 
-    })
+  // validação mais robusta
+  if(
+    melhor.val >= 0.25 && 
+    (melhor.val - segundo.val) >= 0.08
+  ){
+    resposta = ["A","B","C","D"][melhor.index]
+  }
 
-    if(maior < 0.15){
-      respostas.push("-")
-    }else{
-      respostas.push(["A","B","C","D"][melhor])
-    }
+  respostas.push(resposta)
 
-    // debug visual
-    linha.forEach((b,j)=>{
-      ctx.fillStyle = (j===melhor && maior>=0.15) ? "lime" : "red"
-      ctx.fillRect(b.x-4, b.y-4, 8, 8)
-    })
+  // debug visual
+  dados.forEach(d=>{
+    ctx.fillStyle = (d.index === melhor.index && resposta !== "-")
+      ? "lime"
+      : "red"
 
+    ctx.fillRect(d.b.x-4, d.b.y-4, 8, 8)
   })
+
+})
 
   console.log("Respostas:", respostas.join(" "))
 

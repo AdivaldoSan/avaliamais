@@ -69,6 +69,8 @@ input{
 
 <br>
 
+<script src="https://unpkg.com/jsqr/dist/jsQR.js"></script>
+
 <!-- ==============================
      STREAM DA CÂMERA (oculto)
      ============================== -->
@@ -109,6 +111,12 @@ let capturado=false
 let framesOK=0
 let ultimaImagem=null
 let respostasLidas=[]
+
+// >>> INÍCIO ADIÇÃO — CONTROLE QR
+let modo = "qr" // "qr" ou "leitura"
+let gabaritoQR = null
+let qtdQR = 0
+// >>> FIM ADIÇÃO
 
 /* ==============================
    TEMPLATE FIXO DO GABARITO
@@ -189,6 +197,46 @@ function iniciar(){
   })
 }
 
+// >>> INÍCIO ADIÇÃO — LEITURA QR
+function detectarQR(){
+
+  let imageData = ctx.getImageData(0,0,canvas.width,canvas.height)
+
+  let code = jsQR(
+    imageData.data,
+    imageData.width,
+    imageData.height
+  )
+
+  if(code){
+
+    let texto = code.data
+
+    if(texto.includes("AVALIA+")){
+
+      let partes = texto.split("|")
+
+      qtdQR = parseInt(partes[1].split("=")[1])
+      gabaritoQR = partes[2].split("=")[1]
+
+      console.log("QR OK:", qtdQR, gabaritoQR)
+
+      // aplica automaticamente
+      TEMPLATE.questoes = qtdQR
+      document.getElementById("qtdLabel").innerText = qtdQR
+
+      modo = "leitura"
+
+      document.getElementById("status").innerText =
+        "QR lido ✔ Posicione o gabarito"
+    }
+  }
+}
+// >>> FIM ADIÇÃO
+
+
+   
+
 /* ==============================
    LOOP PRINCIPAL
    - captura frame
@@ -206,6 +254,14 @@ function loop(){
   canvas.height=video.videoHeight
 
   ctx.drawImage(video,0,0)
+
+// >>> INÍCIO ADIÇÃO — MODO QR
+if(modo === "qr"){
+  detectarQR()
+  requestAnimationFrame(loop)
+  return
+}
+// >>> FIM ADIÇÃO
 
   let src=cv.imread(canvas)
   let gray=new cv.Mat()
@@ -389,10 +445,18 @@ function lerNovamente(){
    ============================== */
 function confirmar(){
 
-  let gabarito = document.getElementById("gabaritoInput").value
+  // >>> INÍCIO ALTERAÇÃO — USAR QR
+let gabarito
+
+if(gabaritoQR){
+  gabarito = gabaritoQR.split("")
+}else{
+  gabarito = document.getElementById("gabaritoInput").value
     .toUpperCase()
     .replace(/[^ABCD]/g,"")
     .split("")
+}
+// >>> FIM ALTERAÇÃO
 
   let html="Aluno: "+respostasLidas.join(" ")+"<br>"
   html+="Gabarito: "+gabarito.join(" ")+"<br><br>"

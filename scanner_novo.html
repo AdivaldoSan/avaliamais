@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <title>Scanner Gabarito</title>
 
-<script async src="https://docs.opencv.org/4.x/opencv.js"></script>
+<script src="https://docs.opencv.org/4.x/opencv.js"></script>
 
 <style>
 body{
@@ -13,31 +13,9 @@ body{
   text-align:center;
   font-family:Arial;
 }
-
 canvas{
   width:95vw;
   max-width:650px;
-  margin-top:10px;
-  background:#000;
-}
-
-button{
-  padding:20px 30px;
-  margin:10px;
-  font-size:18px;
-  border:none;
-  border-radius:8px;
-}
-
-#status{
-  font-size:28px;
-  margin-top:10px;
-}
-
-#resultado{
-  margin-top:10px;
-  font-size:18px;
-  color:#00ffcc;
 }
 </style>
 </head>
@@ -49,10 +27,7 @@ button{
 <video id="video" autoplay playsinline style="display:none;"></video>
 <canvas id="canvas"></canvas>
 
-<div id="status">🔴 Iniciando...</div>
-<div id="resultado"></div>
-
-<button onclick="refazer()">🔄 Refazer</button>
+<div id="status">🔴 Carregando OpenCV...</div>
 
 <script>
 
@@ -60,27 +35,41 @@ let video = document.getElementById("video")
 let canvas = document.getElementById("canvas")
 let ctx = canvas.getContext("2d")
 
+let pronto = false
 let rodando = true
 
+// ================= AGUARDAR OPENCV =================
+cv['onRuntimeInitialized'] = () => {
+  pronto = true
+  document.getElementById("status").innerText = "🟡 Iniciando câmera..."
+  iniciarCamera()
+}
+
 // ================= CAMERA =================
-navigator.mediaDevices.getUserMedia({
-  video:{ facingMode:{ ideal:"environment" } }
-})
-.then(stream=>{
-  video.srcObject = stream
-  video.onloadedmetadata = ()=>{
-    video.play()
-    loop()
-  }
-})
-.catch(err=>{
-  status.innerText = "Erro câmera"
-})
+function iniciarCamera(){
+
+  navigator.mediaDevices.getUserMedia({
+    video:{ facingMode:{ ideal:"environment" } }
+  })
+  .then(stream=>{
+    video.srcObject = stream
+    video.onloadedmetadata = ()=>{
+      video.play()
+      loop()
+    }
+  })
+  .catch(err=>{
+    status.innerText = "Erro câmera: " + err.message
+  })
+}
 
 // ================= LOOP =================
 function loop(){
 
-  if(!rodando) return
+  if(!pronto || !rodando){
+    requestAnimationFrame(loop)
+    return
+  }
 
   if(video.videoWidth === 0){
     requestAnimationFrame(loop)
@@ -98,17 +87,26 @@ function loop(){
 
   if(marcadores){
 
-    document.getElementById("status").innerText = "🟡 Detectado"
+    // 🔥 DESENHAR RETÂNGULOS
+    ctx.strokeStyle="yellow"
+    ctx.lineWidth=4
+
+    marcadores.forEach(r=>{
+      ctx.strokeRect(r.x,r.y,r.width,r.height)
+    })
+
+    document.getElementById("status").innerText = "🟢 4 marcadores detectados"
 
     let warp = aplicarWarp(src, marcadores)
 
-    processar(warp)
+    cv.imshow(canvas, warp)
 
     rodando = false
+    src.delete()
     return
   }
 
-  document.getElementById("status").innerText = "🔴 Aguardando marcadores"
+  document.getElementById("status").innerText = "🔴 Procurando marcadores..."
 
   src.delete()
 
@@ -122,7 +120,8 @@ function detectarMarcadores(src){
   let thresh = new cv.Mat()
 
   cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY)
-  cv.threshold(gray, thresh, 100,255, cv.THRESH_BINARY_INV)
+
+  cv.threshold(gray, thresh, 120,255, cv.THRESH_BINARY_INV)
 
   let contours = new cv.MatVector()
   let hierarchy = new cv.Mat()
@@ -135,28 +134,27 @@ function detectarMarcadores(src){
   for(let i=0;i<contours.size();i++){
 
     let cnt = contours.get(i)
+
     let rect = cv.boundingRect(cnt)
 
     let area = rect.width * rect.height
     let ratio = rect.width / rect.height
 
-    if(area > 2000 && ratio > 0.8 && ratio < 1.2){
+    if(area > 1500 && area < 20000 && ratio > 0.8 && ratio < 1.2){
       candidatos.push(rect)
     }
   }
 
-  if(candidatos.length < 4){
-    gray.delete(); thresh.delete(); contours.delete(); hierarchy.delete()
-    return null
-  }
+  gray.delete()
+  thresh.delete()
+  contours.delete()
+  hierarchy.delete()
+
+  if(candidatos.length < 4) return null
 
   candidatos.sort((a,b)=>b.width*b.height - a.width*a.height)
 
-  let m = candidatos.slice(0,4)
-
-  gray.delete(); thresh.delete(); contours.delete(); hierarchy.delete()
-
-  return m
+  return candidatos.slice(0,4)
 }
 
 // ================= WARP =================
@@ -194,158 +192,11 @@ function aplicarWarp(src, m){
   let dst = new cv.Mat()
   cv.warpPerspective(src, dst, M, new cv.Size(800,1200))
 
-  srcTri.delete(); dstTri.delete(); M.delete()
+  srcTri.delete()
+  dstTri.delete()
+  M.delete()
 
   return dst
-}
-
-// ================= DETECTAR BOLHAS =================
-function detectarBolhas(mat){
-
-  let gray = new cv.Mat()
-  let blur = new cv.Mat()
-  let thresh = new cv.Mat()
-
-  cv.cvtColor(mat, gray, cv.COLOR_RGBA2GRAY)
-  cv.GaussianBlur(gray, blur, new cv.Size(5,5), 0)
-
-  cv.adaptiveThreshold(
-    blur, thresh, 255,
-    cv.ADAPTIVE_THRESH_MEAN_C,
-    cv.THRESH_BINARY_INV,
-    11, 2
-  )
-
-  let contours = new cv.MatVector()
-  let hierarchy = new cv.Mat()
-
-  cv.findContours(thresh, contours, hierarchy,
-    cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
-
-  let bolhas = []
-
-  for(let i=0;i<contours.size();i++){
-
-    let cnt = contours.get(i)
-    let area = cv.contourArea(cnt)
-
-    if(area < 100 || area > 2000) continue
-
-    let rect = cv.boundingRect(cnt)
-    let ratio = rect.width / rect.height
-
-    if(ratio < 0.7 || ratio > 1.3) continue
-
-    bolhas.push({
-      x: rect.x + rect.width/2,
-      y: rect.y + rect.height/2,
-      w: rect.width,
-      h: rect.height
-    })
-  }
-
-  gray.delete(); blur.delete(); thresh.delete()
-  contours.delete(); hierarchy.delete()
-
-  return bolhas
-}
-
-// ================= INTENSIDADE =================
-function intensidade(mat, b){
-
-  let margem = 0.2
-
-  let x = Math.floor(b.x - b.w/2 + b.w*margem)
-  let y = Math.floor(b.y - b.h/2 + b.h*margem)
-  let w = Math.floor(b.w*(1-2*margem))
-  let h = Math.floor(b.h*(1-2*margem))
-
-  let roi = mat.roi(new cv.Rect(x,y,w,h))
-
-  let gray = new cv.Mat()
-  cv.cvtColor(roi, gray, cv.COLOR_RGBA2GRAY)
-
-  let bin = new cv.Mat()
-  cv.threshold(gray, bin, 0,255,
-    cv.THRESH_BINARY_INV + cv.THRESH_OTSU)
-
-  let total = w*h
-  let pretos = cv.countNonZero(bin)
-
-  gray.delete(); bin.delete(); roi.delete()
-
-  return pretos / total
-}
-
-// ================= PROCESSAR =================
-function processar(mat){
-
-  cv.imshow(canvas, mat)
-
-  let bolhas = detectarBolhas(mat)
-
-  bolhas.sort((a,b)=>a.y - b.y)
-
-  let linhas = []
-  let tol = 20
-
-  bolhas.forEach(b=>{
-    let found = false
-
-    for(let l of linhas){
-      if(Math.abs(l[0].y - b.y) < tol){
-        l.push(b)
-        found = true
-        break
-      }
-    }
-
-    if(!found) linhas.push([b])
-  })
-
-  linhas.forEach(l=>l.sort((a,b)=>a.x - b.x))
-
-  let respostas = []
-
-  linhas.forEach((linha,i)=>{
-
-    let melhor = -1
-    let maior = 0
-
-    linha.forEach((b,j)=>{
-      let score = intensidade(mat,b)
-
-      if(score > maior){
-        maior = score
-        melhor = j
-      }
-    })
-
-    if(maior < 0.15){
-      respostas.push("-")
-    }else{
-      respostas.push(["A","B","C","D"][melhor])
-    }
-
-    // desenhar
-    linha.forEach((b,j)=>{
-      ctx.fillStyle = (j===melhor && maior>=0.15) ? "lime" : "red"
-      ctx.fillRect(b.x-4, b.y-4, 8, 8)
-    })
-
-  })
-
-  document.getElementById("status").innerText = "🟢 Leitura concluída"
-  document.getElementById("resultado").innerText =
-    respostas.join(" ")
-}
-
-// ================= RESET =================
-function refazer(){
-  rodando = true
-  document.getElementById("status").innerText = "🔴 Reiniciando..."
-  document.getElementById("resultado").innerText = ""
-  loop()
 }
 
 </script>

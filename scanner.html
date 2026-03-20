@@ -2,353 +2,285 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Scanner Avalia+</title>
-
-<script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
+<title>Scanner Inteligente - Leitura Paramétrica</title>
 
 <style>
 body{
-  margin:0;
-  background:#000;
+  background:#111;
+  color:white;
+  text-align:center;
   font-family:Arial;
 }
-
-video, canvas{
-  position:absolute;
-  top:0;
-  left:0;
-  width:100vw;
-  height:100vh;
-  object-fit:cover;
-}
-
-#ui{
-  position:absolute;
-  bottom:20px;
+canvas{
   width:100%;
-  text-align:center;
+  max-width:650px;
 }
-
 button{
-  width:45%;
-  padding:15px;
-  margin:5px;
-  font-size:16px;
-  border:none;
-  border-radius:8px;
+  padding:12px 20px;
+  margin:10px;
 }
 </style>
 </head>
 
 <body>
 
-<video id="video" autoplay playsinline></video>
+<h2>Scanner Inteligente</h2>
+
+<video id="video" autoplay playsinline style="display:none;"></video>
 <canvas id="canvas"></canvas>
-<div id="ui"></div>
+
+<div id="status">Iniciando...</div>
+<button onclick="refazer()">Refazer</button>
+
+<script src="https://docs.opencv.org/4.x/opencv.js"></script>
 
 <script>
 
-const video = document.getElementById("video")
-const canvas = document.getElementById("canvas")
-const ctx = canvas.getContext("2d",{willReadFrequently:true})
+let video = document.getElementById("video")
+let canvas = document.getElementById("canvas")
+let ctx = canvas.getContext("2d")
 
-let modo = "QR"
-let capturado = false
-let dadosQR = null
-let frameCapturado = null
+let pronto=false
+let capturado=false
+let framesOK=0
 
-/* =========================
-CALIBRAÇÃO DINÂMICA (SEU LAB)
-========================= */
-
-const mapa = {
-  1:{topo:0.47,base:0.62},
-  5:{topo:0.28,base:0.80},
-  8:{topo:0.20,base:0.84},
-  10:{topo:0.17,base:0.86},
-  15:{topo:0.13,base:0.90}
+// ===== TEMPLATE =====
+const TEMPLATE = {
+  colunas: [0.3051, 0.4486, 0.5169, 0.5913],
+  topo: 0.2122,
+  base: 0.8072,
+  questoes: 10
 }
 
-function getParams(q){
-  let ks = Object.keys(mapa).map(Number).sort((a,b)=>a-b)
+// ==============================
+cv.onRuntimeInitialized=()=>{
+  pronto=true
+  iniciar()
+}
 
-  if(mapa[q]) return mapa[q]
-
-  for(let i=0;i<ks.length-1;i++){
-    let q1=ks[i], q2=ks[i+1]
-    if(q>q1 && q<q2){
-      let t=(q-q1)/(q2-q1)
-      return {
-        topo: mapa[q1].topo + t*(mapa[q2].topo-mapa[q1].topo),
-        base: mapa[q1].base + t*(mapa[q2].base-mapa[q1].base)
-      }
+function iniciar(){
+  navigator.mediaDevices.getUserMedia({
+    video:{facingMode:"environment"}
+  }).then(stream=>{
+    video.srcObject=stream
+    video.onloadedmetadata=()=>{
+      video.play()
+      loop()
     }
-  }
-
-  return mapa[ks[ks.length-1]]
+  })
 }
 
-const esquerda = 0.22
-const direita = 0.83
-
-/* =========================
-CAMERA
-========================= */
-
-navigator.mediaDevices.getUserMedia({
-  video:{ facingMode:"environment" }
-}).then(stream=>{
-  video.srcObject = stream
-})
-
-/* =========================
-LOOP
-========================= */
-
+// ==============================
 function loop(){
 
-  if(video.readyState === video.HAVE_ENOUGH_DATA){
+  if(!pronto || capturado){
+    requestAnimationFrame(loop)
+    return
+  }
 
-    canvas.width = video.videoWidth
-    canvas.height = video.videoHeight
+  canvas.width=video.videoWidth
+  canvas.height=video.videoHeight
 
-    if(!capturado){
-      ctx.drawImage(video,0,0)
-    }
+  ctx.drawImage(video,0,0)
 
-    let frame = ctx.getImageData(0,0,canvas.width,canvas.height)
+  let src=cv.imread(canvas)
+  let gray=new cv.Mat()
+  let bin=new cv.Mat()
 
-    if(modo==="QR"){
-      lerQR(frame)
-    }
+  cv.cvtColor(src,gray,cv.COLOR_RGBA2GRAY)
 
-    else if(modo==="OMR" && dadosQR){
+  cv.adaptiveThreshold(
+    gray,bin,255,
+    cv.ADAPTIVE_THRESH_MEAN_C,
+    cv.THRESH_BINARY_INV,
+    11,2
+  )
 
-      if(!capturado){
-        desenharOverlay()
-        detectarMarcadores(frame)
-      }else{
-        ctx.putImageData(frameCapturado,0,0)
-      }
+  let contours=new cv.MatVector()
+  let hierarchy=new cv.Mat()
+
+  cv.findContours(bin,contours,hierarchy,
+    cv.RETR_EXTERNAL,cv.CHAIN_APPROX_SIMPLE)
+
+  let quadrados=[]
+
+  for(let i=0;i<contours.size();i++){
+
+    let cnt=contours.get(i)
+    let area=cv.contourArea(cnt)
+
+    if(area<500) continue
+
+    let peri=cv.arcLength(cnt,true)
+    let approx=new cv.Mat()
+
+    cv.approxPolyDP(cnt,approx,0.02*peri,true)
+
+    if(approx.rows===4){
+      let r=cv.boundingRect(approx)
+      quadrados.push(r)
     }
   }
+
+  quadrados.forEach(r=>{
+    ctx.strokeStyle="yellow"
+    ctx.strokeRect(r.x,r.y,r.width,r.height)
+  })
+
+  if(quadrados.length===4){
+    framesOK++
+
+    if(framesOK>6){
+      capturarFrame(quadrados)
+    }
+
+  }else{
+    framesOK=0
+  }
+
+  src.delete()
+  gray.delete()
+  bin.delete()
+  contours.delete()
+  hierarchy.delete()
 
   requestAnimationFrame(loop)
 }
-requestAnimationFrame(loop)
 
-/* =========================
-QR
-========================= */
+// ==============================
+function capturarFrame(quadrados){
 
-function lerQR(frame){
-  let code = jsQR(frame.data,frame.width,frame.height)
-
-  if(code){
-    let obj = {}
-    code.data.split("|").forEach(p=>{
-      let [k,v]=p.split("=")
-      if(v) obj[k]=v
-    })
-
-    if(obj.Q){
-      dadosQR=obj
-      modo="OMR"
-    }
-  }
-}
-
-/* =========================
-OVERLAY
-========================= */
-
-function desenharOverlay(){
-
-  let w=canvas.width
-  let h=canvas.height
-
-  ctx.fillStyle="rgba(0,0,0,0.6)"
-  ctx.fillRect(0,0,w,h)
-
-  let q=parseInt(dadosQR.Q)
-
-  let proporcao = 0.35 + q*0.02
-  let boxH = h*proporcao
-  let boxW = boxH*0.6
-
-  if(boxH>h*0.8){
-    boxH=h*0.8
-    boxW=boxH*0.6
-  }
-
-  let x=(w-boxW)/2
-  let y=(h-boxH)/2
-
-  ctx.clearRect(x,y,boxW,boxH)
-
-  ctx.strokeStyle="#00ff88"
-  ctx.lineWidth=3
-  ctx.strokeRect(x,y,boxW,boxH)
-
-  window.area={x,y,w:boxW,h:boxH}
-}
-
-/* =========================
-MARCADORES
-========================= */
-
-function detectarMarcadores(frame){
-
-  let data=frame.data
-  let blobs=0
-
-  for(let i=0;i<data.length;i+=4){
-    if(data[i]<50) blobs++
-  }
-
-  if(blobs>5000){
-    capturar()
-  }
-}
-
-/* =========================
-CAPTURA
-========================= */
-
-function capturar(){
-
-  if(capturado) return
   capturado=true
 
-  ctx.drawImage(video,0,0)
-  frameCapturado = ctx.getImageData(0,0,canvas.width,canvas.height)
+  let frame = ctx.getImageData(0,0,canvas.width,canvas.height)
+  let src = cv.matFromImageData(frame)
 
-  let data=frameCapturado.data
+  let p = ordenar(quadrados)
 
-  for(let i=0;i<data.length;i+=4){
-    let brilho=(data[i]+data[i+1]+data[i+2])/3
-    let cor=brilho<50?0:255
-    data[i]=data[i+1]=data[i+2]=cor
-  }
+  let largura=600
+  let altura=900
 
-  ctx.putImageData(frameCapturado,0,0)
+  let srcTri=cv.matFromArray(4,1,cv.CV_32FC2,[
+    p.TL.x,p.TL.y,
+    p.TR.x+p.TR.width,p.TR.y,
+    p.BL.x,p.BL.y+p.BL.height,
+    p.BR.x+p.BR.width,p.BR.y+p.BR.height
+  ])
 
-  // MOCK marcadores (substituir pela sua detecção real)
-  let TL={x:100,y:100}
-  let TR={x:500,y:100}
-  let BL={x:100,y:800}
-  let BR={x:500,y:800}
+  let dstTri=cv.matFromArray(4,1,cv.CV_32FC2,[
+    0,0, largura,0, 0,altura, largura,altura
+  ])
 
-  processarOMR(TL,TR,BL,BR)
+  let M=cv.getPerspectiveTransform(srcTri,dstTri)
+  let dst=new cv.Mat()
 
-  document.getElementById("ui").innerHTML = `
-    <button onclick="confirmar()">Confirmar</button>
-    <button onclick="resetar()">Ler novamente</button>
-  `
+  cv.warpPerspective(src,dst,M,new cv.Size(largura,altura))
+
+  cv.imshow(canvas,dst)
+
+  lerRespostas(dst)
+
+  document.getElementById("status").innerText =
+    "🟢 Conferir leitura"
 }
 
-/* =========================
-OMR (SEU LAB ADAPTADO)
-========================= */
+// ==============================
+function lerRespostas(mat){
 
-function processarOMR(TL,TR,BL,BR){
+  let respostas = []
 
-  let q=parseInt(dadosQR.Q)
-  let {topo,base}=getParams(q)
+  let passo = (TEMPLATE.base - TEMPLATE.topo) / (TEMPLATE.questoes - 1)
 
-  let linhas=q
-  let colunas=4
+  for(let i=0;i<TEMPLATE.questoes;i++){
 
-  let altura = Math.hypot(BL.x-TL.x,BL.y-TL.y)
-  let alturaUtil = altura*(base-topo)
-  let dy = alturaUtil/linhas
+    let y = TEMPLATE.topo + i * passo
 
-  let raio = dy*0.28
-  let raioVisual = raio*2
+    let valores = []
 
-  function pontoNaArea(u,v){
-    return{
-      x:(1-u)*(1-v)*TL.x + u*(1-v)*TR.x + (1-u)*v*BL.x + u*v*BR.x,
-      y:(1-u)*(1-v)*TL.y + u*(1-v)*TR.y + (1-u)*v*BL.y + u*v*BR.y
-    }
-  }
+    for(let j=0;j<4;j++){
 
-  let respostas=[]
-  let data=frameCapturado.data
+      let x = TEMPLATE.colunas[j]
 
-  for(let i=0;i<linhas;i++){
+      let px = Math.floor(x * mat.cols)
+      let py = Math.floor(y * mat.rows)
 
-    let melhor=-1
-    let maior=0
+      let size = 18
 
-    for(let j=0;j<colunas;j++){
+      let x0 = Math.max(px - size, 0)
+      let y0 = Math.max(py - size, 0)
 
-      let u=esquerda+(j+0.5)/colunas*(direita-esquerda)
-      let v=topo+(i+0.5)/linhas*(base-topo)
+      let w = Math.min(size*2, mat.cols - x0)
+      let h = Math.min(size*2, mat.rows - y0)
 
-      let p=pontoNaArea(u,v)
+      let roi = mat.roi(new cv.Rect(x0,y0,w,h))
 
-      let soma=0
+      let gray = new cv.Mat()
+      cv.cvtColor(roi, gray, cv.COLOR_RGBA2GRAY)
 
-      for(let dx=-raio;dx<=raio;dx++){
-      for(let dy2=-raio;dy2<=raio;dy2++){
+      let t = new cv.Mat()
+      cv.threshold(gray, t, 0,255,
+        cv.THRESH_BINARY_INV + cv.THRESH_OTSU)
 
-        let x=Math.floor(p.x+dx)
-        let y=Math.floor(p.y+dy2)
+      let total = w*h
+      let pretos = cv.countNonZero(t)
 
-        if(x<0||y<0||x>=canvas.width||y>=canvas.height) continue
+      let intensidade = pretos / total
 
-        let idx=(y*canvas.width+x)*4
+      valores.push(intensidade)
 
-        if(data[idx]===0) soma++
-      }}
+      gray.delete()
+      t.delete()
+      roi.delete()
 
-      if(soma>maior){
-        maior=soma
-        melhor=j
-      }
+      // DEBUG VISUAL
+      ctx.fillStyle = "red"
+      ctx.fillRect(px-3, py-3, 6, 6)
     }
 
-    respostas.push(melhor)
+    // decisão
+    let max = Math.max(...valores)
+    let index = valores.indexOf(max)
+
+    let resposta = "-"
+
+    let ordenado = [...valores].sort((a,b)=>b-a)
+
+    if(max > 0.25 && (ordenado[0]-ordenado[1]) > 0.08){
+      resposta = ["A","B","C","D"][index]
+
+      ctx.fillStyle = "lime"
+      ctx.fillRect(
+        TEMPLATE.colunas[index]*canvas.width-5,
+        (TEMPLATE.topo + i*passo)*canvas.height-5,
+        10,10
+      )
+    }
+
+    respostas.push(resposta)
   }
 
-  ctx.putImageData(frameCapturado,0,0)
-
-  ctx.strokeStyle="lime"
-  ctx.lineWidth=3
-
-  for(let i=0;i<linhas;i++){
-
-    let j=respostas[i]
-    if(j<0) continue
-
-    let u=esquerda+(j+0.5)/colunas*(direita-esquerda)
-    let v=topo+(i+0.5)/linhas*(base-topo)
-
-    let p=pontoNaArea(u,v)
-
-    ctx.beginPath()
-    ctx.arc(p.x,p.y,raioVisual,0,Math.PI*2)
-    ctx.stroke()
-
-    ctx.fillStyle="rgba(0,255,0,0.3)"
-    ctx.fill()
-  }
-
-  window.respostas=respostas
+  console.log("RESPOSTAS:", respostas.join(" "))
 }
 
-/* ========================= */
+// ==============================
+function ordenar(q){
 
-function confirmar(){
-  alert("Respostas: "+window.respostas)
+  q.sort((a,b)=>a.y-b.y)
+
+  let top=q.slice(0,2)
+  let bottom=q.slice(2,4)
+
+  top.sort((a,b)=>a.x-b.x)
+  bottom.sort((a,b)=>a.x-b.x)
+
+  return {TL:top[0],TR:top[1],BL:bottom[0],BR:bottom[1]}
 }
 
-function resetar(){
+// ==============================
+function refazer(){
   capturado=false
-  modo="QR"
-  dadosQR=null
-  document.getElementById("ui").innerHTML=""
+  framesOK=0
+  document.getElementById("status").innerText = "Reiniciando..."
 }
 
 </script>

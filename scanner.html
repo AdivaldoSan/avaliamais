@@ -249,8 +249,8 @@ function lerRespostas(mat){
     if(max > 0.25 && (ordenado[0]-ordenado[1]) > 0.08){
       resposta = ["A","B","C","D"][index]
 
-    let cx = TEMPLATE.colunas[index] * canvas.width
-let cy = (TEMPLATE.topo + i * passo) * canvas.height
+    let cx = TEMPLATE.colunas[index] * mat.cols
+let cy = (TEMPLATE.topo + i * passo) * mat.rows
 
 ctx.beginPath()
 ctx.arc(cx, cy, 12, 0, Math.PI * 2)

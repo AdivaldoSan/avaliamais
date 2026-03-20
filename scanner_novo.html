@@ -18,13 +18,11 @@ canvas{
 button{
   padding:10px 16px;
   margin:5px;
-  font-size:16px;
 }
 input{
   padding:8px;
-  width:220px;
+  width:200px;
   text-align:center;
-  font-size:16px;
 }
 #qtdBox{
   font-size:22px;
@@ -54,15 +52,13 @@ input{
 <canvas id="canvas"></canvas>
 
 <div id="status">Iniciando...</div>
-<div id="respostas" style="margin-top:10px;font-size:18px;"></div>
+<div id="respostas" style="margin-top:10px;"></div>
 
-<div>
-  <button onclick="lerNovamente()">🔄 Ler novamente</button>
-  <button onclick="confirmar()">✔ Confirmar</button>
-  <button onclick="refazer()">❌ Refazer</button>
-</div>
+<button onclick="lerNovamente()">Ler novamente</button>
+<button onclick="confirmar()">Confirmar</button>
+<button onclick="refazer()">Refazer</button>
 
-<div id="resultado" style="margin-top:15px;font-size:18px;"></div>
+<div id="resultado"></div>
 
 <script src="https://docs.opencv.org/4.x/opencv.js"></script>
 
@@ -78,6 +74,7 @@ let framesOK=0
 let ultimaImagem=null
 let respostasLidas=[]
 
+// ==============================
 // TEMPLATE
 const TEMPLATE = {
   colunas: [0.30, 0.45, 0.58, 0.73],
@@ -85,22 +82,15 @@ const TEMPLATE = {
 }
 
 // ==============================
-// CONTROLE QTD
 function alterarQtd(delta){
-
   let nova = TEMPLATE.questoes + delta
-
   if(nova < 1) nova = 1
   if(nova > 15) nova = 15
-
   TEMPLATE.questoes = nova
-
   document.getElementById("qtdLabel").innerText = nova
-  document.getElementById("status").innerText = "Qtd: " + nova
 }
 
 // ==============================
-// INTERPOLAÇÃO
 function getTopoBase(qtd){
 
   const pontos = [
@@ -116,14 +106,11 @@ function getTopoBase(qtd){
   if(exato) return exato
 
   for(let i=0;i<pontos.length-1;i++){
-
     let p1 = pontos[i]
     let p2 = pontos[i+1]
 
     if(qtd > p1.q && qtd < p2.q){
-
       let t = (qtd - p1.q) / (p2.q - p1.q)
-
       return {
         topo: p1.topo + t*(p2.topo - p1.topo),
         base: p1.base + t*(p2.base - p1.base)
@@ -142,9 +129,8 @@ cv.onRuntimeInitialized=()=>{
 
 function iniciar(){
   navigator.mediaDevices.getUserMedia({
-    video:{facingMode:{ideal:"environment"}}
-  })
-  .then(stream=>{
+    video:{facingMode:"environment"}
+  }).then(stream=>{
     video.srcObject=stream
     video.onloadedmetadata=()=>{
       video.play()
@@ -188,20 +174,16 @@ function loop(){
   let quadrados=[]
 
   for(let i=0;i<contours.size();i++){
-
     let cnt=contours.get(i)
     let area=cv.contourArea(cnt)
-
     if(area<500) continue
 
     let peri=cv.arcLength(cnt,true)
     let approx=new cv.Mat()
-
     cv.approxPolyDP(cnt,approx,0.02*peri,true)
 
     if(approx.rows===4){
-      let r=cv.boundingRect(approx)
-      quadrados.push(r)
+      quadrados.push(cv.boundingRect(approx))
     }
   }
 
@@ -212,20 +194,15 @@ function loop(){
 
   if(quadrados.length===4){
     framesOK++
-
     if(framesOK>6){
       capturarFrame(quadrados)
     }
-
   }else{
     framesOK=0
   }
 
-  src.delete()
-  gray.delete()
-  bin.delete()
-  contours.delete()
-  hierarchy.delete()
+  src.delete(); gray.delete(); bin.delete()
+  contours.delete(); hierarchy.delete()
 
   requestAnimationFrame(loop)
 }
@@ -277,32 +254,23 @@ function lerRespostas(mat){
 
   let topo = tb.topo
   let base = tb.base
+  let passo = qtd>1 ? (base-topo)/(qtd-1) : 0
 
-  let passo = (qtd > 1) ? (base - topo)/(qtd-1) : 0
-
-  respostasLidas = []
+  respostasLidas=[]
 
   for(let i=0;i<qtd;i++){
 
-    let y = (qtd === 1) ? topo : topo + i*passo
+    let y = (qtd===1)? topo : topo + i*passo
 
     let valores=[]
 
     for(let j=0;j<4;j++){
 
-      let x = TEMPLATE.colunas[j]
+      let x=TEMPLATE.colunas[j]
+      let px=Math.floor(x*mat.cols)
+      let py=Math.floor(y*mat.rows)
 
-      let px = Math.floor(x * mat.cols)
-      let py = Math.floor(y * mat.rows)
-
-      let size = 15
-
-      let x0 = Math.max(px-size,0)
-      let y0 = Math.max(py-size,0)
-      let w = Math.min(size*2, mat.cols - x0)
-      let h = Math.min(size*2, mat.rows - y0)
-
-      let roi = mat.roi(new cv.Rect(x0,y0,w,h))
+      let roi = mat.roi(new cv.Rect(px-15,py-15,30,30))
 
       let gray=new cv.Mat()
       cv.cvtColor(roi,gray,cv.COLOR_RGBA2GRAY)
@@ -311,38 +279,20 @@ function lerRespostas(mat){
       cv.threshold(gray,t,0,255,
         cv.THRESH_BINARY_INV+cv.THRESH_OTSU)
 
-      let intensidade=cv.countNonZero(t)/(w*h)
+      valores.push(cv.countNonZero(t)/(30*30))
 
-      valores.push(intensidade)
-
-      gray.delete()
-      t.delete()
-      roi.delete()
+      gray.delete(); t.delete(); roi.delete()
     }
 
-    let media = Math.max(valores.reduce((a,b)=>a+b,0)/4,0.01)
-    let norm = valores.map(v=>v/media)
+    let max=Math.max(...valores)
+    let idx=valores.indexOf(max)
 
-    let ordenado=[...norm].sort((a,b)=>b-a)
+    let resp="-"
 
-    let max=ordenado[0]
-    let segundo=ordenado[1]
+    let ordenado=[...valores].sort((a,b)=>b-a)
 
-    let resp="_"
-
-    if(max>1.15 && (max-segundo)>0.08){
-
-      let idx=norm.indexOf(max)
+    if(max>0.25 && (ordenado[0]-ordenado[1])>0.08){
       resp=["A","B","C","D"][idx]
-
-      let cx=TEMPLATE.colunas[idx]*mat.cols
-      let cy=y*mat.rows
-
-      ctx.beginPath()
-      ctx.arc(cx,cy,12,0,Math.PI*2)
-      ctx.strokeStyle="lime"
-      ctx.lineWidth=3
-      ctx.stroke()
     }
 
     respostasLidas.push(resp)
@@ -368,16 +318,13 @@ function confirmar(){
     .replace(/[^ABCD]/g,"")
     .split("")
 
-  let html = "<b>Resultado:</b><br><br>"
-
-  html += "Aluno: " + respostasLidas.join(" ") + "<br>"
-  html += "Gabarito: " + gabarito.join(" ") + "<br><br>"
+  let html="Aluno: "+respostasLidas.join(" ")+"<br>"
+  html+="Gabarito: "+gabarito.join(" ")+"<br><br>"
 
   let acertos=0
 
   for(let i=0;i<gabarito.length;i++){
-
-    if(respostasLidas[i] === gabarito[i]){
+    if(respostasLidas[i]===gabarito[i]){
       html+="✅ "
       acertos++
     }else{
@@ -385,22 +332,18 @@ function confirmar(){
     }
   }
 
-  html += "<br><br>Acertos: "+acertos
+  html+="<br><br>Acertos: "+acertos
 
-  document.getElementById("resultado").innerHTML = html
+  document.getElementById("resultado").innerHTML=html
 }
 
 // ==============================
 function ordenar(q){
-
   q.sort((a,b)=>a.y-b.y)
-
   let top=q.slice(0,2)
   let bottom=q.slice(2,4)
-
   top.sort((a,b)=>a.x-b.x)
   bottom.sort((a,b)=>a.x-b.x)
-
   return {TL:top[0],TR:top[1],BL:bottom[0],BR:bottom[1]}
 }
 
@@ -410,7 +353,6 @@ function refazer(){
   framesOK=0
   respostasLidas=[]
   document.getElementById("resultado").innerHTML=""
-  document.getElementById("status").innerText="Reiniciando..."
 }
 
 </script>

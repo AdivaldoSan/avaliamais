@@ -2,44 +2,34 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Scanner Gabarito</title>
+<title>Scanner Marcadores</title>
 
 <style>
 body{
   background:#111;
   color:white;
   text-align:center;
-  font-family:Arial;
 }
-
 canvas{
   width:100%;
   max-width:650px;
-  margin-top:10px;
-  background:#000;
 }
-
 #status{
-  font-size:28px;
-  margin-top:10px;
-}
-
-#debug{
-  font-size:14px;
-  color:#aaa;
+  font-size:24px;
 }
 </style>
 </head>
 
 <body>
 
-<h2>Scanner Gabarito</h2>
+<h2>Scanner com Marcadores</h2>
 
 <video id="video" autoplay playsinline style="display:none;"></video>
 <canvas id="canvas"></canvas>
 
-<div id="status">🔴 Iniciando...</div>
-<div id="debug"></div>
+<div id="status">Carregando...</div>
+
+<script src="https://docs.opencv.org/4.x/opencv.js"></script>
 
 <script>
 
@@ -47,35 +37,31 @@ let video = document.getElementById("video")
 let canvas = document.getElementById("canvas")
 let ctx = canvas.getContext("2d")
 
-let framesEstaveis = 0
-let rodando = true
+let pronto = false
+let framesOK = 0
 
-/* =========================
-CAMERA
-========================= */
-navigator.mediaDevices.getUserMedia({
-  video:{ facingMode:"environment" }
-})
-.then(stream=>{
-  video.srcObject = stream
-  video.onloadedmetadata = ()=>{
-    video.play()
-    loop()
-  }
-})
-.catch(err=>{
-  document.getElementById("status").innerText =
-    "Erro câmera: " + err.message
-})
+cv.onRuntimeInitialized = ()=>{
+  pronto = true
+  iniciarCamera()
+}
 
-/* =========================
-LOOP
-========================= */
+function iniciarCamera(){
+  navigator.mediaDevices.getUserMedia({
+    video:{ facingMode:"environment" }
+  })
+  .then(stream=>{
+    video.srcObject = stream
+    video.onloadedmetadata = ()=>{
+      video.play()
+      loop()
+    }
+  })
+}
+
+/* ========================= */
 function loop(){
 
-  if(!rodando) return
-
-  if(video.videoWidth === 0){
+  if(!pronto){
     requestAnimationFrame(loop)
     return
   }
@@ -85,131 +71,83 @@ function loop(){
 
   ctx.drawImage(video,0,0)
 
-  let frame = ctx.getImageData(0,0,canvas.width,canvas.height)
-  let data = frame.data
+  let src = cv.imread(canvas)
+  let gray = new cv.Mat()
+  let thresh = new cv.Mat()
 
-  // threshold
-  for(let i=0;i<data.length;i+=4){
-    let brilho = (data[i]+data[i+1]+data[i+2])/3
-    let cor = brilho < 80 ? 0 : 255
-    data[i]=data[i+1]=data[i+2]=cor
-  }
+  cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY)
+  cv.threshold(gray, thresh, 100, 255, cv.THRESH_BINARY_INV)
 
-  ctx.putImageData(frame,0,0)
+  let contours = new cv.MatVector()
+  let hierarchy = new cv.Mat()
 
-  let ret = detectarRetangulo(frame)
+  cv.findContours(thresh, contours, hierarchy,
+    cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
 
-  if(ret){
+  let quadrados = []
 
-    desenharRetangulo(ret)
+  for(let i=0;i<contours.size();i++){
 
-    framesEstaveis++
-    document.getElementById("status").innerText =
-      "🟡 Detectado - estabilizando " + framesEstaveis
+    let cnt = contours.get(i)
+    let area = cv.contourArea(cnt)
 
-    if(framesEstaveis > 10){
-      capturar(frame, ret)
-      return
-    }
+    if(area < 500) continue
 
-  }else{
-    framesEstaveis = 0
-    document.getElementById("status").innerText =
-      "🔴 Posicione o gabarito"
-  }
+    let peri = cv.arcLength(cnt,true)
+    let approx = new cv.Mat()
 
-  requestAnimationFrame(loop)
-}
+    cv.approxPolyDP(cnt, approx, 0.02*peri, true)
 
-/* =========================
-DETECÇÃO POR BORDA
-========================= */
-function detectarRetangulo(frame){
+    if(approx.rows === 4){
 
-  let data = frame.data
-  let w = canvas.width
-  let h = canvas.height
+      let rect = cv.boundingRect(approx)
 
-  let minX=99999,maxX=0,minY=99999,maxY=0
-  let count = 0
+      let ratio = rect.width / rect.height
 
-  for(let y=1;y<h-1;y+=2){
-    for(let x=1;x<w-1;x+=2){
-
-      let i = (y*w+x)*4
-
-      let atual = data[i]
-      let direita = data[i+4]
-      let baixo = data[i+w*4]
-
-      if(Math.abs(atual - direita) > 120 ||
-         Math.abs(atual - baixo) > 120){
-
-        count++
-
-        if(x<minX) minX=x
-        if(x>maxX) maxX=x
-        if(y<minY) minY=y
-        if(y>maxY) maxY=y
+      if(ratio > 0.6 && ratio < 1.4){
+        quadrados.push(rect)
       }
     }
   }
 
-  document.getElementById("debug").innerText =
-    "Pontos borda: " + count
+  // desenhar
+  quadrados.forEach(r=>{
+    ctx.strokeStyle="yellow"
+    ctx.strokeRect(r.x, r.y, r.width, r.height)
+  })
 
-  if(count < 500) return null
+  if(quadrados.length === 4){
 
-  let largura = maxX - minX
-  let altura = maxY - minY
+    framesOK++
 
-  if(largura < w*0.3 || altura < h*0.3) return null
+    document.getElementById("status").innerText =
+      "✔ 4 marcadores detectados ("+framesOK+")"
 
-  return {
-    TL:{x:minX,y:minY},
-    TR:{x:maxX,y:minY},
-    BL:{x:minX,y:maxY},
-    BR:{x:maxX,y:maxY}
+    if(framesOK > 10){
+      capturar()
+    }
+
+  }else{
+
+    framesOK = 0
+
+    document.getElementById("status").innerText =
+      "🔴 Enquadre os 4 marcadores ("+quadrados.length+")"
   }
+
+  src.delete()
+  gray.delete()
+  thresh.delete()
+  contours.delete()
+  hierarchy.delete()
+
+  requestAnimationFrame(loop)
 }
 
-/* =========================
-DESENHO VISUAL
-========================= */
-function desenharRetangulo(r){
-
-  ctx.strokeStyle = "lime"
-  ctx.lineWidth = 4
-
-  ctx.beginPath()
-  ctx.moveTo(r.TL.x, r.TL.y)
-  ctx.lineTo(r.TR.x, r.TR.y)
-  ctx.lineTo(r.BR.x, r.BR.y)
-  ctx.lineTo(r.BL.x, r.BL.y)
-  ctx.closePath()
-  ctx.stroke()
-}
-
-/* =========================
-CAPTURA
-========================= */
-function capturar(frame, r){
-
-  rodando = false
-
-  ctx.strokeStyle = "yellow"
-  ctx.lineWidth = 6
-
-  ctx.beginPath()
-  ctx.moveTo(r.TL.x, r.TL.y)
-  ctx.lineTo(r.TR.x, r.TR.y)
-  ctx.lineTo(r.BR.x, r.BR.y)
-  ctx.lineTo(r.BL.x, r.BL.y)
-  ctx.closePath()
-  ctx.stroke()
-
+/* ========================= */
+function capturar(){
   document.getElementById("status").innerText =
-    "🟢 Capturado"
+    "🟢 Captura liberada"
 }
 
 </script>

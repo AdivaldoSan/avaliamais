@@ -58,17 +58,34 @@ cv.onRuntimeInitialized=()=>{
 }
 
 function iniciar(){
+
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+    document.getElementById("status").innerText =
+      "❌ getUserMedia não suportado"
+    return
+  }
+
   navigator.mediaDevices.getUserMedia({
-    video:{facingMode:"environment"}
-  }).then(stream=>{
-    video.srcObject=stream
-    video.onloadedmetadata=()=>{
+    video:{
+      facingMode:{ ideal:"environment" }
+    }
+  })
+  .then(stream=>{
+    video.srcObject = stream
+
+    video.onloadedmetadata = ()=>{
       video.play()
+      document.getElementById("status").innerText = "📷 Câmera ativa"
       loop()
     }
   })
-}
+  .catch(err=>{
+    console.error(err)
 
+    document.getElementById("status").innerText =
+      "❌ Erro câmera: " + err.name
+  })
+}
 // ==============================
 function loop(){
 

@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Scanner Gabarito OpenCV</title>
+<title>Scanner Final</title>
 
 <style>
 body{
@@ -16,24 +16,30 @@ canvas{
   width:100%;
   max-width:650px;
   margin-top:10px;
-  background:#000;
 }
 
-#status{
-  font-size:22px;
-  margin-top:10px;
+button{
+  padding:15px 25px;
+  font-size:18px;
+  margin:10px;
 }
+
+#status{font-size:20px;}
 </style>
 </head>
 
 <body>
 
-<h2>Scanner com Marcadores</h2>
+<h2>Scanner Gabarito</h2>
 
 <video id="video" autoplay playsinline style="display:none;"></video>
 <canvas id="canvas"></canvas>
 
-<div id="status">Carregando OpenCV...</div>
+<div id="status">Iniciando...</div>
+
+<div id="controles" style="display:none;">
+  <button onclick="refazer()">🔄 Refazer</button>
+</div>
 
 <script src="https://docs.opencv.org/4.x/opencv.js"></script>
 
@@ -44,11 +50,11 @@ let canvas = document.getElementById("canvas")
 let ctx = canvas.getContext("2d")
 
 let pronto = false
+let capturado = false
 let framesOK = 0
 
 cv.onRuntimeInitialized = ()=>{
   pronto = true
-  document.getElementById("status").innerText = "OpenCV pronto"
   iniciarCamera()
 }
 
@@ -68,12 +74,7 @@ function iniciarCamera(){
 /* ========================= */
 function loop(){
 
-  if(!pronto){
-    requestAnimationFrame(loop)
-    return
-  }
-
-  if(video.videoWidth === 0){
+  if(!pronto || capturado){
     requestAnimationFrame(loop)
     return
   }
@@ -89,7 +90,6 @@ function loop(){
 
   cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY)
 
-  // threshold robusto
   cv.adaptiveThreshold(
     gray, thresh, 255,
     cv.ADAPTIVE_THRESH_MEAN_C,
@@ -127,55 +127,32 @@ function loop(){
       let ratio = rect.width / rect.height
       if(ratio < 0.6 || ratio > 1.4) continue
 
-      let preenchimento = area / (rect.width * rect.height)
-      if(preenchimento < 0.6) continue
-
-      let cx = rect.x + rect.width/2
-      let cy = rect.y + rect.height/2
-
-      let margemX = canvas.width * 0.25
-      let margemY = canvas.height * 0.25
-
-      let canto =
-        (cx < margemX && cy < margemY) ||
-        (cx > canvas.width - margemX && cy < margemY) ||
-        (cx < margemX && cy > canvas.height - margemY) ||
-        (cx > canvas.width - margemX && cy > canvas.height - margemY)
-
-      if(!canto) continue
+      let fill = area / (rect.width * rect.height)
+      if(fill < 0.6) continue
 
       quadrados.push(rect)
     }
   }
 
-  // desenhar quadrados detectados
   quadrados.forEach(r=>{
     ctx.strokeStyle="yellow"
-    ctx.lineWidth=3
-    ctx.strokeRect(r.x, r.y, r.width, r.height)
+    ctx.strokeRect(r.x,r.y,r.width,r.height)
   })
 
   if(quadrados.length === 4){
-
     framesOK++
-    
+
     document.getElementById("status").innerText =
-      "✔ Marcadores detectados ("+framesOK+")"
+      "✔ Estabilizando ("+framesOK+")"
 
     if(framesOK > 6){
-
-      let p = ordenarMarcadores(quadrados)
-
-      aplicarWarp(src, p)
-
-      framesOK = 0
+      capturarFrame(quadrados)
     }
 
   }else{
-    framesOK = Math.max(0, framesOK - 2)
-
+    framesOK = 0
     document.getElementById("status").innerText =
-      "🔴 Enquadre os 4 marcadores ("+quadrados.length+")"
+      "Posicione os 4 marcadores"
   }
 
   src.delete()
@@ -188,79 +165,80 @@ function loop(){
 }
 
 /* ========================= */
-function ordenarMarcadores(q){
+function capturarFrame(quadrados){
 
-  q.sort((a,b)=>a.y - b.y)
+  capturado = true
 
-  let top = q.slice(0,2)
-  let bottom = q.slice(2,4)
+  let frame = ctx.getImageData(0,0,canvas.width,canvas.height)
 
-  top.sort((a,b)=>a.x - b.x)
-  bottom.sort((a,b)=>a.x - b.x)
+  let src = cv.matFromImageData(frame)
 
-  return {
-    TL: top[0],
-    TR: top[1],
-    BL: bottom[0],
-    BR: bottom[1]
-  }
-}
-
-/* ========================= */
-function aplicarWarp(src, p){
+  let p = ordenar(quadrados)
 
   let largura = 600
   let altura = 900
 
   let srcTri = cv.matFromArray(4,1,cv.CV_32FC2,[
     p.TL.x, p.TL.y,
-    p.TR.x + p.TR.width, p.TR.y,
-    p.BL.x, p.BL.y + p.BL.height,
-    p.BR.x + p.BR.width, p.BR.y + p.BR.height
+    p.TR.x+p.TR.width, p.TR.y,
+    p.BL.x, p.BL.y+p.BL.height,
+    p.BR.x+p.BR.width, p.BR.y+p.BR.height
   ])
 
   let dstTri = cv.matFromArray(4,1,cv.CV_32FC2,[
-    0,0,
-    largura,0,
-    0,altura,
-    largura,altura
+    0,0, largura,0, 0,altura, largura,altura
   ])
 
-  let M = cv.getPerspectiveTransform(srcTri, dstTri)
+  let M = cv.getPerspectiveTransform(srcTri,dstTri)
   let dst = new cv.Mat()
 
-  cv.warpPerspective(src, dst, M, new cv.Size(largura,altura))
+  cv.warpPerspective(src,dst,M,new cv.Size(largura,altura))
 
-  cv.imshow(canvas, dst)
+  cv.imshow(canvas,dst)
 
-  desenharGrade(largura, altura)
+  desenharGrade(largura,altura)
 
   document.getElementById("status").innerText =
-    "🟢 Warp + grade OK"
+    "🟢 Conferir leitura"
 
-  srcTri.delete()
-  dstTri.delete()
-  M.delete()
-  dst.delete()
+  document.getElementById("controles").style.display="block"
+}
+
+/* ========================= */
+function ordenar(q){
+
+  q.sort((a,b)=>a.y-b.y)
+
+  let top=q.slice(0,2)
+  let bottom=q.slice(2,4)
+
+  top.sort((a,b)=>a.x-b.x)
+  bottom.sort((a,b)=>a.x-b.x)
+
+  return {TL:top[0],TR:top[1],BL:bottom[0],BR:bottom[1]}
 }
 
 /* ========================= */
 function desenharGrade(w,h){
 
-  let linhas = 10
-  let colunas = 4
+  ctx.fillStyle="red"
 
-  ctx.fillStyle = "red"
+  for(let i=0;i<10;i++){
+    for(let j=0;j<4;j++){
 
-  for(let i=0;i<linhas;i++){
-    for(let j=0;j<colunas;j++){
-
-      let x = (j + 0.5) * (w / colunas)
-      let y = (i + 0.5) * (h / linhas)
+      let x=(j+0.5)*(w/4)
+      let y=(i+0.5)*(h/10)
 
       ctx.fillRect(x-4,y-4,8,8)
     }
   }
+}
+
+/* ========================= */
+function refazer(){
+  capturado = false
+  framesOK = 0
+  document.getElementById("controles").style.display="none"
 }
 
 </script>

@@ -49,7 +49,7 @@ button{
     position:absolute;
     border:3px solid red;
     width:60%;
-    height:60%;
+    aspect-ratio:1/1;
     top:50%;
     left:50%;
     transform:translate(-50%,-50%);
@@ -129,7 +129,7 @@ function log(msg){
   logBuffer.push(msg)
 
   // mantém só últimas 10 linhas
-  if(logBuffer.length > 10){
+  if(logBuffer.length > 8){
     logBuffer.shift()
   }
 
@@ -173,18 +173,16 @@ function getTopoBase(qtd){
 }
 function atualizarUI(){
 
-  const overlay = document.getElementById("overlayQR")
   const ui = document.getElementById("uiLeitura")
   const canvasEl = document.getElementById("canvas")
+  const qrBox = document.getElementById("qrBox")
 
   if(modo === "qr"){
-    overlay.style.display = "block"
     ui.style.display = "none"
-    //canvasEl.style.visibility = "hidden" // 👈 ESCONDE VISUALMENTE
+    qrBox.style.display = "block"   // 👈 mostra quadrado QR
   }else{
-    overlay.style.display = "none"
     ui.style.display = "block"
-    canvasEl.style.visibility = "visible"
+    qrBox.style.display = "none"    // 👈 esconde QR
   }
 }
 
@@ -235,7 +233,19 @@ log("scaleX: "+scaleX.toFixed(2))
 log("size final: "+size)
 log("posição: "+x+","+y)
 
-  let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+const box = document.getElementById("qrBox")
+const rect = box.getBoundingClientRect()
+const canvasRect = canvas.getBoundingClientRect()
+
+const scaleX = canvas.width / canvasRect.width
+const scaleY = canvas.height / canvasRect.height
+
+const x = (rect.left - canvasRect.left) * scaleX
+const y = (rect.top - canvasRect.top) * scaleY
+const w = rect.width * scaleX
+const h = rect.height * scaleY
+
+let imageData = ctx.getImageData(x, y, w, h)
     
   log("imageData: "+imageData.width+"x"+imageData.height)
 

@@ -33,7 +33,7 @@ button{
 
 <body>
 
-<h2>Scanner Inteligente</h2>
+<h2>Scanner Inteligente.</h2>
 
 <div id="qtdBox">
   <span id="qtdLabel">--</span>
@@ -56,6 +56,23 @@ button{
     left:50%;
     transform:translate(-50%,-50%);
   "></div>
+
+  <div id="msgGabarito" style="
+  position:absolute;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  background:rgba(0,0,0,0.7);
+  color:#00ffcc;
+  padding:20px 30px;
+  font-size:22px;
+  font-weight:bold;
+  border-radius:10px;
+  display:none;
+  z-index:20;
+">
+  Aponte para o gabarito
+  </div>
 </div>
     
 
@@ -259,6 +276,8 @@ function iniciar(){
 
     modo = "espera"
     atualizarUI()
+    
+    document.getElementById("msgGabarito").style.display = "block"
 
     log("QR OK → indo pra leitura")
   }
@@ -370,6 +389,8 @@ function loop(){
 function capturarFrame(quadrados){
 
   capturado=true
+  
+  document.getElementById("msgGabarito").style.display = "none"
 
   let frame = ctx.getImageData(0,0,canvas.width,canvas.height)
   let src = cv.matFromImageData(frame)

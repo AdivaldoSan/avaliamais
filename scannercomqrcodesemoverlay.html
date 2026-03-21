@@ -155,18 +155,23 @@ function getTopoBase(qtd){
 
   return pontos[pontos.length-1]
 }
+  
 function atualizarUI(){
 
   const ui = document.getElementById("uiLeitura")
-  const canvasEl = document.getElementById("canvas")
   const qrBox = document.getElementById("qrBox")
 
   if(modo === "qr"){
     ui.style.display = "none"
-    qrBox.style.display = "block"   // 👈 mostra quadrado QR
-  }else{
+    qrBox.style.display = "block"
+  }
+  else if(modo === "espera"){
+    ui.style.display = "none"
+    qrBox.style.display = "none"
+  }
+  else{
     ui.style.display = "block"
-    qrBox.style.display = "none"    // 👈 esconde QR
+    qrBox.style.display = "none"
   }
 }
 
@@ -252,7 +257,7 @@ function iniciar(){
     TEMPLATE.questoes = qtdQR
     document.getElementById("qtdLabel").innerText = qtdQR
 
-    modo = "leitura"
+    modo = "espera"
     atualizarUI()
 
     log("QR OK → indo pra leitura")
@@ -280,6 +285,26 @@ function loop(){
     detectarQR()
     requestAnimationFrame(loop)
     return
+  }
+  if(modo === "espera"){
+
+  // verifica se QR ainda está visível
+  let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+
+  let code = jsQR(
+    imageData.data,
+    imageData.width,
+    imageData.height
+  )
+
+  if(!code){
+    modo = "leitura"
+    atualizarUI()
+    log("QR saiu → iniciando leitura")
+  }
+
+  requestAnimationFrame(loop)
+  return
   }
 
   // ==============================

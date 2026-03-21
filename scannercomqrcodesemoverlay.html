@@ -33,7 +33,7 @@ button{
 
 <body>
 
-<h2>Scanner Inteligente...</h2>
+<h2>Scanner Inteligente.</h2>
 
 <div id="qtdBox">
   <span id="qtdLabel">--</span>
@@ -599,6 +599,19 @@ function refazer(){
 
   qrLido = false
   qrFramesOK = 0   // ✅ faltava isso
+}
+
+function lerNovamente(){
+
+  capturado = false
+  framesOK = 0
+
+  respostasLidas = []
+  document.getElementById("resultado").innerHTML = ""
+  document.getElementById("respostas").innerText = ""
+
+  modo = "leitura"
+  atualizarUI()
 }
 
 document.addEventListener("DOMContentLoaded", atualizarUI)  

@@ -156,6 +156,7 @@ let respostasLidas=[]
 let modo = "qr" // "qr" ou "leitura"
 let gabaritoQR = null
 let qtdQR = 0
+let qrLido = false
 // >>> FIM ADIÇÃO
 
 
@@ -254,19 +255,28 @@ function iniciar(){
 // >>> INÍCIO ADIÇÃO — LEITURA QR
 function detectarQR(){
 
-  let imageData = ctx.getImageData(0,0,canvas.width,canvas.height)
+  const size = Math.min(canvas.width, canvas.height) * 0.3 // MESMO TAMANHO DO QUADRADO
+
+  const x = (canvas.width - size) / 2
+  const y = (canvas.height - size) / 2
+
+  let imageData = ctx.getImageData(x, y, size, size)
 
   let code = jsQR(
     imageData.data,
-    imageData.width,
-    imageData.height
+    size,
+    size
   )
 
-  if(code){
+  if(code && !qrLido){
 
+    qrLido = true
+     
     let texto = code.data
 
     if(texto.includes("AVALIA+")){
+
+       qrLido = true
 
       let partes = texto.split("|")
 
@@ -275,12 +285,10 @@ function detectarQR(){
 
       console.log("QR OK:", qtdQR, gabaritoQR)
 
-      // aplica automaticamente
       TEMPLATE.questoes = qtdQR
       document.getElementById("qtdLabel").innerText = qtdQR
 
       modo = "leitura"
-
       atualizarOverlay()
 
       document.getElementById("status").innerText =
@@ -561,9 +569,10 @@ function refazer(){
 
   document.getElementById("status").innerText = "Aguardando QR..."
   // >>> FIM CORREÇÃO
+  qrLido = false
 }
 
-document.addEventListener("DOMContentLoaded", atualizarOverlay)
+  document.addEventListener("DOMContentLoaded", atualizarOverlay)
 
 /* ==============================
    [FUTURO - QR CODE]

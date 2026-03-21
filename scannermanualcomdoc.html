@@ -186,9 +186,21 @@ function iniciar(){
 // ==============================
 // 🔥 LEITOR QR (ANTES DE TUDO)
 // ==============================
-function detectarQR(){
 
-  let imageData = ctx.getImageData(0,0,canvas.width,canvas.height)
+  function detectarQR(){
+
+  const overlaySize = 220
+
+  // converte tamanho VISUAL → tamanho REAL do canvas
+  const scaleX = canvas.width / canvas.clientWidth
+  const scaleY = canvas.height / canvas.clientHeight
+
+  const size = overlaySize * scaleX
+
+  const x = Math.floor((canvas.width - size) / 2)
+  const y = Math.floor((canvas.height - size) / 2)
+
+  let imageData = ctx.getImageData(x, y, size, size)
 
   let code = jsQR(
     imageData.data,
@@ -196,36 +208,41 @@ function detectarQR(){
     imageData.height
   )
 
-  if(code && !qrProcessado){
+  if(code){
 
     let texto = code.data
 
     if(texto.includes("AVALIA+")){
-      qrProcessado = true
-      modo = "espera" // novo estado intermediário
-      
-      let partes = texto.split("|")
 
-      qtdQR = parseInt(partes[1].split("=")[1])
-      gabaritoQR = partes[2].split("=")[1]
+      qrFramesOK++
 
-      TEMPLATE.questoes = qtdQR
-      document.getElementById("qtdLabel").innerText = qtdQR
-document.getElementById("status").innerText = "QR detectado ✔"
+      if(qrFramesOK > 2 && !qrLido){
 
-// 🔊 beep opcional
-new Audio("https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg").play()
+        qrLido = true
 
-setTimeout(() => {
+        let partes = texto.split("|")
 
-  modo = "leitura"
-  atualizarUI()
+        qtdQR = parseInt(partes[1].split("=")[1])
+        gabaritoQR = partes[2].split("=")[1]
 
-  document.getElementById("status").innerText =
-    "Posicione o gabarito"
+        TEMPLATE.questoes = qtdQR
+        document.getElementById("qtdLabel").innerText = qtdQR
 
-}, 800)
+        modo = "leitura"
+        atualizarOverlay()
+
+        qrFramesOK = 0
+
+        document.getElementById("status").innerText =
+          "QR lido ✔ Posicione o gabarito"
+      }
+
+    } else {
+      qrFramesOK = 0
     }
+
+  } else {
+    qrFramesOK = 0
   }
 }
 
@@ -446,12 +463,12 @@ function refazer(){
 
   modo = "qr"
   gabaritoQR = null
-  qtdQR = 0
+  atualizarOverlay()
 
-  
-atualizarUI()
   document.getElementById("status").innerText = "Aguardando QR..."
-  qrProcessado = false
+
+  qrLido = false
+  qrFramesOK = 0   // ✅ faltava isso
 }
 
 document.addEventListener("DOMContentLoaded", atualizarUI)  

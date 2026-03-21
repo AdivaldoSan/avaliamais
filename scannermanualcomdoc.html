@@ -257,50 +257,60 @@ function iniciar(){
 // >>> INÍCIO ADIÇÃO — LEITURA QR
 function detectarQR(){
 
-  const size = 220 /*Math.min(canvas.width, canvas.height) * 0.3*/
+  const overlaySize = 220
+
+  // converte tamanho VISUAL → tamanho REAL do canvas
+  const scaleX = canvas.width / canvas.clientWidth
+  const scaleY = canvas.height / canvas.clientHeight
+
+  const size = overlaySize * scaleX
 
   const x = Math.floor((canvas.width - size) / 2)
   const y = Math.floor((canvas.height - size) / 2)
-    
+
   let imageData = ctx.getImageData(x, y, size, size)
 
   let code = jsQR(
     imageData.data,
-    size,
-    size
+    imageData.width,
+    imageData.height
   )
 
   if(code){
 
-  let texto = code.data
+    let texto = code.data
 
-  if(texto.includes("AVALIA+")){
+    if(texto.includes("AVALIA+")){
 
-    qrFramesOK++
+      qrFramesOK++
 
-    if(qrFramesOK > 2 && !qrLido){
+      if(qrFramesOK > 2 && !qrLido){
 
-      qrLido = true
+        qrLido = true
 
-      let partes = texto.split("|")
+        let partes = texto.split("|")
 
-      qtdQR = parseInt(partes[1].split("=")[1])
-      gabaritoQR = partes[2].split("=")[1]
+        qtdQR = parseInt(partes[1].split("=")[1])
+        gabaritoQR = partes[2].split("=")[1]
 
-      TEMPLATE.questoes = qtdQR
-      document.getElementById("qtdLabel").innerText = qtdQR
+        TEMPLATE.questoes = qtdQR
+        document.getElementById("qtdLabel").innerText = qtdQR
 
-      modo = "leitura"
-      atualizarOverlay()
-       qrFramesOK = 0
+        modo = "leitura"
+        atualizarOverlay()
 
-      document.getElementById("status").innerText =
-        "QR lido ✔ Posicione o gabarito"
+        qrFramesOK = 0
+
+        document.getElementById("status").innerText =
+          "QR lido ✔ Posicione o gabarito"
+      }
+
+    } else {
+      qrFramesOK = 0
     }
-  }
 
-}else{
-  qrFramesOK = 0
+  } else {
+    qrFramesOK = 0
   }
 }
 // >>> FIM ADIÇÃO
@@ -569,14 +579,14 @@ function refazer(){
   respostasLidas=[]
   document.getElementById("resultado").innerHTML=""
 
-  // >>> INÍCIO CORREÇÃO
   modo = "qr"
   gabaritoQR = null
   atualizarOverlay()
 
   document.getElementById("status").innerText = "Aguardando QR..."
-  // >>> FIM CORREÇÃO
+
   qrLido = false
+  qrFramesOK = 0   // ✅ faltava isso
 }
 
   document.addEventListener("DOMContentLoaded", atualizarOverlay)

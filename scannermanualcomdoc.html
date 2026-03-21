@@ -104,6 +104,7 @@ let capturado=false
 let framesOK=0
 let ultimaImagem=null
 let respostasLidas=[]
+let qrProcessado = false
 
 // 🔥 NOVO CONTROLE
 let modo = "qr"
@@ -191,12 +192,14 @@ function detectarQR(){
     imageData.height
   )
 
-  if(code){
+  if(code && !qrProcessado){
 
     let texto = code.data
 
     if(texto.includes("AVALIA+")){
-
+      qrProcessado = true
+      modo = "espera" // novo estado intermediário
+      
       let partes = texto.split("|")
 
       qtdQR = parseInt(partes[1].split("=")[1])
@@ -236,7 +239,7 @@ function loop(){
   ctx.drawImage(video,0,0)
 
   // 🔥 BLOQUEIO DO OPENCV
-  if(modo === "qr"){
+  if(modo === "qr" || modo === "espera"){
     detectarQR()
     requestAnimationFrame(loop)
     return

@@ -227,18 +227,17 @@ log("posição: "+x+","+y)
   log("imageData: "+imageData.width+"x"+imageData.height)
 
   let code = jsQR(
+  imageData.data,
+  imageData.width,
+  imageData.height
+)
 
-    if(!code){
+if(!code){
   log("❌ QR NÃO detectado")
 }else{
   log("✅ QR detectado")
   log("conteúdo: "+code.data)
-  }
-    
-    imageData.data,
-    imageData.width,
-    imageData.height
-  )
+}
 
   if(code){
 

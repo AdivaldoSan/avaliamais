@@ -37,21 +37,56 @@ button{
   <span id="qtdLabel">--</span>
 </div>
 
-<br>
+<br
 
 <script src="https://unpkg.com/jsqr/dist/jsQR.js"></script>
 
 <video id="video" autoplay playsinline style="display:none;"></video>
 <canvas id="canvas"></canvas>
 
-<div id="status">Aguardando QR...</div>
-<div id="respostas" style="margin-top:10px;"></div>
+<div id="overlayQR" style="
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  pointer-events:none;
+  display:block;
+  z-index:10;
+">
 
-<button onclick="lerNovamente()">Ler novamente</button>
-<button onclick="confirmar()">Confirmar</button>
-<button onclick="refazer()">Refazer</button>
+  <div style="
+    position:absolute;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,0.7);
+  "></div>
 
-<div id="resultado"></div>
+  <div style="
+    position:absolute;
+    width:220px;
+    height:220px;
+    border:3px solid red;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+  "></div>
+
+</div>  
+
+<div id="status">Aguardando QR...</div>o
+  
+<div id="uiLeitura" style="display:none;">
+
+  <div id="respostas" style="margin-top:10px;"></div>
+
+  <button onclick="lerNovamente()">Ler novamente</button>
+  <button onclick="confirmar()">Confirmar</button>
+  <button onclick="refazer()">Refazer</button>
+
+  <div id="resultado"></div>
+
+</div>
 
 <script src="https://docs.opencv.org/4.x/opencv.js"></script>
 
@@ -111,7 +146,19 @@ function getTopoBase(qtd){
 
   return pontos[pontos.length-1]
 }
+function atualizarUI(){
 
+  const overlay = document.getElementById("overlayQR")
+  const ui = document.getElementById("uiLeitura")
+
+  if(modo === "qr"){
+    overlay.style.display = "block"
+    ui.style.display = "none"
+  }else{
+    overlay.style.display = "none"
+    ui.style.display = "block"
+  }
+}
 // ==============================
 cv.onRuntimeInitialized=()=>{
   pronto=true
@@ -157,11 +204,20 @@ function detectarQR(){
 
       TEMPLATE.questoes = qtdQR
       document.getElementById("qtdLabel").innerText = qtdQR
+document.getElementById("status").innerText = "QR detectado ✔"
 
-      modo = "leitura"
+// 🔊 beep opcional
+new Audio("https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg").play()
 
-      document.getElementById("status").innerText =
-        "QR lido ✔ Posicione o gabarito"
+setTimeout(() => {
+
+  modo = "leitura"
+  atualizarUI()
+
+  document.getElementById("status").innerText =
+    "Posicione o gabarito"
+
+}, 800)
     }
   }
 }
@@ -385,8 +441,12 @@ function refazer(){
   gabaritoQR = null
   qtdQR = 0
 
+  
+atualizarUI()
   document.getElementById("status").innerText = "Aguardando QR..."
 }
+
+document.addEventListener("DOMContentLoaded", atualizarUI)  
 
 </script>
 

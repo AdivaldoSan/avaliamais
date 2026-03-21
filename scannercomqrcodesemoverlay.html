@@ -125,7 +125,7 @@ button{
 
 <body>
 
-<h2 id="titulo">Scanner Avalia+</h2>
+<h2 id="titulo">Scanner Avalia+...</h2>
 
 <div id="qtdBox" style="display:none;">
   <span id="qtdLabel">--</span>
@@ -336,11 +336,14 @@ function atualizarUI(){
     ui.style.display = "none"
     qrBox.style.display = "none"
   }
-  else{
+  else if(modo === "leitura" && capturado){
     ui.style.display = "block"
     qrBox.style.display = "none"
   }
-}
+  else{
+    ui.style.display = "none"
+  }
+     }
 
 // ==============================
 function iniciar(){
@@ -541,6 +544,7 @@ function loop(){
 function capturarFrame(quadrados){
 
   capturado=true
+  atualizarUI()
   
   document.getElementById("msgGabarito").style.display = "none"
 

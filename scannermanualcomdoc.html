@@ -553,13 +553,17 @@ function refazer(){
   framesOK=0
   respostasLidas=[]
   document.getElementById("resultado").innerHTML=""
+
+  // >>> INÍCIO CORREÇÃO
+  modo = "qr"
+  gabaritoQR = null
+  atualizarOverlay()
+
+  document.getElementById("status").innerText = "Aguardando QR..."
+  // >>> FIM CORREÇÃO
 }
 
-   // >>> INÍCIO CORREÇÃO
-window.onload = () => {
-  atualizarOverlay()
-}
-// >>> FIM CORREÇÃO
+document.addEventListener("DOMContentLoaded", atualizarOverlay)
 
 /* ==============================
    [FUTURO - QR CODE]

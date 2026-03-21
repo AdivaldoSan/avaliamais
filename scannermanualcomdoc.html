@@ -156,11 +156,11 @@ function atualizarUI(){
   if(modo === "qr"){
     overlay.style.display = "block"
     ui.style.display = "none"
-    canvasEl.style.display = "none"   // 🔥 ESCONDE VISUAL
+    canvasEl.style.visibility = "hidden" // 👈 ESCONDE VISUALMENTE
   }else{
     overlay.style.display = "none"
     ui.style.display = "block"
-    canvasEl.style.display = "block"  // 🔥 MOSTRA
+    canvasEl.style.visibility = "visible"
   }
 }
 

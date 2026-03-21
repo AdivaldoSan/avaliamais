@@ -158,7 +158,7 @@ let gabaritoQR = null
 let qtdQR = 0
 // >>> FIM ADIÇÃO
 
-atualizarOverlay()   
+
 
 /* ==============================
    TEMPLATE FIXO DO GABARITO
@@ -554,6 +554,12 @@ function refazer(){
   respostasLidas=[]
   document.getElementById("resultado").innerHTML=""
 }
+
+   // >>> INÍCIO CORREÇÃO
+window.onload = () => {
+  atualizarOverlay()
+}
+// >>> FIM CORREÇÃO
 
 /* ==============================
    [FUTURO - QR CODE]

@@ -19,6 +19,16 @@ canvas{
   margin:0 auto;     /* centraliza */
 }
 
+#status{
+  width:90vw;
+  margin:10px auto;
+  padding:12px;
+  font-size:16px;
+  background:#222;
+  border-radius:8px;
+  color:#00ffcc;
+}
+
 button{
   padding:10px 16px;
   margin:5px;
@@ -27,6 +37,43 @@ button{
 #qtdBox{
   font-size:22px;
   margin:10px;
+}
+
+#botoes{
+  width:90vw;              /* igual ao canvas */
+  margin:15px auto;
+  display:flex;
+  gap:10px;
+}
+
+.btn{
+  flex:1;                  /* cada botão ocupa 1/3 */
+  padding:18px 10px;
+  font-size:18px;
+  font-weight:bold;
+  border:none;
+  border-radius:10px;
+  color:white;
+  cursor:pointer;
+  transition:0.2s;
+}
+
+/* cores específicas */
+.btn{
+  background:#444;
+}
+
+.btn.confirmar{
+  background:#28a745; /* verde */
+}
+
+.btn.refazer{
+  background:#dc3545; /* vermelho */
+}
+
+/* efeito clique */
+.btn:active{
+  transform:scale(0.96);
 }
 </style>
 </head>
@@ -132,9 +179,11 @@ button{
 
   <div id="respostas" style="margin-top:10px;"></div>
 
-  <button onclick="lerNovamente()">Ler novamente</button>
-  <button onclick="confirmar()">Confirmar</button>
-  <button onclick="refazer()">Refazer</button>
+  <div id="botoes">
+  <button class="btn" onclick="lerNovamente()">Ler novamente</button>
+  <button class="btn confirmar" onclick="confirmar()">Confirmar</button>
+  <button class="btn refazer" onclick="refazer()">Refazer</button>
+  </div>
 
   <div id="resultado"></div>
 

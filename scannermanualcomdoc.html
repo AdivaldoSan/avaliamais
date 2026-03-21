@@ -197,89 +197,63 @@ function iniciar(){
   function detectarQR(){
 
   const box = document.getElementById("qrBox")
-const rect = box.getBoundingClientRect()
-const canvasRect = canvas.getBoundingClientRect()
+  const rect = box.getBoundingClientRect()
+  const canvasRect = canvas.getBoundingClientRect()
 
-const scaleX = canvas.width / canvasRect.width
-const scaleY = canvas.height / canvasRect.height
+  const scaleX = canvas.width / canvasRect.width
+  const scaleY = canvas.height / canvasRect.height
 
-const x = (rect.left - canvasRect.left) * scaleX
-const y = (rect.top - canvasRect.top) * scaleY
-const w = rect.width * scaleX
-const h = rect.height * scaleY
+  const x = (rect.left - canvasRect.left) * scaleX
+  const y = (rect.top - canvasRect.top) * scaleY
+  const w = rect.width * scaleX
+  const h = rect.height * scaleY
 
-log("canvas real: "+canvas.width+"x"+canvas.height)
-log("canvas css: "+canvas.clientWidth+"x"+canvas.clientHeight)
-log("scaleX: "+scaleX.toFixed(2))
-log("size final: "+size)
-log("posição: "+x+","+y)
+  log("area leitura: "+Math.floor(x)+","+Math.floor(y)+" "+Math.floor(w)+"x"+Math.floor(h))
 
-const box = document.getElementById("qrBox")
-const rect = box.getBoundingClientRect()
-const canvasRect = canvas.getBoundingClientRect()
-
-const scaleX = canvas.width / canvasRect.width
-const scaleY = canvas.height / canvasRect.height
-
-const x = (rect.left - canvasRect.left) * scaleX
-const y = (rect.top - canvasRect.top) * scaleY
-const w = rect.width * scaleX
-const h = rect.height * scaleY
-
-let imageData = ctx.getImageData(x, y, w, h)
-    
-  log("imageData: "+imageData.width+"x"+imageData.height)
+  let imageData = ctx.getImageData(x, y, w, h)
 
   let code = jsQR(
-  imageData.data,
-  imageData.width,
-  imageData.height
-)
+    imageData.data,
+    imageData.width,
+    imageData.height
+  )
 
-if(!code){
-  log("❌ QR NÃO detectado")
-}else{
-  log("✅ QR detectado")
-  log("conteúdo: "+code.data)
-}
-
-  if(code){
-
-    let texto = code.data
-
-    if(texto.includes("AVALIA+")){
-
-      qrFramesOK++
-
-      if(qrFramesOK > 2 && !qrLido){
-
-        qrLido = true
-
-        let partes = texto.split("|")
-
-        qtdQR = parseInt(partes[1].split("=")[1])
-        gabaritoQR = partes[2].split("=")[1]
-
-        TEMPLATE.questoes = qtdQR
-        document.getElementById("qtdLabel").innerText = qtdQR
-
-        modo = "leitura"
-        
-        atualizarUI()
-        qrFramesOK = 0
-
-        document.getElementById("status").innerText =
-          "QR lido ✔ Posicione o gabarito"
-      }
-
-    } else {
-      qrFramesOK = 0
-    }
-
-  } else {
+  if(!code){
+    log("❌ QR NÃO detectado")
     qrFramesOK = 0
+    return
   }
-}
+
+  log("✅ QR detectado")
+
+  let texto = code.data
+
+  if(!texto.includes("AVALIA+")){
+    log("QR inválido")
+    qrFramesOK = 0
+    return
+  }
+
+  qrFramesOK++
+
+  if(qrFramesOK > 2 && !qrLido){
+
+    qrLido = true
+
+    let partes = texto.split("|")
+
+    qtdQR = parseInt(partes[1].split("=")[1])
+    gabaritoQR = partes[2].split("=")[1]
+
+    TEMPLATE.questoes = qtdQR
+    document.getElementById("qtdLabel").innerText = qtdQR
+
+    modo = "leitura"
+    atualizarUI()
+
+    log("QR OK → indo pra leitura")
+  }
+  }
 
 // ==============================
 function loop(){

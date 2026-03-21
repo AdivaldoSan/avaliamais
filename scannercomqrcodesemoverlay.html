@@ -33,7 +33,7 @@ button{
 
 <body>
 
-<h2>Scanner Inteligente...</h2>
+<h2>Scanner Inteligente.</h2>
 
 <div id="qtdBox">
   <span id="qtdLabel">--</span>
@@ -48,14 +48,59 @@ button{
   <canvas id="canvas"></canvas>
 
   <div id="qrBox" style="
-    position:absolute;
-    border:3px solid red;
-    width:60%;
-    aspect-ratio:1/1;
-    top:50%;
-    left:50%;
-    transform:translate(-50%,-50%);
-  "></div>
+  position:absolute;
+  width:60%;
+  aspect-ratio:1/1;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  box-shadow: 0 0 0 9999px rgba(0,0,0,0.6);
+">
+
+  <div style="position:absolute; inset:0;">
+
+    <div style="
+      position:absolute;
+      width:40px;
+      height:40px;
+      border-top:5px solid white;
+      border-left:5px solid white;
+      top:0;
+      left:0;
+    "></div>
+
+    <div style="
+      position:absolute;
+      width:40px;
+      height:40px;
+      border-top:5px solid white;
+      border-right:5px solid white;
+      top:0;
+      right:0;
+    "></div>
+
+    <div style="
+      position:absolute;
+      width:40px;
+      height:40px;
+      border-bottom:5px solid white;
+      border-left:5px solid white;
+      bottom:0;
+      left:0;
+    "></div>
+
+    <div style="
+      position:absolute;
+      width:40px;
+      height:40px;
+      border-bottom:5px solid white;
+      border-right:5px solid white;
+      bottom:0;
+      right:0;
+    "></div>
+
+  </div>
+  </div>
 
   <div id="msgGabarito" style="
   position:absolute;

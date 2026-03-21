@@ -121,8 +121,8 @@ let qrLido = false
   
 
   function log(msg){
-  document.getElementById("status").innerText = msg
-  }
+  document.getElementById("status").innerText += "\n" + msg
+}
 // ==============================
 const TEMPLATE = {
   colunas: [0.30, 0.45, 0.58, 0.73],
@@ -215,11 +215,26 @@ function iniciar(){
   const size = overlaySize * scaleX
 
   const x = Math.floor((canvas.width - size) / 2)
-  const y = Math.floor((canvas.height - size) / 2)
+const y = Math.floor((canvas.height - size) / 2)
+
+log("canvas real: "+canvas.width+"x"+canvas.height)
+log("canvas css: "+canvas.clientWidth+"x"+canvas.clientHeight)
+log("scaleX: "+scaleX.toFixed(2))
+log("size final: "+size)
+log("posição: "+x+","+y)
 
   let imageData = ctx.getImageData(x, y, size, size)
+  log("imageData: "+imageData.width+"x"+imageData.height)
 
   let code = jsQR(
+
+    if(!code){
+  log("❌ QR NÃO detectado")
+}else{
+  log("✅ QR detectado")
+  log("conteúdo: "+code.data)
+  }
+    
     imageData.data,
     imageData.width,
     imageData.height

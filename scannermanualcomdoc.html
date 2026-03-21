@@ -104,19 +104,21 @@ let qtdQR = 0
 let qrFramesOK = 0
 let qrLido = false
   
-
-  let logBuffer = []
-
+let DEBUG = false
+let logBuffer = []
+  
 function log(msg){
+  if(!DEBUG) return
+
   logBuffer.push(msg)
 
-  // mantém só últimas 10 linhas
   if(logBuffer.length > 8){
     logBuffer.shift()
   }
 
   document.getElementById("status").innerText = logBuffer.join("\n")
 }
+
 // ==============================
 const TEMPLATE = {
   colunas: [0.30, 0.45, 0.58, 0.73],

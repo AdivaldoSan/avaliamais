@@ -92,6 +92,34 @@ button{
   font-size:16px;
   line-height:1.4;
 }
+
+.resultadoBox{
+  width:90vw;
+  margin:10px auto;
+  padding:15px;
+  background:#1a1a1a;
+  border-radius:12px;
+}
+
+.tituloResultado{
+  font-size:20px;
+  font-weight:bold;
+  color:#00ffcc;
+  margin-bottom:10px;
+}
+
+.bolinhas{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  margin-bottom:10px;
+}
+
+.acertos{
+  font-size:18px;
+  font-weight:bold;
+  color:#fff;
+}
 </style>
 </head>
 
@@ -621,8 +649,11 @@ function confirmar(){
 
   let gabarito = gabaritoQR.split("")
 
-  let html = "<b>Respostas:</b><br>"
-      html += respostasLidas.join(" ") + "<br><br>"
+  let html = `
+  <div class="resultadoBox">
+    <div class="tituloResultado">Resultado</div>
+    <div class="bolinhas">
+`
 
   let acertos=0
 
@@ -635,14 +666,19 @@ function confirmar(){
   html += `
     <span style="
       display:inline-block;
-      width:16px;
-      height:16px;
+      width:26px;
+      height:26px;
       border-radius:50%;
-      margin:2px;
+      margin:4px;
       background:${correta ? '#00ffcc' : '#ff4444'};
     "></span>
   `
   }
+  html += `
+    </div>
+    <div class="acertos">${acertos} acertos</div>
+  </div>
+`
 
   html+=`<br><br><b>${acertos} acertos</b>`
 

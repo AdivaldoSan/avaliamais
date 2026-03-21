@@ -239,7 +239,7 @@ function loop(){
   ctx.drawImage(video,0,0)
 
   // 🔥 BLOQUEIO DO OPENCV
-  if(modo === "qr" || modo === "espera"){
+  if(modo === "qr"){
     detectarQR()
     requestAnimationFrame(loop)
     return

@@ -75,14 +75,31 @@ button{
 .btn:active{
   transform:scale(0.96);
 }
+
+#titulo{
+  font-size:28px;
+  font-weight:bold;
+  margin:10px 0;
+
+  background:linear-gradient(90deg,#00ffcc,#00aaff);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+
+#resultado{
+  width:90vw;
+  margin:10px auto;
+  font-size:16px;
+  line-height:1.4;
+}
 </style>
 </head>
 
 <body>
 
-<h2>Scanner Inteligente.</h2>
+<h2 id="titulo">Scanner Avalia+</h2>
 
-<div id="qtdBox">
+<div id="qtdBox" style="display:none;">
   <span id="qtdLabel">--</span>
 </div>
 
@@ -604,21 +621,30 @@ function confirmar(){
 
   let gabarito = gabaritoQR.split("")
 
-  let html="Aluno: "+respostasLidas.join(" ")+"<br>"
-  html+="Gabarito: "+gabarito.join(" ")+"<br><br>"
+  let html = "<b>Respostas:</b><br>"
+      html += respostasLidas.join(" ") + "<br><br>"
 
   let acertos=0
 
   for(let i=0;i<gabarito.length;i++){
-    if(respostasLidas[i]===gabarito[i]){
-      html+="✅ "
-      acertos++
-    }else{
-      html+="❌ "
-    }
+
+  let correta = respostasLidas[i]===gabarito[i]
+
+  if(correta) acertos++
+
+  html += `
+    <span style="
+      display:inline-block;
+      width:16px;
+      height:16px;
+      border-radius:50%;
+      margin:2px;
+      background:${correta ? '#00ffcc' : '#ff4444'};
+    "></span>
+  `
   }
 
-  html+="<br><br>Acertos: "+acertos
+  html+=`<br><br><b>${acertos} acertos</b>`
 
   document.getElementById("resultado").innerHTML=html
 }

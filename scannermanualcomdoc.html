@@ -1,28 +1,4 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-<meta charset="UTF-8">
-<title>Scanner Inteligente FINAL</title>
 
-<style>
-/* ==============================
-   ESTILO GLOBAL DA APLICAÇÃO
-   ============================== */
-body{
-  background:#111;
-  color:white;
-  text-align:center;
-  font-family:Arial;
-}
-
-/* Canvas onde ocorre:
-   - exibição da câmera
-   - warp (600x900)
-   - desenho das bolhas verdes */
-canvas{
-  width:100%;
-  max-width:650px;
-}
 
 /* Botões de controle */
 button{
@@ -155,46 +131,7 @@ let respostasLidas=[]
 // >>> INÍCIO ADIÇÃO — CONTROLE QR
 let modo = "qr" // "qr" ou "leitura"
 let gabaritoQR = null
-let qtdQR = 0
-let qrLido = false
-// >>> FIM ADIÇÃO
 
-let qrFramesOK = 0 
-
-
-
-/* ==============================
-   TEMPLATE FIXO DO GABARITO
-   - colunas: posições X das alternativas
-   - questoes: quantidade atual
-   ============================== */
-const TEMPLATE = {
-  colunas: [0.30, 0.45, 0.58, 0.73],
-  questoes: 10
-}
-// >>> INÍCIO ADIÇÃO — CONTROLE OVERLAY
-function atualizarOverlay(){
-
-  let overlay = document.getElementById("overlayQR")
-
-  if(modo === "qr"){
-    overlay.style.display = "block"
-  }else{
-    overlay.style.display = "none"
-  }
-}
-// >>> FIM ADIÇÃO
-   
-/* ==============================
-   CONTROLE DE QUANTIDADE DE QUESTÕES
-   ============================== */
-function alterarQtd(delta){
-  let nova = TEMPLATE.questoes + delta
-  if(nova < 1) nova = 1
-  if(nova > 15) nova = 15
-  TEMPLATE.questoes = nova
-  document.getElementById("qtdLabel").innerText = nova
-}
 
 /* ==============================
    INTERPOLAÇÃO TOPO/BASE

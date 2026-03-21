@@ -100,6 +100,12 @@ let canvas = document.getElementById("canvas")
 let ctx = canvas.getContext("2d")
 
 let pronto=false
+cv.onRuntimeInitialized = () => {
+  pronto = true
+  iniciar()
+}
+
+  
 let capturado=false
 let framesOK=0
 let ultimaImagem=null

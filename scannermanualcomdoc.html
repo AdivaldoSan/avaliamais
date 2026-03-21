@@ -55,27 +55,7 @@ button{
     transform:translate(-50%,-50%);
   "></div>
 </div>
-  
-
-
-  <div style="
-    position:absolute;
-    width:100%;
-    height:100%;
-    background:rgba(0,0,0,0.7);
-  "></div>
-
-  <div style="
-    position:absolute;
-    width:220px;
-    height:220px;
-    border:3px solid red;
-    top:50%;
-    left:50%;
-    transform:translate(-50%,-50%);
-  "></div>
-
-</div>  
+    
 
 <div id="status">Aguardando QR...</div>
   
@@ -216,16 +196,17 @@ function iniciar(){
 
   function detectarQR(){
 
-  const overlaySize = 220
+  const box = document.getElementById("qrBox")
+const rect = box.getBoundingClientRect()
+const canvasRect = canvas.getBoundingClientRect()
 
-  // converte tamanho VISUAL → tamanho REAL do canvas
-  const scaleX = canvas.width / canvas.clientWidth
-  const scaleY = canvas.height / canvas.clientHeight
+const scaleX = canvas.width / canvasRect.width
+const scaleY = canvas.height / canvasRect.height
 
-  const size = Math.min(canvas.width, canvas.height) * 0.4
-
-  const x = Math.floor((canvas.width - size) / 2)
-const y = Math.floor((canvas.height - size) / 2)
+const x = (rect.left - canvasRect.left) * scaleX
+const y = (rect.top - canvasRect.top) * scaleY
+const w = rect.width * scaleX
+const h = rect.height * scaleY
 
 log("canvas real: "+canvas.width+"x"+canvas.height)
 log("canvas css: "+canvas.clientWidth+"x"+canvas.clientHeight)

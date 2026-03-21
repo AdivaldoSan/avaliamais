@@ -33,7 +33,7 @@ button{
 
 <body>
 
-<h2>Scanner Inteligente.</h2>
+<h2>Scanner Inteligente...</h2>
 
 <div id="qtdBox">
   <span id="qtdLabel">--</span>
@@ -44,6 +44,7 @@ button{
 <script src="https://unpkg.com/jsqr/dist/jsQR.js"></script>
 
 <video id="video" autoplay playsinline style="display:none;"></video>
+<audio id="somQR" src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg"></audio>
 <div id="cameraBox" style="position:relative; display:inline-block;">
   <canvas id="canvas"></canvas>
 
@@ -172,6 +173,12 @@ let qrLido = false
   
 let DEBUG = false
 let logBuffer = []
+
+function tocarSomQR(){
+  const audio = document.getElementById("somQR")
+  audio.currentTime = 0
+  audio.play().catch(()=>{})
+}  
   
 function log(msg){
   if(!DEBUG) return
@@ -312,8 +319,10 @@ function iniciar(){
   qrFramesOK++
 
   if(qrFramesOK > 2 && !qrLido){
+    tocarSomQR()
 
     qrLido = true
+    
 
     let partes = texto.split("|")
 

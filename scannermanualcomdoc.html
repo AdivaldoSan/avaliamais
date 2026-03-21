@@ -233,10 +233,15 @@ function loop(){
     return
   }
 
-  canvas.width=video.videoWidth
-  canvas.height=video.videoHeight
-
+  if(modo !== "qr"){
+  canvas.width = video.videoWidth
+  canvas.height = video.videoHeight
   ctx.drawImage(video,0,0)
+}else{
+  // limpa canvas (tela preta)
+  ctx.fillStyle = "black"
+  ctx.fillRect(0,0,canvas.width,canvas.height)
+  }
 
   // 🔥 BLOQUEIO DO OPENCV
   if(modo === "qr"){

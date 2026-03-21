@@ -120,8 +120,17 @@ let qrFramesOK = 0
 let qrLido = false
   
 
-  function log(msg){
-  document.getElementById("status").innerText += "\n" + msg
+  let logBuffer = []
+
+function log(msg){
+  logBuffer.push(msg)
+
+  // mantém só últimas 10 linhas
+  if(logBuffer.length > 10){
+    logBuffer.shift()
+  }
+
+  document.getElementById("status").innerText = logBuffer.join("\n")
 }
 // ==============================
 const TEMPLATE = {

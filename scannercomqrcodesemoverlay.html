@@ -308,6 +308,39 @@ button{
   <div id="resultado"></div>
 
 </div>
+<div id="modalConfirmacao" style="
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.8);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:999;
+">
+
+  <div style="
+    background:#1a1a1a;
+    padding:25px;
+    border-radius:12px;
+    width:85%;
+    max-width:350px;
+    text-align:center;
+  ">
+
+    <div id="modalTexto" style="
+      font-size:16px;
+      margin-bottom:20px;
+      white-space:pre-line;
+    "></div>
+
+    <div style="display:flex; gap:10px;">
+      <button class="btn confirmar" onclick="fecharModal()">SIM</button>
+      <button class="btn refazer" onclick="refazerLeitura()">NÃO</button>
+    </div>
+
+  </div>
+ </div> 
+  
 
 <script src="https://docs.opencv.org/4.x/opencv.js"></script>
 
@@ -653,6 +686,7 @@ function capturarFrame(quadrados){
   ultimaImagem = dst.clone()
 
   lerRespostas(dst)
+  if(pausado) return
 
   document.getElementById("status").innerText =
     "🟢 Conferir leitura"
@@ -730,7 +764,7 @@ for(let i=0;i<respostasLidas.length;i++){
   }
 }
 
-if(vazias.length > 0){
+if(vazias.length > 0 && !pausado){
 
   let msg = "Questões não detectadas: " + vazias.join(", ")
 
@@ -849,38 +883,6 @@ document.addEventListener("DOMContentLoaded", atualizarUI)
 
 </script>
 
- <div id="modalConfirmacao" style="
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,0.8);
-  display:none;
-  align-items:center;
-  justify-content:center;
-  z-index:999;
-">
-
-  <div style="
-    background:#1a1a1a;
-    padding:25px;
-    border-radius:12px;
-    width:85%;
-    max-width:350px;
-    text-align:center;
-  ">
-
-    <div id="modalTexto" style="
-      font-size:16px;
-      margin-bottom:20px;
-      white-space:pre-line;
-    "></div>
-
-    <div style="display:flex; gap:10px;">
-      <button class="btn confirmar" onclick="fecharModal()">SIM</button>
-      <button class="btn refazer" onclick="refazerLeitura()">NÃO</button>
-    </div>
-
-  </div>
- </div> 
-
+ 
 </body>
 </html>

@@ -168,6 +168,15 @@ button{
 .quiz-logo-direita{
   height:40px;
 }
+.quiz-header{
+  position:relative;
+  z-index:50;
+}
+
+#qrBox{
+  z-index:10;
+}  
+  
 </style>
 </head>
 
@@ -196,7 +205,14 @@ button{
 
 <video id="video" autoplay playsinline style="display:none;"></video>
 <audio id="somQR" src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg"></audio>
-<div id="cameraBox" style="position:relative; display:inline-block;">
+  
+<div id="cameraBox" style="
+  position:relative;
+  display:inline-block;
+  overflow:hidden;
+  z-index:1;
+">
+  
   <canvas id="canvas"></canvas>
 
   <div id="qrBox" style="

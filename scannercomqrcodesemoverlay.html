@@ -323,12 +323,13 @@ button{
     padding:25px;
     border-radius:12px;
     width:85%;
-    max-width:350px;
+    width:60%;
+    max-width:none;
     text-align:center;
   ">
 
     <div id="modalTexto" style="
-      font-size:16px;
+      font-size:24px;
       margin-bottom:20px;
       white-space:pre-line;
     "></div>
@@ -752,6 +753,7 @@ function lerRespostas(mat){
     }
 
     respostasLidas.push(resp)
+    let totalMarcadas = respostasLidas.filter(r => r !== "-").length
   }
 
   //document.getElementById("respostas").innerText =
@@ -766,18 +768,38 @@ for(let i=0;i<respostasLidas.length;i++){
 
 if(vazias.length > 0 && !pausado){
 
-  let msg = "Questões não detectadas: " + vazias.join(", ")
+  let totalMarcadas = respostasLidas.filter(r => r !== "-").length
 
-  msg += "\n\nPode ser:\n"
-  msg += "- gabarito em branco\n"
-  msg += "- marcação fraca\n"
-  msg += "- desalinhamento\n"
-  msg += "- gabarito incompatível\n\n"
+  let msg = ""
 
-  msg += "Deseja continuar?"
+  // 🚨 CASO 1 — TOTALMENTE EM BRANCO
+  if(totalMarcadas === 0){
+
+    msg += "Nenhuma marcação foi detectada.\n\n"
+    msg += "Este gabarito deve conter " + qtd + " questões.\n\n"
+
+    msg += "Isso pode indicar que o gabarito está em branco ou não foi preenchido.\n\n"
+
+    msg += "Deseja continuar mesmo assim?"
+
+  } 
+  else {
+
+    // 🚨 CASO 2 — PARCIAL
+    msg += "Há questões que não foram detectadas.\n\n"
+    msg += "Este gabarito deve conter " + qtd + " questões.\n\n"
+
+    msg += "Verifique se o modelo do gabarito é compatível.\n\n"
+
+    msg += "Possíveis causas:\n"
+    msg += "- marcação fraca\n"
+    msg += "- desalinhamento\n"
+    msg += "- gabarito incompatível\n\n"
+
+    msg += "Deseja continuar?"
+  }
 
   abrirModal(msg)
-    }
 }
 
 // ==============================

@@ -339,6 +339,8 @@ let gabaritoQR = null
 let qtdQR = 0
 let qrFramesOK = 0
 let qrLido = false
+
+let pausado = false
   
 let DEBUG = false
 let logBuffer = []
@@ -515,6 +517,10 @@ function iniciar(){
 
 // ==============================
 function loop(){
+  if(pausado){
+  requestAnimationFrame(loop)
+  return
+  }
 
   log("Loop ativo | modo: " + modo + 
     " | video: " + video.videoWidth + "x" + video.videoHeight)
@@ -716,6 +722,28 @@ function lerRespostas(mat){
 
   //document.getElementById("respostas").innerText =
     //"Aluno: "+respostasLidas.join(" ")
+  let vazias = []
+
+for(let i=0;i<respostasLidas.length;i++){
+  if(respostasLidas[i] === "-"){
+    vazias.push(i+1)
+  }
+}
+
+if(vazias.length > 0){
+
+  let msg = "Questões não detectadas: " + vazias.join(", ")
+
+  msg += "\n\nPode ser:\n"
+  msg += "- gabarito em branco\n"
+  msg += "- marcação fraca\n"
+  msg += "- desalinhamento\n"
+  msg += "- gabarito incompatível\n\n"
+
+  msg += "Deseja continuar?"
+
+  abrirModal(msg)
+    }
 }
 
 // ==============================
@@ -789,11 +817,70 @@ function lerNovamente(){
 
   modo = "leitura"
   atualizarUI()
+
+  
+}
+
+function abrirModal(texto){
+  pausado = true
+  document.getElementById("modalTexto").innerText = texto
+  document.getElementById("modalConfirmacao").style.display = "flex"
+}
+
+function fecharModal(){
+  pausado = false
+  document.getElementById("modalConfirmacao").style.display = "none"
+}
+
+function refazerLeitura(){
+  fecharModal()
+
+  capturado = false
+  framesOK = 0
+  respostasLidas = []
+
+  document.getElementById("resultado").innerHTML = ""
+
+  modo = "leitura"
+  atualizarUI()
 }
 
 document.addEventListener("DOMContentLoaded", atualizarUI)  
 
 </script>
+
+ <div id="modalConfirmacao" style="
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.8);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:999;
+">
+
+  <div style="
+    background:#1a1a1a;
+    padding:25px;
+    border-radius:12px;
+    width:85%;
+    max-width:350px;
+    text-align:center;
+  ">
+
+    <div id="modalTexto" style="
+      font-size:16px;
+      margin-bottom:20px;
+      white-space:pre-line;
+    "></div>
+
+    <div style="display:flex; gap:10px;">
+      <button class="btn confirmar" onclick="fecharModal()">SIM</button>
+      <button class="btn refazer" onclick="refazerLeitura()">NÃO</button>
+    </div>
+
+  </div>
+ </div> 
 
 </body>
 </html>

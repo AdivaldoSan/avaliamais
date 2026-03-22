@@ -544,8 +544,6 @@ function loop(){
     }
   }
 
-  })
-
   if(quadrados.length===4){
     framesOK++
     if(framesOK>6){
@@ -694,11 +692,10 @@ function confirmar(){
   </div>
 `
     }
-  //html += `
-   // </div>
-    //<div class="acertos">${acertos} acertos</div>
-  //</div>
-//`
+  html += `
+  </div>
+</div>
+`
 
   document.getElementById("resultado").innerHTML=html
 }

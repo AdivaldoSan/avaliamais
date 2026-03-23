@@ -2,167 +2,20 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Scanner | Avalia+</title>
 <link rel="stylesheet" href="styles.css">
+<link rel="icon" href="favicon.svg">
 
 <style>
 body{
   background:#111;
   color:white;
-  text-align:center;
   font-family:Arial;
+  margin:0;
 }
 
-canvas{
-  width:90vw;
-  height:auto;
-  display:block;
-  margin:0 auto;
-}
-
-#status{
-  display:none;
-}
-
-button{
-  padding:10px 16px;
-  margin:5px;
-}
-
-#qtdBox{
-  font-size:22px;
-  margin:10px;
-}
-
-#botoes{
-  width:90vw;
-  margin:15px auto;
-  display:flex;
-  gap:10px;
-}
-
-.btn{
-  flex:1;
-  padding:18px 10px;
-  font-size:28px;
-  font-weight:bold;
-  border:none;
-  border-radius:10px;
-  color:white;
-  cursor:pointer;
-  transition:0.2s;
-}
-
-.btn{
-  background:#444;
-}
-
-.btn.confirmar{
-  background:#28a745;
-}
-
-.btn.refazer{
-  background:#dc3545;
-}
-
-.btn:active{
-  transform:scale(0.96);
-}
-
-#titulo{
-  font-size:28px;
-  font-weight:bold;
-  margin:10px 0;
-  background:linear-gradient(90deg,#00ffcc,#00aaff);
-  -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;
-}
-  #painelResultado{
-  display:none;
-  width:90vw;
-  margin:0 auto;
-}
-
-#resultado{
-  width:90vw;
-  margin:10px auto;
-  font-size:16px;
-  line-height:1.4;
-}
-
-.resultadoBox{
-  width:90vw;
-  margin:10px auto;
-  padding:15px;
-  background:#1a1a1a;
-  border-radius:12px;
-}
-
-.tituloResultado{
-  display:none;
-}
-
-  #acoesResultado{
-  display:none;
-  width:90vw;
-  margin:15px auto;
-  display:flex;
-  gap:10px;
-}
-
-#acoesResultado .btn{
-  flex:1;
-}
- #telaResultado{
-  width:100%;
-  height:100%;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  align-items:center;
-} 
-
-.bolinhas{
-  display:flex;
-  flex-wrap:wrap;
-  justify-content:center;
-  gap:8px;
-  margin-top:10px;
-}
-
-.acertos{
-  font-size:18px;
-  font-weight:bold;
-  color:#fff;
-}
-
-.bolinha{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  width:50px;
-  height:50px;
-  border-radius:50%;
-  margin:6px;
-  font-size:28px;
-  font-weight:bold;
-  color:#fff;
-
-  box-shadow:
-    inset -4px -6px 10px rgba(0,0,0,0.8),
-    inset 4px 4px 8px rgba(255,255,255,0.35),
-    0 4px 12px rgba(0,0,0,0.9),
-    0 0 8px rgba(255,255,255,0.2);
-}
-
-.bolinha.correta{
-  background:linear-gradient(145deg,#00ffcc,#00997a);
-}
-
-.bolinha.errada{
-  background:linear-gradient(145deg,#ff5a5a,#990000);
-}
-
+/* ===== MOBILE (scanner style) ===== */
 .quiz-header{
   text-align:left;
   display:flex;
@@ -175,6 +28,9 @@ button{
 .quiz-titulo{
   font-size:22px;
   font-weight:bold;
+  background:linear-gradient(90deg,#00ffcc,#00aaff);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
 }
 
 .quiz-info{
@@ -186,862 +42,130 @@ button{
   height:40px;
 }
 
-.quiz-header{
-  position:relative;
-  z-index:50;
-}
-
-#qrBox{
-  z-index:10;
-}
-
-#telaResultado{
+.container{
   width:90vw;
-  margin:0 auto;
-}  
+  max-width:500px;
+  margin:40px auto;
+  background:#1a1a1a;
+  border-radius:16px;
+  padding:30px 25px;
+  box-shadow:0 8px 25px rgba(0,0,0,0.6);
+  text-align:center;
+}
+
+.titulo{
+  font-size:24px;
+  font-weight:bold;
+  margin-bottom:10px;
+}
+
+.sub{
+  opacity:0.6;
+  margin-bottom:20px;
+}
+
+.texto{
+  font-size:15px;
+  line-height:1.5;
+  opacity:0.85;
+}
 </style>
 </head>
 
 <body>
 
-<div class="quiz-header">
-    <div>
-        <div class="quiz-titulo">
-            Scanner Avalia+
-        </div>
-        <div class="quiz-info">
-            Leitura automática de gabarito
-        </div>
-    </div>
-
-    <img src="favicon.svg" class="quiz-logo-direita" alt="Avalia+">
-</div>
-
-<div id="qtdBox" style="display:none;">
-  <span id="qtdLabel">--</span>
-</div>
-
-<br>
-
-<script src="https://unpkg.com/jsqr/dist/jsQR.js"></script>
-
-<video id="video" autoplay playsinline style="display:none;"></video>
-<audio id="somQR" src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg"></audio>
-  
-<div id="cameraBox" style="
-  position:relative;
-  display:inline-block;
-  overflow:hidden;
-  z-index:1;
-">
-  
-  <canvas id="canvas"></canvas>
-
-  <div id="qrBox" style="
-  position:absolute;
-  width:60%;
-  aspect-ratio:1/1;
-  top:50%;
-  left:50%;
-  transform:translate(-50%,-50%);
-  box-shadow: 0 0 0 9999px rgba(0,0,0,0.6);
-">
-
-  <div style="position:absolute; inset:0;">
-
-    <div style="
-      position:absolute;
-      width:40px;
-      height:40px;
-      border-top:5px solid white;
-      border-left:5px solid white;
-      top:0;
-      left:0;
-    "></div>
-
-    <div style="
-      position:absolute;
-      width:40px;
-      height:40px;
-      border-top:5px solid white;
-      border-right:5px solid white;
-      top:0;
-      right:0;
-    "></div>
-
-    <div style="
-      position:absolute;
-      width:40px;
-      height:40px;
-      border-bottom:5px solid white;
-      border-left:5px solid white;
-      bottom:0;
-      left:0;
-    "></div>
-
-    <div style="
-      position:absolute;
-      width:40px;
-      height:40px;
-      border-bottom:5px solid white;
-      border-right:5px solid white;
-      bottom:0;
-      right:0;
-    "></div>
-
-  </div>
-  </div>
-
-  <div id="msgGabarito" style="
-  position:absolute;
-  top:50%;
-  left:50%;
-  transform:translate(-50%,-50%);
-  background:rgba(0,0,0,0.85);
-  color:#00ffcc;
-  padding:30px 50px;
-  font-size:28px;
-  font-weight:bold;
-  border-radius:12px;
-  min-width:250px;
-  max-width:80%;
-  text-align:center;
-  box-shadow:0 0 20px #00ffcc;
-  display:none;
-  z-index:20;
-">
-  Aponte para o gabarito
-  </div>
-</div>
-    
-
-<div id="status">Aguardando QR...</div>
-  
-<div id="uiLeitura" style="display:none;">
-<div id="respostas" style="margin-top:10px;"></div>
-
-  <div id="botoes">
-  <button class="btn" onclick="lerNovamente()">Ler novamente</button>
-  <button class="btn confirmar" onclick="confirmar()">Confirmar</button>
-  
-  </div>
-
-  <div id="resultado"></div>
-
-</div>
-<div id="painelResultado" style="
-  display:none;
-  width:90vw;
-  margin:15px auto;
-  background:#1a1a1a;
-  border-radius:16px;
-  padding:25px 20px;
-  text-align:center;
-  box-shadow:0 8px 25px rgba(0,0,0,0.6);
-">
-<div id="telaResultado">
-<div id="percentualBox" style="
-  font-size:72px;
-  font-weight:800;
-  margin:10px 0 5px;
-  background:linear-gradient(90deg,#00ffcc,#00aaff);
-  -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;
-">
-  --
-</div>
-
-   <div id="notaBox" style="
-  font-size:20px;
-  opacity:0.8;
-  margin-bottom:15px;
-   ">
-   </div>
-
-  <div id="bolinhasResultado" class="bolinhas"></div>
-
-</div>
-
-  </div>
-
-<!-- 🔥 BOTÃO FORA DO PAINEL -->
-<div id="acoesResultado" style="
-  display:none;
-  width:90vw;
-  margin:15px auto;
-  display:flex;
-  gap:10px;
-">
-  <button class="btn confirmar" style="flex:1;" onclick="proximo()">
-    Próximo
-  </button>
-</div>
-
-  
-<div id="modalConfirmacao" style="
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,0.8);
-  display:none;
-  align-items:center;
-  justify-content:center;
-  z-index:999;
-">
-
-  <div style="
-    background:#1a1a1a;
-    padding:25px;
-    border-radius:12px;
-    width:85%;
-    width:60%;
-    max-width:none;
-    text-align:center;
-  ">
-
-    <div id="modalTexto" style="
-      font-size:24px;
-      margin-bottom:20px;
-      white-space:pre-line;
-    "></div>
-
-    <div style="display:flex; gap:10px;">
-      <button class="btn confirmar" onclick="fecharModal()">SIM</button>
-      <button class="btn refazer" onclick="refazerLeitura()">NÃO</button>
-    </div>
-
-  </div>
- </div> 
-  
-
-<script src="https://docs.opencv.org/4.x/opencv.js"></script>
+<script src="./js/config.js"></script>
+<script src="js/conexao.js"></script>
+<script src="js/layout.js"></script>
 
 <script>
 
-// ==============================
-// VARIÁVEIS GLOBAIS
-// ==============================
-let video = document.getElementById("video")
-let canvas = document.getElementById("canvas")
-let ctx = canvas.getContext("2d")
-
-let pronto=false
-cv.onRuntimeInitialized = () => {
-  pronto = true
-  iniciar()
+// =============================
+// DETECÇÃO MOBILE REAL
+// =============================
+function isMobile(){
+  return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 }
 
-  
-let capturado=false
-let framesOK=0
-let ultimaImagem=null
-let respostasLidas=[]
-let qrProcessado = false
+// =============================
+// INICIALIZAÇÃO
+// =============================
+function iniciar(){
 
-// 🔥 NOVO CONTROLE
-let modo = "qr"
-let gabaritoQR = null
-let qtdQR = 0
-let qrFramesOK = 0
-let qrLido = false
+  if(isMobile()){
+    // 🔥 MODO SCANNER (SEM LAYOUT)
+    document.body.innerHTML = `
 
-let pausado = false
-  
-let DEBUG = false
-let logBuffer = []
+      <div class="quiz-header">
+        <div>
+          <div class="quiz-titulo">
+            Scanner Avalia+
+          </div>
+          <div class="quiz-info">
+            Leitura automática de gabarito
+          </div>
+        </div>
 
-function tocarSomQR(){
-  const audio = document.getElementById("somQR")
-  audio.currentTime = 0
-  audio.play().catch(()=>{})
-}  
-  
-function log(msg){
-  if(!DEBUG) return
+        <img src="favicon.svg" class="quiz-logo-direita">
+      </div>
 
-  logBuffer.push(msg)
+      <div class="container">
 
-  if(logBuffer.length > 8){
-    logBuffer.shift()
-  }
+        <div class="titulo">
+          Em produção
+        </div>
 
-  document.getElementById("status").innerText = logBuffer.join("\n")
-}
+        <div class="sub">
+          Funcionalidade em desenvolvimento
+        </div>
 
-// ==============================
-const TEMPLATE = {
-  colunas: [0.30, 0.45, 0.58, 0.73],
-  questoes: 10
-}
+        <div class="texto">
+          O Scanner Avalia+ permitirá a leitura automática de gabaritos utilizando a câmera do dispositivo.<br><br>
 
-// ==============================
-function getTopoBase(qtd){
+          Funcionalidades previstas:<br><br>
 
-  const pontos = [
-    {q:1, topo:0.5307, base:0.5307},
-    {q:5, topo:0.3248, base:0.7137},
-    {q:6, topo:0.2908, base:0.7396},
-    {q:8, topo:0.2508, base:0.7811},
-    {q:10, topo:0.2158, base:0.8090},
-    {q:15, topo:0.1607, base:0.8563}
-  ]
+          • Leitura por QR Code<br>
+          • Correção automática<br>
+          • Cálculo de percentual e nota<br>
+          • Feedback visual por questão<br><br>
 
-  let exato = pontos.find(p => p.q === qtd)
-  if(exato) return exato
+          O uso será realizado diretamente pelo celular, utilizando a câmera traseira.
+        </div>
 
-  for(let i=0;i<pontos.length-1;i++){
-    let p1 = pontos[i]
-    let p2 = pontos[i+1]
-
-    if(qtd > p1.q && qtd < p2.q){
-      let t = (qtd - p1.q) / (p2.q - p1.q)
-      return {
-        topo: p1.topo + t*(p2.topo - p1.topo),
-        base: p1.base + t*(p2.base - p1.base)
-      }
-    }
-  }
-
-  return pontos[pontos.length-1]
-}
-  
-function atualizarUI(){
-
-  const ui = document.getElementById("uiLeitura")
-  const qrBox = document.getElementById("qrBox")
-  const acoes = document.getElementById("acoesResultado")
-
-  // 🔥 ESCONDE SEMPRE POR PADRÃO
-  acoes.style.display = "none"
-
-  if(modo === "qr"){
-    ui.style.display = "none"
-    qrBox.style.display = "block"
-  }
-  else if(modo === "espera"){
-    ui.style.display = "none"
-    qrBox.style.display = "none"
-  }
-  else if(modo === "leitura" && capturado){
-    ui.style.display = "block"
-    qrBox.style.display = "none"
+      </div>
+    `
   }
   else{
-    ui.style.display = "none"
-  }
-}
-// ==============================
-function iniciar(){
-  log("Solicitando câmera...")
+    // 🔥 DESKTOP NORMAL (COM LAYOUT)
+    criarLayout()
 
-  navigator.mediaDevices.getUserMedia({
-    video:{facingMode:"environment"}
-  })
-  .then(stream=>{
-    log("Câmera liberada ✔")
+    document.getElementById("conteudo").innerHTML = `
+      <h2 style="margin-bottom:20px;">📷 Scanner Avalia+</h2>
 
-    video.srcObject=stream
+      <div class="card" style="max-width:600px;">
 
-    video.onloadedmetadata=()=>{
-      log("Metadata carregado ✔")
-
-      video.play()
-      loop()
-    }
-  })
-  .catch(err=>{
-    log("ERRO câmera: " + err.message)
-  })
-}
-
-// ==============================
-// 🔥 LEITOR QR (ANTES DE TUDO)
-// ==============================
-
-  function detectarQR(){
-
-  const box = document.getElementById("qrBox")
-  const rect = box.getBoundingClientRect()
-  const canvasRect = canvas.getBoundingClientRect()
-
-  const scaleX = canvas.width / canvasRect.width
-  const scaleY = canvas.height / canvasRect.height
-
-  const x = (rect.left - canvasRect.left) * scaleX
-  const y = (rect.top - canvasRect.top) * scaleY
-  const w = rect.width * scaleX
-  const h = rect.height * scaleY
-
-  log("area leitura: "+Math.floor(x)+","+Math.floor(y)+" "+Math.floor(w)+"x"+Math.floor(h))
-
-  let imageData = ctx.getImageData(x, y, w, h)
-
-  let code = jsQR(
-    imageData.data,
-    imageData.width,
-    imageData.height
-  )
-
-  if(!code){
-    log("❌ QR NÃO detectado")
-    qrFramesOK = 0
-    return
-  }
-
-  log("✅ QR detectado")
-
-  let texto = code.data
-
-  if(!texto.includes("AVALIA+")){
-    log("QR inválido")
-    qrFramesOK = 0
-    return
-  }
-
-  qrFramesOK++
-
-  if(qrFramesOK > 2 && !qrLido){
-    tocarSomQR()
-
-    qrLido = true
-    
-
-    let partes = texto.split("|")
-
-    qtdQR = parseInt(partes[1].split("=")[1])
-    gabaritoQR = partes[2].split("=")[1]
-
-    TEMPLATE.questoes = qtdQR
-    document.getElementById("qtdLabel").innerText = qtdQR
-
-    modo = "espera"
-    atualizarUI()
-    
-    document.getElementById("msgGabarito").style.display = "block"
-
-    log("QR OK → indo pra leitura")
-  }
-  }
-
-// ==============================
-function loop(){
-  if(pausado){
-  requestAnimationFrame(loop)
-  return
-  }
-
-  log("Loop ativo | modo: " + modo + 
-    " | video: " + video.videoWidth + "x" + video.videoHeight)
-
-  if(!pronto || capturado){
-    requestAnimationFrame(loop)
-    return
-  }
-
-  canvas.width = video.videoWidth
-  canvas.height = video.videoHeight
-
-  ctx.drawImage(video,0,0)
-
-  // 🔥 BLOQUEIO DO OPENCV
-  if(modo === "qr"){
-    detectarQR()
-    requestAnimationFrame(loop)
-    return
-  }
-  if(modo === "espera"){
-
-  // verifica se QR ainda está visível
-  let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
-
-  let code = jsQR(
-    imageData.data,
-    imageData.width,
-    imageData.height
-  )
-
-  if(!code){
-    modo = "leitura"
-    atualizarUI()
-    log("QR saiu → iniciando leitura")
-  }
-
-  requestAnimationFrame(loop)
-  return
-  }
-
-  // ==============================
-  // 🔥 DAQUI PRA BAIXO NÃO FOI ALTERADO
-  // ==============================
-
-  let src=cv.imread(canvas)
-  let gray=new cv.Mat()
-  let bin=new cv.Mat()
-
-  cv.cvtColor(src,gray,cv.COLOR_RGBA2GRAY)
-
-  cv.adaptiveThreshold(
-    gray,bin,255,
-    cv.ADAPTIVE_THRESH_MEAN_C,
-    cv.THRESH_BINARY_INV,
-    11,2
-  )
-
-  let contours=new cv.MatVector()
-  let hierarchy=new cv.Mat()
-
-  cv.findContours(bin,contours,hierarchy,
-    cv.RETR_EXTERNAL,cv.CHAIN_APPROX_SIMPLE)
-
-  let quadrados=[]
-
-  for(let i=0;i<contours.size();i++){
-    let cnt=contours.get(i)
-    let area=cv.contourArea(cnt)
-    if(area<500) continue
-
-    let peri=cv.arcLength(cnt,true)
-    let approx=new cv.Mat()
-    cv.approxPolyDP(cnt,approx,0.02*peri,true)
-
-    if(approx.rows===4){
-      quadrados.push(cv.boundingRect(approx))
-    }
-  }
-
-  if(quadrados.length===4){
-    framesOK++
-    if(framesOK>6){
-      capturarFrame(quadrados)
-    }
-  }else{
-    framesOK=0
-  }
-
-  src.delete(); gray.delete(); bin.delete()
-  contours.delete(); hierarchy.delete()
-
-  requestAnimationFrame(loop)
-}
-
-// ==============================
-function capturarFrame(quadrados){
-
-  capturado=true
-  atualizarUI()
-  
-  document.getElementById("msgGabarito").style.display = "none"
-
-  let frame = ctx.getImageData(0,0,canvas.width,canvas.height)
-  let src = cv.matFromImageData(frame)
-
-  let p = ordenar(quadrados)
-
-  let largura=600
-  let altura=900
-
-  let srcTri=cv.matFromArray(4,1,cv.CV_32FC2,[
-    p.TL.x,p.TL.y,
-    p.TR.x+p.TR.width,p.TR.y,
-    p.BL.x,p.BL.y+p.BL.height,
-    p.BR.x+p.BR.width,p.BR.y+p.BR.height
-  ])
-
-  let dstTri=cv.matFromArray(4,1,cv.CV_32FC2,[
-    0,0, largura,0, 0,altura, largura,altura
-  ])
-
-  let M=cv.getPerspectiveTransform(srcTri,dstTri)
-  let dst=new cv.Mat()
-
-  cv.warpPerspective(src,dst,M,new cv.Size(largura,altura))
-
-  cv.imshow(canvas,dst)
-
-  ultimaImagem = dst.clone()
-
-  lerRespostas(dst)
-  if(pausado) return
-
-  document.getElementById("status").innerText =
-    "🟢 Conferir leitura"
-}
-
-// ==============================
-function lerRespostas(mat){
-
-  let qtd = TEMPLATE.questoes
-  let tb = getTopoBase(qtd)
-
-  let topo = tb.topo
-  let base = tb.base
-  let passo = qtd>1 ? (base-topo)/(qtd-1) : 0
-
-  respostasLidas=[]
-
-  for(let i=0;i<qtd;i++){
-
-    let y = (qtd===1)? topo : topo + i*passo
-
-    let valores=[]
-
-    for(let j=0;j<4;j++){
-
-      let x=TEMPLATE.colunas[j]
-      let px=Math.floor(x*mat.cols)
-      let py=Math.floor(y*mat.rows)
-
-      let roi = mat.roi(new cv.Rect(px-15,py-15,30,30))
-
-      let gray=new cv.Mat()
-      cv.cvtColor(roi,gray,cv.COLOR_RGBA2GRAY)
-
-      let t=new cv.Mat()
-      cv.threshold(gray,t,0,255,
-        cv.THRESH_BINARY_INV+cv.THRESH_OTSU)
-
-      valores.push(cv.countNonZero(t)/(30*30))
-
-      gray.delete(); t.delete(); roi.delete()
-    }
-
-    let max=Math.max(...valores)
-    let idx=valores.indexOf(max)
-
-    let resp="-"
-
-    let ordenado=[...valores].sort((a,b)=>b-a)
-
-    if(max>0.25 && (ordenado[0]-ordenado[1])>0.08){
-      resp=["A","B","C","D"][idx]
-
-      // ✅ DESENHAR BOLHA VERDE
-  let cx = TEMPLATE.colunas[idx] * mat.cols
-  let cy = y * mat.rows
-
-  ctx.beginPath()
-  ctx.arc(cx, cy, 12, 0, Math.PI * 2)
-  ctx.lineWidth = 3
-  ctx.strokeStyle = "lime"
-  ctx.stroke()
-    }
-
-    respostasLidas.push(resp)
-   // let totalMarcadas = respostasLidas.filter(r => r !== "-").length
-  }
-
-  //document.getElementById("respostas").innerText =
-    //"Aluno: "+respostasLidas.join(" ")
-  let vazias = []
-
-for(let i=0;i<respostasLidas.length;i++){
-  if(respostasLidas[i] === "-"){
-    vazias.push(i+1)
-  }
-}
-
-if(vazias.length > 0 && !pausado){
-
-  let totalMarcadas = respostasLidas.filter(r => r !== "-").length
-
-  let msg = ""
-
-  // 🚨 CASO 1 — TOTALMENTE EM BRANCO
-  if(totalMarcadas === 0){
-
-    msg += "Nenhuma marcação foi detectada.\n\n"
-    msg += "Este gabarito deve conter " + qtd + " questões.\n\n"
-
-    msg += "Isso pode indicar que o gabarito está em branco ou não foi preenchido.\n\n"
-
-    msg += "Deseja continuar mesmo assim?"
-
-  } 
-  else {
-
-    // 🚨 CASO 2 — PARCIAL
-    msg += "Há questões que não foram detectadas.\n\n"
-    msg += "Este gabarito deve conter " + qtd + " questões.\n\n"
-
-    msg += "Verifique se o modelo do gabarito é compatível.\n\n"
-
-    msg += "Possíveis causas:\n"
-    msg += "● marcação duplicada\n"
-    msg += "● marcação fraca\n"
-    msg += "● desalinhamento\n"
-    msg += "● gabarito incompatível\n\n"
-
-    msg += "Deseja continuar?"
-  }
-
-  abrirModal(msg)
-}
-  }
-// ==============================
-function confirmar(){
-
-  let gabarito = gabaritoQR.split("")
-  let acertos = 0
-
-  let bolinhasHTML = ""
-
-  for(let i=0;i<gabarito.length;i++){
-
-    let correta = respostasLidas[i] === gabarito[i]
-
-    if(correta) acertos++
-
-    bolinhasHTML += `
-      <div class="bolinha ${correta ? 'correta' : 'errada'}">
-        ${i+1}
-      </div>
-    `
-  }
-
-  let total = gabarito.length
-  let percentual = Math.round((acertos / total) * 100)
-
-  
-
-  // 🔥 ESCONDE BOTÕES ANTIGOS
-  document.getElementById("botoes").style.display = "none"
-
-    let h = canvas.offsetHeight
- document.getElementById("painelResultado").style.height = h + "px"
-
-  // 🔥 ESCONDE CÂMERA
-  canvas.style.display = "none"
-
-  // 🔥 MOSTRA NOVO PAINEL
-  document.getElementById("painelResultado").style.display = "block"
-
-  document.getElementById("acoesResultado").style.display = "flex"
-
-  // 🔥 INSERE RESULTADO
-  document.getElementById("percentualBox").innerText = percentual + "%"
-
-
-
-  let nota10 = (acertos / total * 10).toFixed(1)
-
-document.getElementById("notaBox").innerText =
-  acertos + " de " + total + " • Nota: " + nota10
-
-  document.getElementById("bolinhasResultado").innerHTML = bolinhasHTML
-}
-
-// ==============================
-function ordenar(q){
-  q.sort((a,b)=>a.y-b.y)
-  let top=q.slice(0,2)
-  let bottom=q.slice(2,4)
-  top.sort((a,b)=>a.x-b.x)
-  bottom.sort((a,b)=>a.x-b.x)
-  return {TL:top[0],TR:top[1],BL:bottom[0],BR:bottom[1]}
-}
-
-// ==============================
-function proximo(){
-
-  capturado = false
-  framesOK = 0
-  respostasLidas = []
-
-  modo = "qr"
-  gabaritoQR = null
-  qrLido = false
-  qrFramesOK = 0
-
-  atualizarUI()
-
-  // 🔥 RESET VISUAL COMPLETO
-  document.getElementById("painelResultado").style.display = "none"
-  document.getElementById("acoesResultado").style.display = "none"
-
-  document.getElementById("percentualBox").innerText = "--"
-  document.getElementById("notaBox").innerText = ""
-  document.getElementById("bolinhasResultado").innerHTML = ""
-
-  document.getElementById("botoes").style.display = "flex"
-  canvas.style.display = "block"
-
-  document.getElementById("status").innerText = "Aguardando QR..."
-  document.getElementById("painelResultado").style.height = "auto"
-}
-
-function lerNovamente(){
-
-  capturado = false
-  framesOK = 0
-
-  respostasLidas = []
-  document.getElementById("resultado").innerHTML = ""
-  document.getElementById("respostas").innerText = ""
-
-  modo = "leitura"
-  atualizarUI()
-
-  
-}
-
-function abrirModal(texto){
-  pausado = true
-  document.getElementById("modalTexto").innerText = texto
-  document.getElementById("modalConfirmacao").style.display = "flex"
-}
-
-function fecharModal(){
-  pausado = false
-  document.getElementById("modalConfirmacao").style.display = "none"
-}
-
-function refazerLeitura(){
-  fecharModal()
-
-  capturado = false
-  framesOK = 0
-  respostasLidas = []
-
-  document.getElementById("resultado").innerHTML = ""
-
-  modo = "leitura"
-  atualizarUI()
-}
-
-function isMobile(){
-  return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-
-  if(!isMobile() || !navigator.mediaDevices){
-    document.body.innerHTML = `
-      <div style="
-        display:flex;
-        height:100vh;
-        align-items:center;
-        justify-content:center;
-        text-align:center;
-        padding:20px;
-        font-family:Arial;
-        background:#111;
-        color:white;
-      ">
-        <div>
-          <h2 style="margin-bottom:10px;">Use no celular</h2>
-          <p style="opacity:0.7;">
-            O Scanner Avalia+ funciona apenas em dispositivos móveis com câmera traseira.
-          </p>
+        <div style="font-size:20px; font-weight:bold; margin-bottom:10px;">
+          Em produção
         </div>
+
+        <div style="opacity:0.7; margin-bottom:15px;">
+          Esta funcionalidade está sendo desenvolvida
+        </div>
+
+        <div style="line-height:1.5;">
+          O Scanner permitirá leitura automática de gabaritos via câmera.<br><br>
+
+          O uso será exclusivo em dispositivos móveis.
+        </div>
+
       </div>
     `
-    return
   }
+}
 
-  atualizarUI()
-})
+window.onload = iniciar;
 
 </script>
 
- 
 </body>
 </html>

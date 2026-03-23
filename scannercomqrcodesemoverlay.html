@@ -77,6 +77,11 @@ button{
   -webkit-background-clip:text;
   -webkit-text-fill-color:transparent;
 }
+  #painelResultado{
+  display:none;
+  width:90vw;
+  margin:0 auto;
+}
 
 #resultado{
   width:90vw;
@@ -874,6 +879,9 @@ function confirmar(){
   // 🔥 ESCONDE BOTÕES ANTIGOS
   document.getElementById("botoes").style.display = "none"
 
+    let h = canvas.offsetHeight
+ document.getElementById("painelResultado").style.height = h + "px"
+
   // 🔥 MOSTRA NOVO PAINEL
   document.getElementById("painelResultado").style.display = "block"
 
@@ -881,6 +889,8 @@ function confirmar(){
 
   // 🔥 INSERE RESULTADO
   document.getElementById("percentualBox").innerText = percentual + "%"
+
+
 
   let nota10 = (acertos / total * 10).toFixed(1)
 
@@ -926,6 +936,7 @@ function proximo(){
   canvas.style.display = "block"
 
   document.getElementById("status").innerText = "Aguardando QR..."
+  document.getElementById("painelResultado").style.height = "auto"
 }
 
 function lerNovamente(){

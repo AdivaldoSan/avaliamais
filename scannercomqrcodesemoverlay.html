@@ -297,6 +297,35 @@ button{
   
 <div id="uiLeitura" style="display:none;">
 
+  <div id="painelResultado" style="
+  display:none;
+  width:90vw;
+  margin:10px auto;
+  background:#1a1a1a;
+  border-radius:12px;
+  padding:20px;
+  text-align:center;
+">
+
+  <div id="percentualBox" style="
+    font-size:64px;
+    font-weight:bold;
+    margin:20px 0;
+  ">
+    --
+  </div>
+
+  <div id="notaBox" style="
+    font-size:22px;
+    opacity:0.7;
+    margin-bottom:20px;
+  ">
+  </div>
+
+  <div id="bolinhasResultado" class="bolinhas"></div>
+
+  </div>
+
   <div id="respostas" style="margin-top:10px;"></div>
 
   <div id="botoes">
@@ -870,6 +899,9 @@ function proximo(){
 
   qrLido = false
   qrFramesOK = 0   // ✅ faltava isso
+  document.getElementById("painelResultado").style.display = "none"
+canvas.style.display = "block"
+document.getElementById("botoes").style.display = "flex"
 }
 
 function lerNovamente(){

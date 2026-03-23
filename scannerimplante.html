@@ -27,33 +27,69 @@ function iniciarPagina(){
   // ============================
   if(!isMobile){
 
-    document.getElementById("conteudo").innerHTML = `
-      <h2 style="margin-bottom:20px;">📷 Scanner Inteligente</h2>
+   document.getElementById("conteudo").innerHTML = `
 
-      <div class="card" style="text-align:center;">
+<h2 style="
+  margin-bottom:15px;
+  padding:0 10px;
+">📷 Scanner Inteligente</h2>
 
-        <p style="
-          font-size:18px;
-          margin-bottom:15px;
-          color:#ff5a5a;
-          font-weight:bold;
-        ">
-          ⚠️ Funcionalidade exclusiva para celular
-        </p>
+<div style="
+  width:100%;
+  max-width:500px;
+  margin:0 auto;
+  padding:18px 15px;
+  background:#1a1a1a;
+  border-radius:14px;
+  box-shadow:0 6px 20px rgba(0,0,0,0.5);
+">
 
-        <p style="opacity:0.7; line-height:1.5;">
-          O scanner utiliza a câmera do dispositivo para leitura automática
-          de gabaritos.
-        </p>
+  <div style="
+    font-size:18px;
+    font-weight:bold;
+    margin-bottom:10px;
+    color:#00ffcc;
+    text-align:center;
+  ">
+    🚧 Em desenvolvimento
+  </div>
 
-        <br>
+  <p style="
+    font-size:14px;
+    line-height:1.5;
+    opacity:0.85;
+    text-align:center;
+    margin-bottom:15px;
+  ">
+    Este módulo permitirá leitura automática de gabaritos
+    utilizando a câmera do celular.
+  </p>
 
-        <p style="opacity:0.6;">
-          Acesse esta página pelo seu smartphone para utilizar.
-        </p>
+  <div style="
+    background:#0f0f0f;
+    border-radius:10px;
+    padding:12px 14px;
+    font-size:14px;
+    line-height:1.6;
+  ">
+    ✔ Leitura via QR Code<br>
+    ✔ Correção automática<br>
+    ✔ Identificação de respostas<br>
+    ✔ Integração com Avalia+<br>
+    ✔ Uso em sala de aula
+  </div>
 
-      </div>
-    `;
+  <div style="
+    margin-top:15px;
+    font-size:12px;
+    opacity:0.6;
+    text-align:center;
+  ">
+    Em breve disponível.
+  </div>
+
+</div>
+`;
 
     return;
   }

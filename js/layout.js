@@ -47,6 +47,11 @@ function criarLayout(){
        class="${paginaAtual==='dashboard.html'?'active':''}">
        Dashboard
     </a>
+
+    <a href="scannerimplante.html"
+       class="${paginaAtual==='scannerimplante.html'?'active':''}">
+       Scanner
+    </a>
    
     ${perfil === "ADMIN" ? `
       <a href="admin.html"

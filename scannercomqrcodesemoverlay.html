@@ -335,10 +335,8 @@ button{
 
 <!-- 🔥 BOTÃO FORA DO PAINEL -->
 <div id="acoesResultado" style="
-  display:none;
   width:90vw;
   margin:10px auto;
-  display:flex;
   gap:10px;
 ">
   <button class="btn confirmar" style="flex:1;" onclick="proximo()">
@@ -477,6 +475,10 @@ function atualizarUI(){
 
   const ui = document.getElementById("uiLeitura")
   const qrBox = document.getElementById("qrBox")
+  const acoes = document.getElementById("acoesResultado")
+
+  // 🔥 ESCONDE SEMPRE POR PADRÃO
+  acoes.style.display = "none"
 
   if(modo === "qr"){
     ui.style.display = "none"
@@ -493,8 +495,7 @@ function atualizarUI(){
   else{
     ui.style.display = "none"
   }
-     }
-
+}
 // ==============================
 function iniciar(){
   log("Solicitando câmera...")

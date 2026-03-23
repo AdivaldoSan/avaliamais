@@ -23,126 +23,117 @@ function iniciarPagina(){
   const isMobile = window.innerWidth <= 900;
 
   // ============================
-  // 🔴 BLOQUEIO DESKTOP
+  // 🔴 DESKTOP (mantém simples e limpo)
   // ============================
   if(!isMobile){
 
-   document.getElementById("conteudo").innerHTML = `
+    document.getElementById("conteudo").innerHTML = `
+      <h2 style="margin-bottom:20px;">📷 Scanner Inteligente</h2>
 
-<h2 style="
-  margin-bottom:15px;
-  padding:0 10px;
-">📷 Scanner Inteligente</h2>
+      <div class="card" style="
+        text-align:center;
+        color:#eaeaea;
+      ">
 
-<div style="
-  width:100%;
-  max-width:500px;
-  margin:0 auto;
-  padding:18px 15px;
-  background:#1a1a1a;
-  border-radius:14px;
-  box-shadow:0 6px 20px rgba(0,0,0,0.5);
-">
+        <p style="
+          font-size:18px;
+          margin-bottom:15px;
+          color:#ff5a5a;
+          font-weight:bold;
+        ">
+          ⚠️ Funcionalidade exclusiva para celular
+        </p>
 
-  <div style="
-    font-size:18px;
-    font-weight:bold;
-    margin-bottom:10px;
-    color:#00ffcc;
-    text-align:center;
-  ">
-    🚧 Em desenvolvimento
-  </div>
+        <p style="
+          opacity:0.85;
+          line-height:1.6;
+          color:#ddd;
+        ">
+          O scanner utiliza a câmera do dispositivo para leitura automática
+          de gabaritos.
+        </p>
 
-  <p style="
-    font-size:14px;
-    line-height:1.5;
-    opacity:0.85;
-    text-align:center;
-    margin-bottom:15px;
-  ">
-    Este módulo permitirá leitura automática de gabaritos
-    utilizando a câmera do celular.
-  </p>
+        <br>
 
-  <div style="
-    background:#0f0f0f;
-    border-radius:10px;
-    padding:12px 14px;
-    font-size:14px;
-    line-height:1.6;
-  ">
-    ✔ Leitura via QR Code<br>
-    ✔ Correção automática<br>
-    ✔ Identificação de respostas<br>
-    ✔ Integração com Avalia+<br>
-    ✔ Uso em sala de aula
-  </div>
+        <p style="
+          opacity:0.6;
+          color:#aaa;
+        ">
+          Acesse esta página pelo seu smartphone para utilizar.
+        </p>
 
-  <div style="
-    margin-top:15px;
-    font-size:12px;
-    opacity:0.6;
-    text-align:center;
-  ">
-    Em breve disponível.
-  </div>
-
-</div>
-`;
+      </div>
+    `;
 
     return;
   }
 
   // ============================
-  // 🟢 MOBILE - EM PRODUÇÃO
+  // 🟢 MOBILE (ajustado)
   // ============================
   document.getElementById("conteudo").innerHTML = `
 
-    <h2 style="margin-bottom:20px;">📷 Scanner Inteligente</h2>
+    <h2 style="
+      margin-bottom:15px;
+      padding:0 10px;
+    ">📷 Scanner Inteligente</h2>
 
-    <div class="card" style="text-align:center;">
+    <div style="
+      width:100%;
+      max-width:500px;
+      margin:0 auto;
+      padding:18px 15px;
+      background:#1a1a1a;
+      border-radius:14px;
+      box-shadow:0 6px 20px rgba(0,0,0,0.5);
+      color:#eaeaea;
+    ">
 
       <div style="
-        font-size:20px;
+        font-size:18px;
         font-weight:bold;
-        margin-bottom:15px;
+        margin-bottom:10px;
         color:#00ffcc;
+        text-align:center;
       ">
         🚧 Em desenvolvimento
       </div>
 
-      <p style="opacity:0.8; line-height:1.6;">
+      <p style="
+        font-size:14px;
+        line-height:1.5;
+        opacity:0.9;
+        text-align:center;
+        margin-bottom:15px;
+        color:#ddd;
+      ">
         Este módulo permitirá leitura automática de gabaritos
         utilizando a câmera do celular.
       </p>
 
-      <br>
-
       <div style="
-        text-align:left;
-        max-width:500px;
-        margin:0 auto;
-        line-height:1.6;
-      ">
-        ✔ Leitura via QR Code<br>
-        ✔ Correção instantânea<br>
-        ✔ Identificação de respostas<br>
-        ✔ Integração com Avalia+<br>
-        ✔ Uso otimizado para ambiente escolar<br>
-      </div>
-
-      <br>
-
-      <div style="
-        margin-top:20px;
-        padding:15px;
         background:#0f0f0f;
         border-radius:10px;
+        padding:12px 14px;
         font-size:14px;
-        opacity:0.7;
+        line-height:1.6;
+        color:#e0e0e0;
       ">
-        Em breve disponível para uso em sala de aula.
+        ✔ Leitura via QR Code<br>
+        ✔ Correção automática<br>
+        ✔ Identificação de respostas<br>
+        ✔ Integração com Avalia+<br>
+        ✔ Uso em sala de aula
+      </div>
+
+      <div style="
+        margin-top:15px;
+        font-size:12px;
+        opacity:0.6;
+        text-align:center;
+        color:#aaa;
+      ">
+        Em breve disponível.
       </div>
 
     </div>

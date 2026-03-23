@@ -104,7 +104,8 @@ button{
   display:flex;
   flex-wrap:wrap;
   justify-content:center;
-  margin-bottom:10px;
+  gap:8px;
+  margin-top:10px;
 }
 
 .acertos{
@@ -310,24 +311,31 @@ button{
 <div id="painelResultado" style="
   display:none;
   width:90vw;
-  margin:10px auto;
+  margin:15px auto;
   background:#1a1a1a;
-  border-radius:12px;
-  padding:20px;
+  border-radius:16px;
+  padding:25px 20px;
   text-align:center;
+  box-shadow:0 8px 25px rgba(0,0,0,0.6);
 ">
 
-  <div id="percentualBox" style="
-    font-size:64px;
-    font-weight:bold;
-    margin:20px 0;
-  ">--</div>
+<div id="percentualBox" style="
+  font-size:72px;
+  font-weight:800;
+  margin:10px 0 5px;
+  background:linear-gradient(90deg,#00ffcc,#00aaff);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+">
+  --
+</div>
 
-  <div id="notaBox" style="
-    font-size:22px;
-    opacity:0.7;
-    margin-bottom:20px
-  "></div>
+   <div id="notaBox" style="
+  font-size:20px;
+  opacity:0.8;
+  margin-bottom:15px;
+   ">
+   </div>
 
   <div id="bolinhasResultado" class="bolinhas"></div>
 
@@ -335,8 +343,10 @@ button{
 
 <!-- 🔥 BOTÃO FORA DO PAINEL -->
 <div id="acoesResultado" style="
+  display:none;
   width:90vw;
-  margin:10px auto;
+  margin:15px auto;
+  display:flex;
   gap:10px;
 ">
   <button class="btn confirmar" style="flex:1;" onclick="proximo()">
@@ -881,8 +891,10 @@ function confirmar(){
   // 🔥 INSERE RESULTADO
   document.getElementById("percentualBox").innerText = percentual + "%"
 
-  document.getElementById("notaBox").innerText =
-    acertos + " de " + total
+  let nota10 = (acertos / total * 10).toFixed(1)
+
+document.getElementById("notaBox").innerText =
+  acertos + " de " + total + " • Nota: " + nota10
 
   document.getElementById("bolinhasResultado").innerHTML = bolinhasHTML
 }

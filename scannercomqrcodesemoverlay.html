@@ -301,7 +301,7 @@ button{
   <div id="botoes">
   <button class="btn" onclick="lerNovamente()">Ler novamente</button>
   <button class="btn confirmar" onclick="confirmar()">Confirmar</button>
-  <button class="btn refazer" onclick="proximo()">Próximo</button>
+  
   </div>
 
   <div id="resultado"></div>
@@ -316,6 +316,15 @@ button{
   padding:20px;
   text-align:center;
 ">
+    
+<div id="acoesResultado" style="
+  display:none;
+  width:90vw;
+  margin:10px auto;
+">
+  <button class="btn confirmar" onclick="proximo()">Próximo</button>
+</div>
+    
 
   <div id="percentualBox" style="
     font-size:64px;
@@ -864,6 +873,8 @@ function confirmar(){
   // 🔥 MOSTRA NOVO PAINEL
   document.getElementById("painelResultado").style.display = "block"
 
+  document.getElementById("acoesResultado").style.display = "block"
+
   // 🔥 INSERE RESULTADO
   document.getElementById("percentualBox").innerText = percentual + "%"
 
@@ -899,8 +910,10 @@ function proximo(){
   qrLido = false
   qrFramesOK = 0   // ✅ faltava isso
   document.getElementById("painelResultado").style.display = "none"
+  document.getElementById("acoesResultado").style.display = "none"
 canvas.style.display = "block"
 document.getElementById("botoes").style.display = "flex"
+  
 }
 
 function lerNovamente(){

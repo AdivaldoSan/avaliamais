@@ -307,7 +307,7 @@ button{
   <div id="resultado"></div>
 
 </div>
-  <div id="painelResultado" style="
+<div id="painelResultado" style="
   display:none;
   width:90vw;
   margin:10px auto;
@@ -316,34 +316,35 @@ button{
   padding:20px;
   text-align:center;
 ">
-    
-  </div>
-  <div id="acoesResultado" style="
-  display:none;
-  width:90vw;
-  margin:10px auto;
-">
-  <button class="btn confirmar" onclick="proximo()">Próximo</button>
-  </div>
-    
 
   <div id="percentualBox" style="
     font-size:64px;
     font-weight:bold;
     margin:20px 0;
-  ">
-    --
-  </div>
+  ">--</div>
 
   <div id="notaBox" style="
     font-size:22px;
     opacity:0.7;
     margin-bottom:20px
-  ">
-  </div>
+  "></div>
 
   <div id="bolinhasResultado" class="bolinhas"></div>
-  </div>
+
+</div>
+
+<!-- 🔥 BOTÃO FORA DO PAINEL -->
+<div id="acoesResultado" style="
+  display:none;
+  width:90vw;
+  margin:10px auto;
+  display:flex;
+  gap:10px;
+">
+  <button class="btn confirmar" style="flex:1;" onclick="proximo()">
+    Próximo
+  </button>
+</div>
 
   
 <div id="modalConfirmacao" style="
@@ -897,24 +898,30 @@ function ordenar(q){
 
 // ==============================
 function proximo(){
-  capturado=false
-  framesOK=0
-  respostasLidas=[]
-  document.getElementById("resultado").innerHTML=""
+
+  capturado = false
+  framesOK = 0
+  respostasLidas = []
 
   modo = "qr"
   gabaritoQR = null
+  qrLido = false
+  qrFramesOK = 0
+
   atualizarUI()
 
-  document.getElementById("status").innerText = "Aguardando QR..."
-
-  qrLido = false
-  qrFramesOK = 0   // ✅ faltava isso
+  // 🔥 RESET VISUAL COMPLETO
   document.getElementById("painelResultado").style.display = "none"
   document.getElementById("acoesResultado").style.display = "none"
-canvas.style.display = "block"
-document.getElementById("botoes").style.display = "flex"
-  
+
+  document.getElementById("percentualBox").innerText = "--"
+  document.getElementById("notaBox").innerText = ""
+  document.getElementById("bolinhasResultado").innerHTML = ""
+
+  document.getElementById("botoes").style.display = "flex"
+  canvas.style.display = "block"
+
+  document.getElementById("status").innerText = "Aguardando QR..."
 }
 
 function lerNovamente(){

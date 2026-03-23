@@ -6,6 +6,10 @@
 <link rel="stylesheet" href="styles.css">
 
 <style>
+*{
+  box-sizing:border-box;
+}
+
 body{
   background:#111;
   color:white;
@@ -13,15 +17,34 @@ body{
   font-family:Arial;
 }
 
-canvas{
-  width:90vw;        /* ocupa 90% da largura da tela */
-  height:auto;
-  display:block;
-  margin:0 auto;     /* centraliza */
+/* 🔥 STAGE FIXO (NÚCLEO DO SISTEMA) */
+#cameraBox{
+  width:90vw;
+  max-width:650px;
+  aspect-ratio:2/3;
+  margin:0 auto;
+  position:relative;
+  overflow:hidden;
+  border-radius:12px;
+  background:#000;
 }
 
+/* canvas ocupa o stage inteiro */
+canvas{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+}
+
+/* QR overlay continua funcionando */
+#qrBox{
+  z-index:10;
+}
+
+/* restante mantém padrão */
 #status{
-display:none;
+  display:none;
 }
 
 button{
@@ -34,15 +57,17 @@ button{
   margin:10px;
 }
 
+/* botões alinhados com stage */
 #botoes{
-  width:90vw;              /* igual ao canvas */
+  width:90vw;
+  max-width:650px;
   margin:15px auto;
   display:flex;
   gap:10px;
 }
 
 .btn{
-  flex:1;                  /* cada botão ocupa 1/3 */
+  flex:1;
   padding:18px 10px;
   font-size:28px;
   font-weight:bold;
@@ -53,51 +78,40 @@ button{
   transition:0.2s;
 }
 
-/* cores específicas */
 .btn{
   background:#444;
 }
 
 .btn.confirmar{
-  background:#28a745; /* verde */
+  background:#28a745;
 }
 
 .btn.refazer{
-  background:#dc3545; /* vermelho */
+  background:#dc3545;
 }
 
-/* efeito clique */
 .btn:active{
   transform:scale(0.96);
 }
 
-#titulo{
-  font-size:28px;
-  font-weight:bold;
-  margin:10px 0;
-
-  background:linear-gradient(90deg,#00ffcc,#00aaff);
-  -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;
-}
-
 #resultado{
   width:90vw;
+  max-width:650px;
   margin:10px auto;
   font-size:16px;
   line-height:1.4;
 }
 
-.resultadoBox{
+/* 🔥 RESULTADO AGORA SEGUE O STAGE */
+#painelResultado{
   width:90vw;
-  margin:10px auto;
-  padding:15px;
+  max-width:650px;
+  margin:15px auto;
   background:#1a1a1a;
-  border-radius:12px;
-}
-
-.tituloResultado{
-  display:none;
+  border-radius:16px;
+  padding:25px 20px;
+  text-align:center;
+  box-shadow:0 8px 25px rgba(0,0,0,0.6);
 }
 
 .bolinhas{
@@ -108,28 +122,17 @@ button{
   margin-top:10px;
 }
 
-.acertos{
-  font-size:18px;
-  font-weight:bold;
-  color:#fff;
-}
-
 .bolinha{
   display:inline-flex;
   align-items:center;
   justify-content:center;
-
   width:50px;
   height:50px;
   border-radius:50%;
-
-  margin:6px;
-
   font-size:28px;
   font-weight:bold;
   color:#fff;
 
-  /* 🔥 efeito 3D + brilho */
   box-shadow:
     inset -4px -6px 10px rgba(0,0,0,0.8),
     inset 4px 4px 8px rgba(255,255,255,0.35),
@@ -137,12 +140,10 @@ button{
     0 0 8px rgba(255,255,255,0.2);
 }
 
-/* verde (acerto) */
 .bolinha.correta{
   background:linear-gradient(145deg,#00ffcc,#00997a);
 }
 
-/* vermelho (erro) */
 .bolinha.errada{
   background:linear-gradient(145deg,#ff5a5a,#990000);
 }
@@ -153,6 +154,7 @@ button{
   justify-content:space-between;
   align-items:center;
   width:90vw;
+  max-width:650px;
   margin:10px auto;
 }
 
@@ -169,15 +171,11 @@ button{
 .quiz-logo-direita{
   height:40px;
 }
+
 .quiz-header{
   position:relative;
   z-index:50;
 }
-
-#qrBox{
-  z-index:10;
-}  
-  
 </style>
 </head>
 

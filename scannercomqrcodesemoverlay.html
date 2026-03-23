@@ -807,33 +807,42 @@ if(vazias.length > 0 && !pausado){
 function confirmar(){
 
   let gabarito = gabaritoQR.split("")
+  let acertos = 0
 
-  let html = `
-  <div class="resultadoBox">
-    <div class="tituloResultado">Resultado</div>
-    <div class="bolinhas">
-`
-
-  let acertos=0
+  let bolinhasHTML = ""
 
   for(let i=0;i<gabarito.length;i++){
 
-  let correta = respostasLidas[i]===gabarito[i]
+    let correta = respostasLidas[i] === gabarito[i]
 
-  if(correta) acertos++
+    if(correta) acertos++
 
-  html += `
-  <div class="bolinha ${correta ? 'correta' : 'errada'}">
-    ${i+1}
-  </div>
-`
-    }
-  html += `
-  </div>
-</div>
-`
+    bolinhasHTML += `
+      <div class="bolinha ${correta ? 'correta' : 'errada'}">
+        ${i+1}
+      </div>
+    `
+  }
 
-  document.getElementById("resultado").innerHTML=html
+  let total = gabarito.length
+  let percentual = Math.round((acertos / total) * 100)
+
+  // 🔥 ESCONDE CÂMERA
+  canvas.style.display = "none"
+
+  // 🔥 ESCONDE BOTÕES ANTIGOS
+  document.getElementById("botoes").style.display = "none"
+
+  // 🔥 MOSTRA NOVO PAINEL
+  document.getElementById("painelResultado").style.display = "block"
+
+  // 🔥 INSERE RESULTADO
+  document.getElementById("percentualBox").innerText = percentual + "%"
+
+  document.getElementById("notaBox").innerText =
+    acertos + " de " + total
+
+  document.getElementById("bolinhasResultado").innerHTML = bolinhasHTML
 }
 
 // ==============================

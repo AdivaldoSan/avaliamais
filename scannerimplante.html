@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Scanner (Implantação) | Avalia+</title>
+
+<style>
+body{
+  background:#111;
+  color:white;
+  font-family:Arial;
+  margin:0;
+  padding:0;
+}
+
+/* CONTEÚDO CENTRAL */
+.container{
+  width:90vw;
+  max-width:900px;
+  margin:20px auto;
+  background:#1a1a1a;
+  border-radius:16px;
+  padding:25px 20px;
+  box-shadow:0 8px 25px rgba(0,0,0,0.6);
+}
+
+/* TÍTULO */
+.titulo{
+  font-size:26px;
+  font-weight:bold;
+  margin-bottom:10px;
+  background:linear-gradient(90deg,#00ffcc,#00aaff);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+
+/* STATUS */
+.status{
+  display:inline-block;
+  padding:6px 12px;
+  border-radius:8px;
+  background:#ffc107;
+  color:#000;
+  font-weight:bold;
+  font-size:13px;
+  margin-bottom:15px;
+}
+
+/* SEÇÕES */
+.section{
+  margin-top:20px;
+}
+
+.section h3{
+  margin-bottom:8px;
+  font-size:18px;
+  color:#00ffcc;
+}
+
+.section p{
+  opacity:0.85;
+  line-height:1.5;
+  font-size:15px;
+}
+
+.lista{
+  margin-top:10px;
+  padding-left:18px;
+}
+
+.lista li{
+  margin-bottom:6px;
+  opacity:0.85;
+}
+
+/* FOOTER */
+.footer{
+  margin-top:20px;
+  padding-top:15px;
+  border-top:1px solid rgba(255,255,255,0.1);
+  font-size:13px;
+  opacity:0.6;
+  text-align:center;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <div class="titulo">Scanner em Implantação</div>
+
+  <div class="status">🚧 Em produção</div>
+
+  <div class="section">
+    <h3>Objetivo</h3>
+    <p>
+      Implementar leitura automatizada de gabaritos físicos utilizando visão computacional (OpenCV)
+      e identificação por QR Code, com correção imediata e feedback visual ao usuário.
+    </p>
+  </div>
+
+  <div class="section">
+    <h3>Funcionalidades previstas</h3>
+    <ul class="lista">
+      <li>Leitura de QR Code para identificação do gabarito</li>
+      <li>Detecção automática das marcações (A, B, C, D)</li>
+      <li>Correção instantânea com percentual de acerto</li>
+      <li>Exibição visual de desempenho (acertos e erros)</li>
+      <li>Cálculo de nota na escala 0–10</li>
+      <li>Validação de inconsistências na leitura</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h3>Como será utilizado</h3>
+    <ul class="lista">
+      <li>Apontar a câmera para o QR Code do gabarito</li>
+      <li>Aguardar validação automática</li>
+      <li>Apontar para o cartão de respostas</li>
+      <li>Confirmar leitura e visualizar resultado</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h3>Status atual</h3>
+    <p>
+      O módulo já possui versão funcional em ambiente de testes.
+      Esta página representa a etapa de implantação, organização e integração ao sistema.
+    </p>
+  </div>
+
+  <div class="footer">
+    Avalia+ • Sistema de avaliação digital
+  </div>
+
+</div>
+
+</body>
+</html>

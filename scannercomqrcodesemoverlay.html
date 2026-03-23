@@ -296,7 +296,17 @@ button{
 <div id="status">Aguardando QR...</div>
   
 <div id="uiLeitura" style="display:none;">
+<div id="respostas" style="margin-top:10px;"></div>
 
+  <div id="botoes">
+  <button class="btn" onclick="lerNovamente()">Ler novamente</button>
+  <button class="btn confirmar" onclick="confirmar()">Confirmar</button>
+  <button class="btn refazer" onclick="proximo()">Próximo</button>
+  </div>
+
+  <div id="resultado"></div>
+
+</div>
   <div id="painelResultado" style="
   display:none;
   width:90vw;
@@ -318,25 +328,14 @@ button{
   <div id="notaBox" style="
     font-size:22px;
     opacity:0.7;
-    margin-bottom:20px;
+    margin-bottom:20px
   ">
   </div>
 
   <div id="bolinhasResultado" class="bolinhas"></div>
-
   </div>
 
-  <div id="respostas" style="margin-top:10px;"></div>
-
-  <div id="botoes">
-  <button class="btn" onclick="lerNovamente()">Ler novamente</button>
-  <button class="btn confirmar" onclick="confirmar()">Confirmar</button>
-  <button class="btn refazer" onclick="proximo()">Próximo</button>
-  </div>
-
-  <div id="resultado"></div>
-
-</div>
+  
 <div id="modalConfirmacao" style="
   position:fixed;
   inset:0;

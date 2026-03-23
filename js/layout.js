@@ -1,121 +1,105 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Avalia+ | Scanner</title>
-  <link rel="stylesheet" href="styles.css">
-  <link rel="icon" href="favicon.svg" type="image/svg+xml">
-</head>
+function criarLayout(){
 
-<body>
+    const token = localStorage.getItem("TOKEN");
+    const perfil = localStorage.getItem("PERFIL");
+    const nome = localStorage.getItem("NOME");
 
-<script src="./js/config.js"></script>
-<script src="js/conexao.js"></script>
-<script src="js/layout.js"></script>
+    if(!token){
+        window.location.href = "index.html";
+        return;
+    }
 
-<script>
+    // Detecta página atual
+    const paginaAtual =
+        window.location.pathname.split("/").pop();
 
-function iniciarPagina(){
+    document.body.innerHTML = `
+    <div class="app">
 
-  criarLayout();
+        <div class="sidebar" id="sidebar">
 
-  const isMobile = window.innerWidth <= 900;
+  <div class="logo-area">
+    <h2 class="logo">
+      Avalia<span class="logo-plus">+</span>
+    </h2>
+    <p class="logo-sub">
+      Plataforma de Avaliação Digital
+    </p>
+  </div>
 
-  // ============================
-  // 🔴 BLOQUEIO DESKTOP
-  // ============================
-  if(!isMobile){
+  <div class="menu-principal">
+    <a href="painel.html"
+       class="${paginaAtual==='painel.html'?'active':''}">
+       Relatórios
+    </a>
 
-    document.getElementById("conteudo").innerHTML = `
-      <h2 style="margin-bottom:20px;">📷 Scanner Inteligente</h2>
+    <a href="professor.html"
+       class="${paginaAtual==='professor.html'?'active':''}">
+       Gerar Simulado
+    </a>
 
-      <div class="card" style="text-align:center;">
+    <a href="turmas.html"
+       class="${paginaAtual==='turmas.html'?'active':''}">
+       Turmas
+    </a>
 
-        <p style="
-          font-size:18px;
-          margin-bottom:15px;
-          color:#ff5a5a;
-          font-weight:bold;
-        ">
-          ⚠️ Funcionalidade exclusiva para celular
-        </p>
+    <a href="dashboard.html"
+       class="${paginaAtual==='dashboard.html'?'active':''}">
+       Dashboard
+    </a>
+   
+    ${perfil === "ADMIN" ? `
+      <a href="admin.html"
+         class="${paginaAtual==='admin.html'?'active':''}">
+         Admin
+      </a>
+    
+    ` : ``}
+  </div>
 
-        <p style="opacity:0.7; line-height:1.5;">
-          O scanner utiliza a câmera do dispositivo para leitura automática
-          de gabaritos.
-        </p>
+  <div class="sidebar-bottom">
+    <a href="sobre.html"
+       class="${paginaAtual==='sobre.html'?'active':''}">
+       Sobre
+    </a>
+  </div>
 
-        <br>
+</div>
 
-        <p style="opacity:0.6;">
-          Acesse esta página pelo seu smartphone para utilizar.
-        </p>
+        <div class="overlay"
+             id="overlay"
+             onclick="toggleMenu()"></div>
 
-      </div>
-    `;
+        <div class="main">
 
-    return;
-  }
+            <div class="topbar">
+                <div class="menu-toggle"
+                     onclick="toggleMenu()">☰</div>
 
-  // ============================
-  // 🟢 MOBILE - EM PRODUÇÃO
-  // ============================
-  document.getElementById("conteudo").innerHTML = `
+                <div class="user-info">
+                    ${nome} (${perfil})
+                    <button class="btn-logout"
+                            onclick="logout()">Sair</button>
+                </div>
+            </div>
 
-    <h2 style="margin-bottom:20px;">📷 Scanner Inteligente</h2>
+            <div class="page-content"
+                 id="conteudo"></div>
 
-    <div class="card" style="text-align:center;">
-
-      <div style="
-        font-size:20px;
-        font-weight:bold;
-        margin-bottom:15px;
-        color:#00ffcc;
-      ">
-        🚧 Em desenvolvimento
-      </div>
-
-      <p style="opacity:0.8; line-height:1.6;">
-        Este módulo permitirá leitura automática de gabaritos
-        utilizando a câmera do celular.
-      </p>
-
-      <br>
-
-      <div style="
-        text-align:left;
-        max-width:500px;
-        margin:0 auto;
-        line-height:1.6;
-      ">
-        ✔ Leitura via QR Code<br>
-        ✔ Correção instantânea<br>
-        ✔ Identificação de respostas<br>
-        ✔ Integração com Avalia+<br>
-        ✔ Uso otimizado para ambiente escolar<br>
-      </div>
-
-      <br>
-
-      <div style="
-        margin-top:20px;
-        padding:15px;
-        background:#0f0f0f;
-        border-radius:10px;
-        font-size:14px;
-        opacity:0.7;
-      ">
-        Em breve disponível para uso em sala de aula.
-      </div>
-
+        </div>
     </div>
-  `;
+    `;
 }
 
-window.onload = iniciarPagina;
+function toggleMenu(){
+    const sidebar = document.getElementById("sidebar");
+    const overlay = document.getElementById("overlay");
 
-</script>
+    sidebar.classList.toggle("open");
+    overlay.classList.toggle("open");
+}
 
-</body>
-</html>
+function logout(){
+    localStorage.clear();
+    window.location.href = "index.html";
+}

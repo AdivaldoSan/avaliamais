@@ -50,7 +50,7 @@ function criarLayout(){
 
     <a href="scannerimplante.html"
        class="${paginaAtual==='scannerimplante.html'?'active':''}">
-       Scanner
+       Corrigir Prova
     </a>
    
     ${perfil === "ADMIN" ? `

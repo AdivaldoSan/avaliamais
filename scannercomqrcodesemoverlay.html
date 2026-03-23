@@ -317,13 +317,14 @@ button{
   text-align:center;
 ">
     
-<div id="acoesResultado" style="
+  </div>
+  <div id="acoesResultado" style="
   display:none;
   width:90vw;
   margin:10px auto;
 ">
   <button class="btn confirmar" onclick="proximo()">Próximo</button>
-</div>
+  </div>
     
 
   <div id="percentualBox" style="
@@ -873,7 +874,7 @@ function confirmar(){
   // 🔥 MOSTRA NOVO PAINEL
   document.getElementById("painelResultado").style.display = "block"
 
-  document.getElementById("acoesResultado").style.display = "block"
+  document.getElementById("acoesResultado").style.display = "flex"
 
   // 🔥 INSERE RESULTADO
   document.getElementById("percentualBox").innerText = percentual + "%"

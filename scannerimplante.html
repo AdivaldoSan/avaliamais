@@ -1,141 +1,121 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-<meta charset="UTF-8">
-<title>Scanner (Implantação) | Avalia+</title>
-
-<style>
-body{
-  background:#111;
-  color:white;
-  font-family:Arial;
-  margin:0;
-  padding:0;
-}
-
-/* CONTEÚDO CENTRAL */
-.container{
-  width:90vw;
-  max-width:900px;
-  margin:20px auto;
-  background:#1a1a1a;
-  border-radius:16px;
-  padding:25px 20px;
-  box-shadow:0 8px 25px rgba(0,0,0,0.6);
-}
-
-/* TÍTULO */
-.titulo{
-  font-size:26px;
-  font-weight:bold;
-  margin-bottom:10px;
-  background:linear-gradient(90deg,#00ffcc,#00aaff);
-  -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;
-}
-
-/* STATUS */
-.status{
-  display:inline-block;
-  padding:6px 12px;
-  border-radius:8px;
-  background:#ffc107;
-  color:#000;
-  font-weight:bold;
-  font-size:13px;
-  margin-bottom:15px;
-}
-
-/* SEÇÕES */
-.section{
-  margin-top:20px;
-}
-
-.section h3{
-  margin-bottom:8px;
-  font-size:18px;
-  color:#00ffcc;
-}
-
-.section p{
-  opacity:0.85;
-  line-height:1.5;
-  font-size:15px;
-}
-
-.lista{
-  margin-top:10px;
-  padding-left:18px;
-}
-
-.lista li{
-  margin-bottom:6px;
-  opacity:0.85;
-}
-
-/* FOOTER */
-.footer{
-  margin-top:20px;
-  padding-top:15px;
-  border-top:1px solid rgba(255,255,255,0.1);
-  font-size:13px;
-  opacity:0.6;
-  text-align:center;
-}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Avalia+ | Scanner</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
 </head>
 
 <body>
 
-<div class="container">
+<script src="./js/config.js"></script>
+<script src="js/conexao.js"></script>
+<script src="js/layout.js"></script>
 
-  <div class="titulo">Scanner em Implantação</div>
+<script>
 
-  <div class="status">🚧 Em produção</div>
+function iniciarPagina(){
 
-  <div class="section">
-    <h3>Objetivo</h3>
-    <p>
-      Implementar leitura automatizada de gabaritos físicos utilizando visão computacional (OpenCV)
-      e identificação por QR Code, com correção imediata e feedback visual ao usuário.
-    </p>
-  </div>
+  criarLayout();
 
-  <div class="section">
-    <h3>Funcionalidades previstas</h3>
-    <ul class="lista">
-      <li>Leitura de QR Code para identificação do gabarito</li>
-      <li>Detecção automática das marcações (A, B, C, D)</li>
-      <li>Correção instantânea com percentual de acerto</li>
-      <li>Exibição visual de desempenho (acertos e erros)</li>
-      <li>Cálculo de nota na escala 0–10</li>
-      <li>Validação de inconsistências na leitura</li>
-    </ul>
-  </div>
+  const isMobile = window.innerWidth <= 900;
 
-  <div class="section">
-    <h3>Como será utilizado</h3>
-    <ul class="lista">
-      <li>Apontar a câmera para o QR Code do gabarito</li>
-      <li>Aguardar validação automática</li>
-      <li>Apontar para o cartão de respostas</li>
-      <li>Confirmar leitura e visualizar resultado</li>
-    </ul>
-  </div>
+  // ============================
+  // 🔴 BLOQUEIO DESKTOP
+  // ============================
+  if(!isMobile){
 
-  <div class="section">
-    <h3>Status atual</h3>
-    <p>
-      O módulo já possui versão funcional em ambiente de testes.
-      Esta página representa a etapa de implantação, organização e integração ao sistema.
-    </p>
-  </div>
+    document.getElementById("conteudo").innerHTML = `
+      <h2 style="margin-bottom:20px;">📷 Scanner Inteligente</h2>
 
-  <div class="footer">
-    Avalia+ • Sistema de avaliação digital
-  </div>
+      <div class="card" style="text-align:center;">
 
-</div>
+        <p style="
+          font-size:18px;
+          margin-bottom:15px;
+          color:#ff5a5a;
+          font-weight:bold;
+        ">
+          ⚠️ Funcionalidade exclusiva para celular
+        </p>
+
+        <p style="opacity:0.7; line-height:1.5;">
+          O scanner utiliza a câmera do dispositivo para leitura automática
+          de gabaritos.
+        </p>
+
+        <br>
+
+        <p style="opacity:0.6;">
+          Acesse esta página pelo seu smartphone para utilizar.
+        </p>
+
+      </div>
+    `;
+
+    return;
+  }
+
+  // ============================
+  // 🟢 MOBILE - EM PRODUÇÃO
+  // ============================
+  document.getElementById("conteudo").innerHTML = `
+
+    <h2 style="margin-bottom:20px;">📷 Scanner Inteligente</h2>
+
+    <div class="card" style="text-align:center;">
+
+      <div style="
+        font-size:20px;
+        font-weight:bold;
+        margin-bottom:15px;
+        color:#00ffcc;
+      ">
+        🚧 Em desenvolvimento
+      </div>
+
+      <p style="opacity:0.8; line-height:1.6;">
+        Este módulo permitirá leitura automática de gabaritos
+        utilizando a câmera do celular.
+      </p>
+
+      <br>
+
+      <div style="
+        text-align:left;
+        max-width:500px;
+        margin:0 auto;
+        line-height:1.6;
+      ">
+        ✔ Leitura via QR Code<br>
+        ✔ Correção instantânea<br>
+        ✔ Identificação de respostas<br>
+        ✔ Integração com Avalia+<br>
+        ✔ Uso otimizado para ambiente escolar<br>
+      </div>
+
+      <br>
+
+      <div style="
+        margin-top:20px;
+        padding:15px;
+        background:#0f0f0f;
+        border-radius:10px;
+        font-size:14px;
+        opacity:0.7;
+      ">
+        Em breve disponível para uso em sala de aula.
+      </div>
+
+    </div>
+  `;
+}
+
+window.onload = iniciarPagina;
+
+</script>
 
 </body>
 </html>

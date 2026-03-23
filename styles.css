@@ -2025,6 +2025,18 @@ label {
   border: 1px solid #f5c2c7;
 }
 
+/* BASE DO ALERTA */
+.alerta {
+  background-color: #f1f3f5;
+  color: #333;
+  border: 1px solid #ddd;
+  padding: 10px;
+  border-radius: 6px;
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+
+
 
 /*=====*/
 .aplicacao-card.desabilitada{

@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Avalia+ | Gerador de Provas</title>
+
+<link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+<script src="./js/config.js"></script>    
+<script src="./js/conexao.js"></script>
+<script src="./js/layout.js"></script>
+
+<script>
+
+let banco = [];
+let descritoresBanco = [];
+let mapaDescritores = {};
+let modoGeracao = null;
+
+// 🔥 ESTADO GLOBAL (ESSENCIAL)
+let questoesSelecionadas = [];
+
+
+// ================= INICIAR =================
+function iniciarPagina(){
+
+    criarLayout();
+
+    document.getElementById("conteudo").innerHTML = `
+        <h2>🧾 Gerador de Provas</h2>
+
+        <div class="card form-card">
+
+            <div class="form-group">
+                <label>Disciplina</label>
+                <select id="disciplina"></select>
+            </div>
+
+            <div class="form-group">
+                <label>Nível</label>
+                <select id="nivel">
+                    <option value="">Selecione</option>
+                    <option value="EF1">EF1</option>
+                    <option value="EF2">EF2</option>
+                    <option value="EM">EM</option>
+                </select>
+            </div>
+
+            <div id="etapaTurmas" style="display:none;">
+                <div class="form-group">
+                    <label>Turmas</label>
+                    <div id="listaTurmas" class="turmas-grid"></div>
+                </div>
+            </div>
+
+            <div id="etapaModo" style="display:none;">
+                <div class="form-group">
+                    <label>Modo</label>
+                    <label><input type="radio" name="modo" value="ASSUNTO"> Assunto</label>
+                    <label><input type="radio" name="modo" value="DESCRITOR"> Descritor</label>
+                </div>
+            </div>
+
+            <div id="etapaFiltro" style="display:none;">
+
+                <div class="form-group" id="blocoAssunto">
+                    <label>Assunto:</label>
+                    <div class="multi-select" id="msAssunto">
+                        <div class="multi-header">Nenhum selecionado ▼</div>
+                        <div class="multi-list" id="listaAssuntos"></div>
+                    </div>
+                </div>
+
+                <div class="form-group" id="blocoDescritor" style="display:none;">
+                    <label>Descritor:</label>
+                    <div class="multi-select" id="msDescritor">
+                        <div class="multi-header">Nenhum selecionado ▼</div>
+                        <div class="multi-list" id="listaDescritores"></div>
+                    </div>
+                </div>
+
+                <button class="btn-primary" onclick="mostrarQuestoes()">
+                    Buscar questões
+                </button>
+
+            </div>
+
+            <hr style="margin:20px 0;">
+
+            <div id="areaQuestoes"></div>
+            <div id="preview"></div>
+
+            <div id="etapaFinal" style="display:none;">
+                <button class="btn-primary" onclick="gerarProva()">
+                    Gerar Prova
+                </button>
+            </div>
+
+        </div>
+    `;
+
+    iniciar();
+}
+
+window.onload = iniciarPagina;
+
+
+// ================= INIT =================
+async function iniciar(){
+
+    const dados = await carregarBancoCompleto();
+
+    banco = dados.questoes.filter(q =>
+        String(q.ATIVO).trim().toUpperCase() === "SIM"
+    );
+
+    descritoresBanco = dados.descritores;
+
+    preencherSelect("disciplina",
+        [...new Set(banco.map(q=>q.DISCIPLINA))]
+    );
+
+    document.getElementById("disciplina").addEventListener("change", resetarFluxo);
+    document.getElementById("nivel").addEventListener("change", resetarFluxo);
+
+    document.querySelectorAll("input[name='modo']")
+        .forEach(r=>{
+            r.addEventListener("change", ()=>{
+                modoGeracao = document.querySelector("input[name='modo']:checked").value;
+                mostrarFiltro();
+            });
+        });
+
+    configurarMultiSelect("msAssunto");
+    configurarMultiSelect("msDescritor");
+    document.addEventListener("click", fecharMultiSelect);
+
+    await carregarTurmas();
+}
+
+
+// ================= RESET =================
+function resetarFluxo(){
+
+    modoGeracao = null;
+
+    document.querySelectorAll("input[name='modo']")
+        .forEach(r=>r.checked=false);
+
+    etapaModo.style.display = "none";
+    etapaFiltro.style.display = "none";
+    etapaFinal.style.display = "none";
+
+    areaQuestoes.innerHTML = "";
+    preview.innerHTML = "";
+
+    // 🔥 mantém seleção persistente (NÃO limpa array)
+
+    carregarTurmas();
+
+    if(disciplina.value && nivel.value){
+        etapaTurmas.style.display = "block";
+    }else{
+        etapaTurmas.style.display = "none";
+    }
+}
+
+
+// ================= TURMAS =================
+document.addEventListener("change", function(e){
+
+    if(e.target.classList.contains("chkTurma")){
+
+        const selecionadas =
+            document.querySelectorAll(".chkTurma:checked");
+
+        if(selecionadas.length > 0){
+            etapaModo.style.display = "block";
+        }else{
+            etapaModo.style.display = "none";
+            etapaFiltro.style.display = "none";
+        }
+    }
+});
+
+
+// ================= FILTRO =================
+function mostrarFiltro(){
+
+    etapaFiltro.style.display = "block";
+
+    atualizarFiltros();
+
+    if(modoGeracao === "ASSUNTO"){
+        blocoAssunto.style.display = "block";
+        blocoDescritor.style.display = "none";
+    }else{
+        blocoAssunto.style.display = "none";
+        blocoDescritor.style.display = "block";
+    }
+}
+
+
+// ================= LISTAS =================
+function atualizarFiltros(){
+
+    const filtrado = banco.filter(q =>
+        q.DISCIPLINA === disciplina.value &&
+        q.NIVEL_ENSINO === nivel.value
+    );
+
+    const assuntos =
+        [...new Set(filtrado.map(q=>q.ASSUNTO))];
+
+    const descritores =
+        [...new Set(filtrado.map(q=>q.DESCRITOR))];
+
+    listaAssuntosHTML(assuntos);
+    listaDescritoresHTML(descritores);
+}
+
+
+// ================= QUESTÕES =================
+function mostrarQuestoes(){
+
+    const selecionados =
+        modoGeracao === "ASSUNTO"
+        ? [...document.querySelectorAll("#listaAssuntos .selected")].map(el=>el.dataset.value)
+        : [...document.querySelectorAll("#listaDescritores .selected")].map(el=>el.dataset.value);
+
+    const filtradas = banco.filter(q => {
+
+        if(q.DISCIPLINA !== disciplina.value) return false;
+        if(q.NIVEL_ENSINO !== nivel.value) return false;
+
+        if(modoGeracao === "ASSUNTO")
+            return selecionados.includes(q.ASSUNTO);
+
+        if(modoGeracao === "DESCRITOR")
+            return selecionados.includes(q.DESCRITOR);
+
+        return false;
+    });
+
+    areaQuestoes.innerHTML = "";
+
+    filtradas.forEach(q => {
+
+        const jaSelecionada =
+            questoesSelecionadas.some(x => x.ID === q.ID);
+
+        const div = document.createElement("div");
+        div.className = "preview-questao";
+
+        div.innerHTML = `
+            <label>
+                <input type="checkbox"
+                       ${jaSelecionada ? "checked" : ""}
+                       onchange="toggleQuestao('${q.ID}')">
+                <strong>${q.ENUNCIADO}</strong>
+            </label>
+
+            <div style="margin-left:10px;">
+                A) ${q.ALT_A}<br>
+                B) ${q.ALT_B}<br>
+                C) ${q.ALT_C}<br>
+                D) ${q.ALT_D}
+            </div>
+        `;
+
+        areaQuestoes.appendChild(div);
+    });
+}
+
+
+// ================= SELEÇÃO =================
+function toggleQuestao(id){
+
+    const q = banco.find(x => x.ID === id);
+
+    const existe = questoesSelecionadas
+        .find(item => item.ID === id);
+
+    if(existe){
+        questoesSelecionadas =
+            questoesSelecionadas.filter(x => x.ID !== id);
+    }else{
+        questoesSelecionadas.push({
+            ...q,
+            PESO: 1
+        });
+    }
+
+    atualizarPreview();
+}
+
+
+// ================= PREVIEW =================
+function atualizarPreview(){
+
+    preview.innerHTML = "<hr><h3>Selecionadas</h3>";
+
+    questoesSelecionadas.forEach((q,i)=>{
+
+        const div = document.createElement("div");
+        div.className = "preview-questao";
+
+        div.innerHTML = `
+            <div style="display:flex; justify-content:space-between;">
+
+                <strong>${i+1}) ${q.ENUNCIADO}</strong>
+
+                <span style="cursor:pointer; color:red; font-weight:bold;"
+                      onclick="removerQuestao('${q.ID}')">
+                    ✕
+                </span>
+
+            </div>
+
+            <div style="margin-left:10px;">
+                A) ${q.ALT_A}<br>
+                B) ${q.ALT_B}<br>
+                C) ${q.ALT_C}<br>
+                D) ${q.ALT_D}
+            </div>
+
+            <div style="margin-top:8px;">
+                Peso:
+                <input type="number"
+                       value="${q.PESO}"
+                       step="0.1"
+                       min="0.1"
+                       max="10"
+                       onchange="alterarPeso('${q.ID}', this.value)">
+            </div>
+        `;
+
+        preview.appendChild(div);
+    });
+
+    etapaFinal.style.display =
+        questoesSelecionadas.length > 0 ? "block" : "none";
+}
+
+
+// ================= REMOVER =================
+function removerQuestao(id){
+
+    questoesSelecionadas =
+        questoesSelecionadas.filter(q => q.ID !== id);
+
+    atualizarPreview();
+}
+
+
+// ================= PESO =================
+function alterarPeso(id, valor){
+
+    const q = questoesSelecionadas.find(x => x.ID === id);
+
+    if(q){
+        q.PESO = parseFloat(valor) || 1;
+    }
+}
+
+
+// ================= GERAR =================
+function gerarProva(){
+
+    const turmas =
+        [...document.querySelectorAll(".chkTurma:checked")]
+        .map(el=>el.value);
+
+    localStorage.setItem("provaGerada", JSON.stringify({
+        questoes: questoesSelecionadas,
+        turmas: turmas
+    }));
+
+    alert("Prova pronta.");
+}
+
+
+// ================= TURMAS =================
+async function carregarTurmas(){
+
+    const div = document.getElementById("listaTurmas");
+    if(!div) return;
+
+    const token = localStorage.getItem("TOKEN");
+
+    const linhas =
+        await fetchProtegido(API+"?tipo=turmas&token="+token);
+
+    if(!linhas || !Array.isArray(linhas)){
+        div.innerHTML = "Erro ao carregar turmas";
+        return;
+    }
+
+    div.innerHTML = "";
+
+    if(linhas.length <= 1){
+        div.innerHTML = "Nenhuma turma encontrada";
+        return;
+    }
+
+    linhas.slice(1).forEach(l=>{
+
+        const nome = l[2];
+
+        const label = document.createElement("label");
+
+        label.innerHTML=`
+            <input type="checkbox"
+                   value="${nome}"
+                   class="chkTurma">
+            <span>${nome}</span>
+        `;
+
+        div.appendChild(label);
+    });
+}
+
+
+// ================= AUX =================
+function preencherSelect(id, lista){
+
+    const sel=document.getElementById(id);
+    sel.innerHTML="<option value=''>Selecione</option>";
+
+    lista.forEach(v=>{
+        let op=document.createElement("option");
+        op.value=v;
+        op.textContent=v;
+        sel.appendChild(op);
+    });
+}
+
+
+// ================= MULTI SELECT =================
+function configurarMultiSelect(id){
+
+    const el = document.getElementById(id);
+    if(!el) return;
+
+    const header = el.querySelector(".multi-header");
+
+    header.addEventListener("click", function(e){
+        e.stopPropagation();
+        document.querySelectorAll(".multi-select")
+            .forEach(ms=>{
+                if(ms!==el) ms.classList.remove("open");
+            });
+        el.classList.toggle("open");
+    });
+}
+
+function fecharMultiSelect(){
+    document.querySelectorAll(".multi-select")
+        .forEach(ms=>ms.classList.remove("open"));
+}
+
+
+// ================= LISTAS HTML =================
+function listaAssuntosHTML(lista){
+
+    const div = document.getElementById("listaAssuntos");
+    div.innerHTML="";
+
+    lista.forEach(nome=>{
+
+        const item = document.createElement("div");
+        item.className="multi-item";
+        item.dataset.value = nome;
+        item.innerText = nome;
+
+        item.addEventListener("click", function(){
+            this.classList.toggle("selected");
+            atualizarHeader("msAssunto");
+        });
+
+        div.appendChild(item);
+    });
+}
+
+function listaDescritoresHTML(lista){
+
+    const div = document.getElementById("listaDescritores");
+    div.innerHTML="";
+
+    lista.forEach(cod=>{
+
+        const item = document.createElement("div");
+        item.className="multi-item";
+        item.dataset.value = cod;
+        item.innerText = cod;
+
+        item.addEventListener("click", function(){
+            this.classList.toggle("selected");
+            atualizarHeader("msDescritor");
+        });
+
+        div.appendChild(item);
+    });
+}
+
+function atualizarHeader(id){
+
+    const selecionados =
+        document.querySelectorAll("#"+id+" .selected");
+
+    const header =
+        document.querySelector("#"+id+" .multi-header");
+
+    if(!header) return;
+
+    if(selecionados.length === 0){
+        header.innerText="Nenhum selecionado ▼";
+    }else{
+        header.innerText=
+            selecionados.length + " selecionado(s) ▼";
+    }
+}
+
+</script>
+
+</body>
+</html>

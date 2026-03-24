@@ -94,14 +94,18 @@ function iniciarPagina(){
 
             <div id="areaQuestoes" class="col-questoes"></div>
 
-            <div id="preview" class="col-preview"></div>
+            <div id="preview" class="col-preview">
 
-            </div>
+            <div id="previewLista"></div>
 
-            <div id="etapaFinal" style="display:none;">
-                <button class="btn-primary" onclick="gerarProva()">
-                    Gerar Prova
-                </button>
+            <div id="previewAcao" style="margin-top:15px; display:none;">
+           <button class="btn-primary" onclick="gerarProva()">
+            Gerar Prova
+            </button>
+         </div>
+
+</div>
+
             </div>
 
         </div>
@@ -306,9 +310,22 @@ function toggleQuestao(id){
 // ================= PREVIEW =================
 function atualizarPreview(){
 
-    preview.innerHTML = "<hr><h3>Selecionadas</h3>";
+    const lista = document.getElementById("previewLista");
+    const acao = document.getElementById("previewAcao");
+
+    lista.innerHTML = "<h3>Selecionadas</h3>";
 
     questoesSelecionadas.forEach((q,i)=>{
+
+        function alt(letra, texto){
+            const correta = (letra === q.GABARITO);
+
+            return `
+                <div class="alt-preview ${correta ? "alt-correta" : ""}">
+                    <strong>${letra})</strong> ${texto}
+                </div>
+            `;
+        }
 
         const div = document.createElement("div");
         div.className = "preview-questao";
@@ -325,14 +342,14 @@ function atualizarPreview(){
 
             </div>
 
-            <div style="margin-left:10px;">
-                A) ${q.ALT_A}<br>
-                B) ${q.ALT_B}<br>
-                C) ${q.ALT_C}<br>
-                D) ${q.ALT_D}
+            <div style="margin-top:10px;">
+                ${alt("A", q.ALT_A)}
+                ${alt("B", q.ALT_B)}
+                ${alt("C", q.ALT_C)}
+                ${alt("D", q.ALT_D)}
             </div>
 
-            <div style="margin-top:8px;">
+            <div style="margin-top:10px;">
                 Peso:
                 <input type="number"
                        value="${q.PESO}"
@@ -343,10 +360,11 @@ function atualizarPreview(){
             </div>
         `;
 
-        preview.appendChild(div);
+        lista.appendChild(div);
     });
 
-    etapaFinal.style.display =
+    // 🔥 CONTROLE DO BOTÃO
+    acao.style.display =
         questoesSelecionadas.length > 0 ? "block" : "none";
 }
 

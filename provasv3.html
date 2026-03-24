@@ -161,10 +161,11 @@ function resetarFluxo(){
 
     etapaModo.style.display = "none";
     etapaFiltro.style.display = "none";
-    etapaFinal.style.display = "none";
+    
 
     areaQuestoes.innerHTML = "";
-    preview.innerHTML = "";
+    document.getElementById("previewLista").innerHTML = "";
+    document.getElementById("previewAcao").style.display = "none";
 
     // 🔥 mantém seleção persistente (NÃO limpa array)
 

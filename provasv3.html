@@ -179,23 +179,6 @@ function resetarFluxo(){
 }
 
 
-// ================= TURMAS =================
-document.addEventListener("change", function(e){
-
-    if(e.target.classList.contains("chkTurma")){
-
-        const selecionadas =
-            document.querySelectorAll(".chkTurma:checked");
-
-        if(selecionadas.length > 0){
-            etapaModo.style.display = "block";
-        }else{
-            etapaModo.style.display = "none";
-            etapaFiltro.style.display = "none";
-        }
-    }
-});
-
 
 // ================= FILTRO =================
 function mostrarFiltro(){
@@ -269,11 +252,7 @@ function mostrarQuestoes(){
             <label>
                 <input type="checkbox"
                        ${jaSelecionada ? "checked" : ""}
-                       onchange="toggleQuestao('${q.ID}')">
-                <strong>${q.ENUNCIADO}</strong>
-            </label>
-
-            <div style="margin-left:10px;">
+                       onchange="lista.innerHTMLleft:10px;">
                 A) ${q.ALT_A}<br>
                 B) ${q.ALT_B}<br>
                 C) ${q.ALT_C}<br>
@@ -314,8 +293,17 @@ function atualizarPreview(){
     const lista = document.getElementById("previewLista");
     const acao = document.getElementById("previewAcao");
 
-    lista.innerHTML = "<h3>Selecionadas</h3>";
+    const total = questoesSelecionadas
+    .reduce((soma, q) => soma + (parseFloat(q.PESO) || 0), 0);
 
+lista.innerHTML = `
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h3>Selecionadas</h3>
+        <div style="font-weight:bold; color:#2563EB;">
+            Peso total: ${total.toFixed(1)}
+        </div>
+    </div>
+`;
     questoesSelecionadas.forEach((q,i)=>{
 
         function alt(letra, texto){
@@ -386,9 +374,9 @@ function alterarPeso(id, valor){
     const q = questoesSelecionadas.find(x => x.ID === id);
 
     if(q){
-        q.PESO = parseFloat(valor) || 1;
+    q.PESO = parseFloat(valor) || 1;
+    atualizarPreview(); // 🔥 atualiza total em tempo real
     }
-}
 
 
 // ================= GERAR =================
@@ -438,15 +426,28 @@ async function carregarTurmas(){
 
         label.innerHTML=`
             <input type="checkbox"
-                   value="${nome}"
-                   class="chkTurma">
+              value="${nome}"
+              class="chkTurma"
+              onclick="toggleTurma()">
             <span>${nome}</span>
         `;
 
         div.appendChild(label);
     });
 }
+//===============================
+function toggleTurma(){
 
+    const selecionadas =
+        document.querySelectorAll(".chkTurma:checked");
+
+    if(selecionadas.length > 0){
+        etapaModo.style.display = "block";
+    }else{
+        etapaModo.style.display = "none";
+        etapaFiltro.style.display = "none";
+    }
+}
 
 // ================= AUX =================
 function preencherSelect(id, lista){

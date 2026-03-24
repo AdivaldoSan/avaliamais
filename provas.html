@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Avalia+ | Gerador de Provas</title>
+
+<link rel="stylesheet" href="styles.css">
+<link rel="icon" href="favicon.svg">
+
+<script src="./js/config.js"></script>
+<script src="./js/conexao.js"></script>
+<script src="./js/layout.js"></script>
+
+<style>
+.questao-card{
+    border:1px solid #ddd;
+    border-radius:8px;
+    padding:12px;
+    margin-bottom:10px;
+    background:#fff;
+}
+
+.questao-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:6px;
+}
+
+.peso-input{
+    width:70px;
+}
+</style>
+
+</head>
+<body>
+
+<div id="conteudo"></div>
+
+<script>
+
+// ================= VARIÁVEIS =================
+let banco = [];
+let selecionadas = [];
+
+// ================= INICIAR =================
+window.onload = iniciar;
+
+async function iniciar(){
+
+    criarLayout();
+
+    document.getElementById("conteudo").innerHTML = `
+        <h2>🧾 Gerador de Provas</h2>
+
+        <div class="card form-card">
+
+            <div class="form-group">
+                <label>Disciplina</label>
+                <select id="disciplina"></select>
+            </div>
+
+            <div class="form-group">
+                <label>Nível</label>
+                <select id="nivel">
+                    <option value="">Selecione</option>
+                    <option value="EF1">EF1</option>
+                    <option value="EF2">EF2</option>
+                    <option value="EM">EM</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Turmas</label>
+                <div id="listaTurmas"></div>
+            </div>
+
+            <div class="form-group">
+                <label>Quantidade de questões</label>
+                <input type="number" id="quantidade" value="5">
+            </div>
+
+            <button class="btn-primary" onclick="gerarEstrutura()">
+                Montar Prova
+            </button>
+
+        </div>
+
+        <div id="areaQuestoes"></div>
+    `;
+
+    const dados = await carregarBancoCompleto();
+
+    banco = dados.questoes.filter(q =>
+        String(q.ATIVO).trim().toUpperCase() === "SIM"
+    );
+
+    preencherSelect("disciplina",
+        [...new Set(banco.map(q=>q.DISCIPLINA))]
+    );
+
+    await carregarTurmas();
+}
+
+// ================= GERAR ESTRUTURA =================
+
+function gerarEstrutura(){
+
+    const qtd = parseInt(document.getElementById("quantidade").value);
+
+    const filtradas = banco.filter(q =>
+        q.DISCIPLINA === disciplina.value &&
+        q.NIVEL_ENSINO === nivel.value
+    );
+
+    embaralhar(filtradas);
+
+    selecionadas = filtradas.slice(0, qtd);
+
+    renderizarQuestoes();
+}
+
+// ================= RENDER =================
+
+function renderizarQuestoes(){
+
+    const area = document.getElementById("areaQuestoes");
+    area.innerHTML = "<h3>Questões da prova</h3>";
+
+    selecionadas.forEach((q, i)=>{
+
+        const div = document.createElement("div");
+        div.className = "questao-card";
+
+        div.innerHTML = `
+            <div class="questao-header">
+                <strong>Q${i+1}</strong>
+                Peso:
+                <input type="number"
+                       value="1"
+                       step="0.1"
+                       class="peso-input"
+                       onchange="atualizarPeso(${i}, this.value)">
+            </div>
+
+            <div>${q.ENUNCIADO}</div>
+
+            <ul>
+                <li>A) ${q.A}</li>
+                <li>B) ${q.B}</li>
+                <li>C) ${q.C}</li>
+                <li>D) ${q.D}</li>
+            </ul>
+        `;
+
+        area.appendChild(div);
+
+    });
+
+    area.innerHTML += `
+        <button class="btn-primary" onclick="finalizarProva()">
+            Gerar Prova
+        </button>
+    `;
+}
+
+// ================= PESO =================
+
+function atualizarPeso(index, valor){
+    selecionadas[index].PESO = parseFloat(valor) || 1;
+}
+
+// ================= FINALIZAR =================
+
+function finalizarProva(){
+
+    const turmasSelecionadas =
+        [...document.querySelectorAll(".chkTurma:checked")]
+        .map(cb=>cb.value);
+
+    if(turmasSelecionadas.length === 0){
+        alert("Selecione ao menos uma turma");
+        return;
+    }
+
+    const prova = {
+        id: "PROVA_"+Date.now(),
+        turmas: turmasSelecionadas,
+        questoes: selecionadas.map(q => ({
+            ID: q.ID,
+            ENUNCIADO: q.ENUNCIADO,
+            A: q.A,
+            B: q.B,
+            C: q.C,
+            D: q.D,
+            CORRETA: q.GABARITO,
+            PESO: q.PESO || 1
+        }))
+    };
+
+    localStorage.setItem("provaGerada", JSON.stringify(prova));
+
+    window.location.href = "prova_preview.html";
+}
+
+// ================= AUX =================
+
+function preencherSelect(id, lista){
+
+    const sel = document.getElementById(id);
+    sel.innerHTML = "<option value=''>Selecione</option>";
+
+    lista.forEach(v=>{
+        const op = document.createElement("option");
+        op.value = v;
+        op.textContent = v;
+        sel.appendChild(op);
+    });
+}
+
+async function carregarTurmas(){
+
+    const token = localStorage.getItem("TOKEN");
+
+    const linhas =
+        await fetchProtegido(API+"?tipo=turmas&token="+token);
+
+    const div = document.getElementById("listaTurmas");
+
+    if(!linhas || linhas.length <= 1){
+        div.innerHTML = "Nenhuma turma";
+        return;
+    }
+
+    linhas.slice(1).forEach(l=>{
+
+        const nome = l[2];
+
+        const label = document.createElement("label");
+
+        label.innerHTML = `
+            <input type="checkbox" value="${nome}" class="chkTurma">
+            ${nome}
+        `;
+
+        div.appendChild(label);
+    });
+}
+
+function embaralhar(a){
+    for(let i=a.length-1;i>0;i--){
+        let j=Math.floor(Math.random()*(i+1));
+        [a[i],a[j]]=[a[j],a[i]];
+    }
+}
+
+</script>
+
+</body>
+</html>

@@ -249,16 +249,20 @@ function mostrarQuestoes(){
         div.className = "preview-questao";
 
         div.innerHTML = `
-            <label>
-                <input type="checkbox"
-                       ${jaSelecionada ? "checked" : ""}
-                       onchange="lista.innerHTMLleft:10px;">
-                A) ${q.ALT_A}<br>
-                B) ${q.ALT_B}<br>
-                C) ${q.ALT_C}<br>
-                D) ${q.ALT_D}
-            </div>
-        `;
+    <label>
+        <input type="checkbox"
+               ${jaSelecionada ? "checked" : ""}
+               onchange="toggleQuestao('${q.ID}')">
+        <strong>${q.ENUNCIADO}</strong>
+    </label>
+
+    <div style="margin-left:10px;">
+        A) ${q.ALT_A}<br>
+        B) ${q.ALT_B}<br>
+        C) ${q.ALT_C}<br>
+        D) ${q.ALT_D}
+    </div>
+`;
 
         areaQuestoes.appendChild(div);
     });
@@ -377,7 +381,7 @@ function alterarPeso(id, valor){
     q.PESO = parseFloat(valor) || 1;
     atualizarPreview(); // 🔥 atualiza total em tempo real
     }
-
+}
 
 // ================= GERAR =================
 function gerarProva(){

@@ -5,47 +5,8 @@
 <title>Avalia+ | Gerador de Provas</title>
 
 <link rel="stylesheet" href="styles.css">
-
-<style>
-
-/* ===== LISTA DE QUESTÕES ===== */
-.questao-box {
-    background: #F9FAFB;
-    border: 1px solid #E5E7EB;
-    border-left: 4px solid var(--primary);
-    padding: 12px;
-    border-radius: 10px;
-    margin-bottom: 12px;
-}
-
-/* ===== PREVIEW ===== */
-.preview-box {
-    background: #FFFFFF;
-    border: 1px solid #E5E7EB;
-    border-left: 4px solid #22C55E;
-    padding: 12px;
-    border-radius: 10px;
-    margin-bottom: 14px;
-}
-
-.preview-box strong {
-    display: block;
-    margin-bottom: 6px;
-}
-
-.alternativas {
-    margin-left: 10px;
-    font-size: 14px;
-    color: #374151;
-}
-
-.peso-box {
-    margin-top: 8px;
-}
-
-</style>
-
 </head>
+
 <body>
 
 <script src="./js/config.js"></script>    
@@ -58,7 +19,6 @@ let banco = [];
 let descritoresBanco = [];
 let mapaDescritores = {};
 let modoGeracao = null;
-
 
 // ================= INICIAR =================
 function iniciarPagina(){
@@ -85,19 +45,22 @@ function iniciarPagina(){
                 </select>
             </div>
 
-            <div class="form-group">
-                <label>Turmas</label>
-                <div id="listaTurmas" class="turmas-grid"></div>
+            <div id="etapaTurmas" style="display:none;">
+                <div class="form-group">
+                    <label>Turmas</label>
+                    <div id="listaTurmas" class="turmas-grid"></div>
+                </div>
             </div>
 
-            <div class="form-group">
-                <label>Modo</label>
-                <label><input type="radio" name="modo" value="ASSUNTO"> Assunto</label>
-                <label><input type="radio" name="modo" value="DESCRITOR"> Descritor</label>
+            <div id="etapaModo" style="display:none;">
+                <div class="form-group">
+                    <label>Modo</label>
+                    <label><input type="radio" name="modo" value="ASSUNTO"> Assunto</label>
+                    <label><input type="radio" name="modo" value="DESCRITOR"> Descritor</label>
+                </div>
             </div>
 
-            <!-- FILTRO IGUAL QUIZ -->
-            <div id="etapaFiltro">
+            <div id="etapaFiltro" style="display:none;">
 
                 <div class="form-group" id="blocoAssunto">
                     <label>Assunto:</label>
@@ -115,21 +78,18 @@ function iniciarPagina(){
                     </div>
                 </div>
 
-            </div>
-
-            <div style="margin-top:15px;">
                 <button class="btn-primary" onclick="mostrarQuestoes()">
                     Buscar questões
                 </button>
+
             </div>
 
             <hr style="margin:20px 0;">
 
             <div id="areaQuestoes"></div>
-
             <div id="preview"></div>
 
-            <div style="margin-top:20px;">
+            <div id="etapaFinal" style="display:none;">
                 <button class="btn-primary" onclick="gerarProva()">
                     Gerar Prova
                 </button>
@@ -159,14 +119,14 @@ async function iniciar(){
         [...new Set(banco.map(q=>q.DISCIPLINA))]
     );
 
-    document.getElementById("disciplina").addEventListener("change", atualizarFiltros);
-    document.getElementById("nivel").addEventListener("change", atualizarFiltros);
+    document.getElementById("disciplina").addEventListener("change", resetarFluxo);
+    document.getElementById("nivel").addEventListener("change", resetarFluxo);
 
     document.querySelectorAll("input[name='modo']")
         .forEach(r=>{
-            r.addEventListener("change", e=>{
-                modoGeracao = e.target.value;
-                atualizarFiltros();
+            r.addEventListener("change", ()=>{
+                modoGeracao = document.querySelector("input[name='modo']:checked").value;
+                mostrarFiltro();
             });
         });
 
@@ -178,24 +138,51 @@ async function iniciar(){
 }
 
 
-// ================= FILTROS =================
-function atualizarFiltros(){
+// ================= RESET =================
+function resetarFluxo(){
 
-    if(!disciplina.value || !nivel.value || !modoGeracao) return;
+    modoGeracao = null;
 
-    const filtrado = banco.filter(q =>
-        q.DISCIPLINA === disciplina.value &&
-        q.NIVEL_ENSINO === nivel.value
-    );
+    document.querySelectorAll("input[name='modo']")
+        .forEach(r=>r.checked=false);
 
-    const listaAssuntos =
-        [...new Set(filtrado.map(q=>q.ASSUNTO))];
+    etapaModo.style.display = "none";
+    etapaFiltro.style.display = "none";
+    etapaFinal.style.display = "none";
 
-    const listaDescritores =
-        [...new Set(filtrado.map(q=>q.DESCRITOR))];
+    areaQuestoes.innerHTML = "";
+    preview.innerHTML = "";
 
-    listaAssuntosHTML(listaAssuntos);
-    listaDescritoresHTML(listaDescritores);
+    if(disciplina.value && nivel.value){
+        etapaTurmas.style.display = "block";
+    }
+}
+
+
+// ================= TURMAS =================
+document.addEventListener("change", function(e){
+
+    if(e.target.classList.contains("chkTurma")){
+
+        const selecionadas =
+            document.querySelectorAll(".chkTurma:checked");
+
+        if(selecionadas.length > 0){
+            etapaModo.style.display = "block";
+        }else{
+            etapaModo.style.display = "none";
+            etapaFiltro.style.display = "none";
+        }
+    }
+});
+
+
+// ================= FILTRO =================
+function mostrarFiltro(){
+
+    etapaFiltro.style.display = "block";
+
+    atualizarFiltros();
 
     if(modoGeracao === "ASSUNTO"){
         blocoAssunto.style.display = "block";
@@ -207,7 +194,26 @@ function atualizarFiltros(){
 }
 
 
-// ================= LISTA QUESTÕES =================
+// ================= ATUALIZAR LISTAS =================
+function atualizarFiltros(){
+
+    const filtrado = banco.filter(q =>
+        q.DISCIPLINA === disciplina.value &&
+        q.NIVEL_ENSINO === nivel.value
+    );
+
+    const assuntos =
+        [...new Set(filtrado.map(q=>q.ASSUNTO))];
+
+    const descritores =
+        [...new Set(filtrado.map(q=>q.DESCRITOR))];
+
+    listaAssuntosHTML(assuntos);
+    listaDescritoresHTML(descritores);
+}
+
+
+// ================= QUESTÕES =================
 function mostrarQuestoes(){
 
     const selecionados =
@@ -229,8 +235,7 @@ function mostrarQuestoes(){
         return false;
     });
 
-    const area = document.getElementById("areaQuestoes");
-    area.innerHTML = "";
+    areaQuestoes.innerHTML = "";
 
     filtradas.forEach(q => {
 
@@ -243,7 +248,7 @@ function mostrarQuestoes(){
                 <strong>${q.ENUNCIADO}</strong>
             </label>
 
-            <div class="alternativas">
+            <div style="margin-left:10px;">
                 A) ${q.ALT_A}<br>
                 B) ${q.ALT_B}<br>
                 C) ${q.ALT_C}<br>
@@ -251,7 +256,7 @@ function mostrarQuestoes(){
             </div>
         `;
 
-        area.appendChild(div);
+        areaQuestoes.appendChild(div);
     });
 
     document.querySelectorAll(".chkQuestao")
@@ -271,8 +276,7 @@ function atualizarPreview(){
     const selecionadas =
         banco.filter(q => ids.includes(q.ID));
 
-    const preview = document.getElementById("preview");
-    preview.innerHTML = "<hr><h3>Questões selecionadas</h3>";
+    preview.innerHTML = "<hr><h3>Selecionadas</h3>";
 
     selecionadas.forEach((q,i)=>{
 
@@ -282,14 +286,14 @@ function atualizarPreview(){
         div.innerHTML = `
             <strong>${i+1}) ${q.ENUNCIADO}</strong>
 
-            <div class="alternativas">
+            <div style="margin-left:10px;">
                 A) ${q.ALT_A}<br>
                 B) ${q.ALT_B}<br>
                 C) ${q.ALT_C}<br>
                 D) ${q.ALT_D}
             </div>
 
-            <div class="peso-box">
+            <div style="margin-top:8px;">
                 Peso:
                 <input type="number" class="peso"
                        value="1" step="0.1" min="0.1" max="10">
@@ -298,6 +302,8 @@ function atualizarPreview(){
 
         preview.appendChild(div);
     });
+
+    etapaFinal.style.display = ids.length > 0 ? "block" : "none";
 }
 
 
@@ -307,11 +313,6 @@ function gerarProva(){
     const ids =
         [...document.querySelectorAll(".chkQuestao:checked")]
         .map(el=>el.value);
-
-    if(ids.length === 0){
-        alert("Selecione ao menos uma questão");
-        return;
-    }
 
     const pesos =
         [...document.querySelectorAll(".peso")]

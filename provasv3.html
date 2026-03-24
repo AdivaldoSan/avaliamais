@@ -319,7 +319,7 @@ function atualizarPreview(){
     questoesSelecionadas.forEach((q,i)=>{
 
         function alt(letra, texto){
-            const correta = (letra === q.GABARITO);
+            const correta = (letra === String(q.GABARITO).trim().toUpperCase());
 
             return `
                 <div class="alt-preview ${correta ? "alt-correta" : ""}">

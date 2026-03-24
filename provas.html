@@ -1,53 +1,27 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Avalia+ | Gerador de Provas</title>
 
 <link rel="stylesheet" href="styles.css">
-<link rel="icon" href="favicon.svg">
-
-<script src="./js/config.js"></script>
-<script src="./js/conexao.js"></script>
-<script src="./js/layout.js"></script>
-
-<style>
-.questao-card{
-    border:1px solid #ddd;
-    border-radius:8px;
-    padding:12px;
-    margin-bottom:10px;
-    background:#fff;
-}
-
-.questao-header{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    margin-bottom:6px;
-}
-
-.peso-input{
-    width:70px;
-}
-</style>
 
 </head>
 <body>
 
-<div id="conteudo"></div>
+<script src="./js/config.js"></script>    
+<script src="./js/conexao.js"></script>
+<script src="./js/layout.js"></script>
 
 <script>
 
-// ================= VARIÁVEIS =================
 let banco = [];
-let selecionadas = [];
+let descritoresBanco = [];
+let mapaDescritores = {};
+let modoGeracao = null;
 
 // ================= INICIAR =================
-window.onload = iniciar;
-
-async function iniciar(){
+function iniciarPagina(){
 
     criarLayout();
 
@@ -73,22 +47,36 @@ async function iniciar(){
 
             <div class="form-group">
                 <label>Turmas</label>
-                <div id="listaTurmas"></div>
+                <div id="listaTurmas" class="turmas-grid"></div>
             </div>
 
             <div class="form-group">
-                <label>Quantidade de questões</label>
-                <input type="number" id="quantidade" value="5">
+                <label>Modo</label>
+                <label><input type="radio" name="modo" value="ASSUNTO"> Assunto</label>
+                <label><input type="radio" name="modo" value="DESCRITOR"> Descritor</label>
             </div>
 
-            <button class="btn-primary" onclick="gerarEstrutura()">
-                Montar Prova
-            </button>
+            <div id="filtro"></div>
+
+            <hr style="margin:20px 0;">
+
+            <div id="areaQuestoes"></div>
+
+            <div style="margin-top:20px;">
+                <button class="btn-primary" onclick="gerarProva()">Gerar Prova</button>
+            </div>
 
         </div>
-
-        <div id="areaQuestoes"></div>
     `;
+
+    iniciar();
+}
+
+window.onload = iniciarPagina;
+
+
+// ================= CARREGAR =================
+async function iniciar(){
 
     const dados = await carregarBancoCompleto();
 
@@ -96,163 +84,247 @@ async function iniciar(){
         String(q.ATIVO).trim().toUpperCase() === "SIM"
     );
 
+    descritoresBanco = dados.descritores;
+
     preencherSelect("disciplina",
         [...new Set(banco.map(q=>q.DISCIPLINA))]
     );
 
+    document.getElementById("disciplina")
+        .addEventListener("change", atualizarFiltros);
+
+    document.getElementById("nivel")
+        .addEventListener("change", atualizarFiltros);
+
+    document.querySelectorAll("input[name='modo']")
+        .forEach(r=>{
+            r.addEventListener("change", e=>{
+                modoGeracao = e.target.value;
+                atualizarFiltros();
+            });
+        });
+
     await carregarTurmas();
 }
 
-// ================= GERAR ESTRUTURA =================
 
-function gerarEstrutura(){
+// ================= FILTROS =================
+function atualizarFiltros(){
 
-    const qtd = parseInt(document.getElementById("quantidade").value);
+    if(!disciplina.value || !nivel.value || !modoGeracao) return;
 
-    const filtradas = banco.filter(q =>
+    const filtrado = banco.filter(q =>
         q.DISCIPLINA === disciplina.value &&
         q.NIVEL_ENSINO === nivel.value
     );
 
-    embaralhar(filtradas);
+    const filtroDiv = document.getElementById("filtro");
+    filtroDiv.innerHTML = "";
 
-    selecionadas = filtradas.slice(0, qtd);
+    if(modoGeracao === "ASSUNTO"){
 
-    renderizarQuestoes();
+        const lista =
+            [...new Set(filtrado.map(q=>q.ASSUNTO))];
+
+        lista.forEach(a=>{
+            const el = document.createElement("div");
+            el.className = "multi-item";
+            el.innerText = a;
+            el.onclick = ()=>{
+                el.classList.toggle("selected");
+                mostrarQuestoes();
+            };
+            filtroDiv.appendChild(el);
+        });
+    }
+
+    if(modoGeracao === "DESCRITOR"){
+
+        const lista =
+            [...new Set(filtrado.map(q=>q.DESCRITOR))];
+
+        lista.forEach(d=>{
+            const el = document.createElement("div");
+            el.className = "multi-item";
+            el.innerText = d;
+            el.onclick = ()=>{
+                el.classList.toggle("selected");
+                mostrarQuestoes();
+            };
+            filtroDiv.appendChild(el);
+        });
+    }
 }
 
-// ================= RENDER =================
 
-function renderizarQuestoes(){
+// ================= QUESTÕES =================
+function mostrarQuestoes(){
+
+    const selecionados =
+        [...document.querySelectorAll("#filtro .selected")]
+        .map(el=>el.innerText);
+
+    const filtradas = banco.filter(q => {
+
+        if(q.DISCIPLINA !== disciplina.value) return false;
+        if(q.NIVEL_ENSINO !== nivel.value) return false;
+
+        if(modoGeracao === "ASSUNTO")
+            return selecionados.includes(q.ASSUNTO);
+
+        if(modoGeracao === "DESCRITOR")
+            return selecionados.includes(q.DESCRITOR);
+
+        return false;
+    });
 
     const area = document.getElementById("areaQuestoes");
-    area.innerHTML = "<h3>Questões da prova</h3>";
+    area.innerHTML = "";
 
-    selecionadas.forEach((q, i)=>{
+    filtradas.forEach(q => {
 
         const div = document.createElement("div");
-        div.className = "questao-card";
+        div.className = "preview-questao";
 
         div.innerHTML = `
-            <div class="questao-header">
-                <strong>Q${i+1}</strong>
-                Peso:
-                <input type="number"
-                       value="1"
-                       step="0.1"
-                       class="peso-input"
-                       onchange="atualizarPeso(${i}, this.value)">
-            </div>
-
-            <div>${q.ENUNCIADO}</div>
-
-            <ul>
-                <li>A) ${q.A}</li>
-                <li>B) ${q.B}</li>
-                <li>C) ${q.C}</li>
-                <li>D) ${q.D}</li>
-            </ul>
+            <label>
+                <input type="checkbox" class="chkQuestao" value="${q.ID}">
+                <strong>${q.ENUNCIADO}</strong>
+            </label>
         `;
 
         area.appendChild(div);
-
     });
 
-    area.innerHTML += `
-        <button class="btn-primary" onclick="finalizarProva()">
-            Gerar Prova
-        </button>
-    `;
+    document.querySelectorAll(".chkQuestao")
+        .forEach(cb=>{
+            cb.addEventListener("change", atualizarPreview);
+        });
 }
 
-// ================= PESO =================
 
-function atualizarPeso(index, valor){
-    selecionadas[index].PESO = parseFloat(valor) || 1;
+// ================= PREVIEW =================
+function atualizarPreview(){
+
+    const ids =
+        [...document.querySelectorAll(".chkQuestao:checked")]
+        .map(el=>el.value);
+
+    const selecionadas =
+        banco.filter(q => ids.includes(q.ID));
+
+    let preview = document.getElementById("preview");
+
+    if(!preview){
+        preview = document.createElement("div");
+        preview.id = "preview";
+        document.getElementById("areaQuestoes").appendChild(preview);
+    }
+
+    preview.innerHTML = "<hr><h3>Pré-visualização</h3>";
+
+    selecionadas.forEach((q,i)=>{
+
+        const div = document.createElement("div");
+        div.className = "preview-questao";
+
+        div.innerHTML = `
+            <strong>${i+1}) ${q.ENUNCIADO}</strong>
+
+            <div>A) ${q.ALT_A}</div>
+            <div>B) ${q.ALT_B}</div>
+            <div>C) ${q.ALT_C}</div>
+            <div>D) ${q.ALT_D}</div>
+
+            <label>Peso:
+                <input type="number" class="peso"
+                       value="1" step="0.1" min="0.1" max="10">
+            </label>
+        `;
+
+        preview.appendChild(div);
+    });
 }
 
-// ================= FINALIZAR =================
 
-function finalizarProva(){
+// ================= GERAR =================
+function gerarProva(){
 
-    const turmasSelecionadas =
-        [...document.querySelectorAll(".chkTurma:checked")]
-        .map(cb=>cb.value);
+    const ids =
+        [...document.querySelectorAll(".chkQuestao:checked")]
+        .map(el=>el.value);
 
-    if(turmasSelecionadas.length === 0){
-        alert("Selecione ao menos uma turma");
+    if(ids.length === 0){
+        alert("Selecione ao menos uma questão");
         return;
     }
 
-    const prova = {
-        id: "PROVA_"+Date.now(),
-        turmas: turmasSelecionadas,
-        questoes: selecionadas.map(q => ({
-            ID: q.ID,
-            ENUNCIADO: q.ENUNCIADO,
-            A: q.A,
-            B: q.B,
-            C: q.C,
-            D: q.D,
-            CORRETA: q.GABARITO,
-            PESO: q.PESO || 1
-        }))
-    };
+    const pesos =
+        [...document.querySelectorAll(".peso")]
+        .map(el=>parseFloat(el.value));
 
-    localStorage.setItem("provaGerada", JSON.stringify(prova));
+    const questoes =
+        banco.filter(q => ids.includes(q.ID));
 
-    window.location.href = "prova_preview.html";
+    const prova = questoes.map((q,i)=>({
+        ...q,
+        PESO: pesos[i] || 1
+    }));
+
+    const turmas =
+        [...document.querySelectorAll(".chkTurma:checked")]
+        .map(el=>el.value);
+
+    localStorage.setItem("provaGerada", JSON.stringify({
+        questoes: prova,
+        turmas: turmas
+    }));
+
+    alert("Prova pronta. Próximo passo: preview.");
 }
 
-// ================= AUX =================
 
+// ================= AUX =================
 function preencherSelect(id, lista){
 
-    const sel = document.getElementById(id);
-    sel.innerHTML = "<option value=''>Selecione</option>";
+    const sel=document.getElementById(id);
+    sel.innerHTML="<option value=''>Selecione</option>";
 
     lista.forEach(v=>{
-        const op = document.createElement("option");
-        op.value = v;
-        op.textContent = v;
+        let op=document.createElement("option");
+        op.value=v;
+        op.textContent=v;
         sel.appendChild(op);
     });
 }
 
 async function carregarTurmas(){
 
-    const token = localStorage.getItem("TOKEN");
+    const token=localStorage.getItem("TOKEN");
 
     const linhas =
         await fetchProtegido(API+"?tipo=turmas&token="+token);
 
-    const div = document.getElementById("listaTurmas");
+    if(!linhas) return;
 
-    if(!linhas || linhas.length <= 1){
-        div.innerHTML = "Nenhuma turma";
-        return;
-    }
+    const div=document.getElementById("listaTurmas");
+    div.innerHTML="";
 
     linhas.slice(1).forEach(l=>{
 
-        const nome = l[2];
+        const nome=l[2];
 
-        const label = document.createElement("label");
+        const label=document.createElement("label");
 
-        label.innerHTML = `
-            <input type="checkbox" value="${nome}" class="chkTurma">
-            ${nome}
+        label.innerHTML=`
+            <input type="checkbox"
+                   value="${nome}"
+                   class="chkTurma">
+            <span>${nome}</span>
         `;
 
         div.appendChild(label);
     });
-}
-
-function embaralhar(a){
-    for(let i=a.length-1;i>0;i--){
-        let j=Math.floor(Math.random()*(i+1));
-        [a[i],a[j]]=[a[j],a[i]];
-    }
 }
 
 </script>

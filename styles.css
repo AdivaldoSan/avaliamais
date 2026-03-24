@@ -1,3 +1,55 @@
+/* ===== LAYOUT LADO A LADO ===== */
+
+.layout-prova {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+/* COLUNA ESQUERDA (LISTA) */
+.col-questoes {
+  flex: 2;
+  max-height: 75vh;
+  overflow-y: auto;
+  padding-right: 10px;
+}
+
+/* COLUNA DIREITA (SELECIONADAS) */
+.col-preview {
+  flex: 1;
+  position: sticky;
+  top: 20px;
+
+  max-height: 75vh;
+  overflow-y: auto;
+
+  background: #F9FAFB;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #E5E7EB;
+}
+
+/* QUESTÃO (melhor separação visual) */
+.preview-questao {
+  margin-bottom: 12px;
+  padding: 12px;
+  background: white;
+  border-radius: 10px;
+  border: 1px solid #E5E7EB;
+}
+
+/* RESPONSIVO (celular volta empilhado) */
+@media (max-width: 900px) {
+  .layout-prova {
+    flex-direction: column;
+  }
+
+  .col-preview {
+    position: relative;
+    top: 0;
+  }
+}
+
 .paypal-box{
     text-align:center;
     margin-top:20px;

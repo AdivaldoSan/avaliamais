@@ -1,3 +1,21 @@
+/* ===== ALTERNATIVAS PREVIEW (PROVA) ===== */
+
+.alt-preview {
+  padding: 6px 8px;
+  margin-bottom: 6px;
+  border-radius: 6px;
+  background: #F3F4F6;
+  font-size: 14px;
+}
+
+.alt-correta {
+  background: #DCFCE7;
+  color: #166534;
+  font-weight: 600;
+  border: 1px solid #86EFAC;
+}
+
+
 /* ===== LAYOUT LADO A LADO ===== */
 
 .layout-prova {

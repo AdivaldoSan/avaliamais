@@ -6,6 +6,45 @@
 
 <link rel="stylesheet" href="styles.css">
 
+<style>
+
+/* ===== LISTA DE QUESTÕES ===== */
+.questao-box {
+    background: #F9FAFB;
+    border: 1px solid #E5E7EB;
+    border-left: 4px solid var(--primary);
+    padding: 12px;
+    border-radius: 10px;
+    margin-bottom: 12px;
+}
+
+/* ===== PREVIEW ===== */
+.preview-box {
+    background: #FFFFFF;
+    border: 1px solid #E5E7EB;
+    border-left: 4px solid #22C55E;
+    padding: 12px;
+    border-radius: 10px;
+    margin-bottom: 14px;
+}
+
+.preview-box strong {
+    display: block;
+    margin-bottom: 6px;
+}
+
+.alternativas {
+    margin-left: 10px;
+    font-size: 14px;
+    color: #374151;
+}
+
+.peso-box {
+    margin-top: 8px;
+}
+
+</style>
+
 </head>
 <body>
 
@@ -19,6 +58,7 @@ let banco = [];
 let descritoresBanco = [];
 let mapaDescritores = {};
 let modoGeracao = null;
+
 
 // ================= INICIAR =================
 function iniciarPagina(){
@@ -56,14 +96,43 @@ function iniciarPagina(){
                 <label><input type="radio" name="modo" value="DESCRITOR"> Descritor</label>
             </div>
 
-            <div id="filtro"></div>
+            <!-- FILTRO IGUAL QUIZ -->
+            <div id="etapaFiltro">
+
+                <div class="form-group" id="blocoAssunto">
+                    <label>Assunto:</label>
+                    <div class="multi-select" id="msAssunto">
+                        <div class="multi-header">Nenhum selecionado ▼</div>
+                        <div class="multi-list" id="listaAssuntos"></div>
+                    </div>
+                </div>
+
+                <div class="form-group" id="blocoDescritor" style="display:none;">
+                    <label>Descritor:</label>
+                    <div class="multi-select" id="msDescritor">
+                        <div class="multi-header">Nenhum selecionado ▼</div>
+                        <div class="multi-list" id="listaDescritores"></div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div style="margin-top:15px;">
+                <button class="btn-primary" onclick="mostrarQuestoes()">
+                    Buscar questões
+                </button>
+            </div>
 
             <hr style="margin:20px 0;">
 
             <div id="areaQuestoes"></div>
 
+            <div id="preview"></div>
+
             <div style="margin-top:20px;">
-                <button class="btn-primary" onclick="gerarProva()">Gerar Prova</button>
+                <button class="btn-primary" onclick="gerarProva()">
+                    Gerar Prova
+                </button>
             </div>
 
         </div>
@@ -75,7 +144,7 @@ function iniciarPagina(){
 window.onload = iniciarPagina;
 
 
-// ================= CARREGAR =================
+// ================= INIT =================
 async function iniciar(){
 
     const dados = await carregarBancoCompleto();
@@ -90,11 +159,8 @@ async function iniciar(){
         [...new Set(banco.map(q=>q.DISCIPLINA))]
     );
 
-    document.getElementById("disciplina")
-        .addEventListener("change", atualizarFiltros);
-
-    document.getElementById("nivel")
-        .addEventListener("change", atualizarFiltros);
+    document.getElementById("disciplina").addEventListener("change", atualizarFiltros);
+    document.getElementById("nivel").addEventListener("change", atualizarFiltros);
 
     document.querySelectorAll("input[name='modo']")
         .forEach(r=>{
@@ -103,6 +169,10 @@ async function iniciar(){
                 atualizarFiltros();
             });
         });
+
+    configurarMultiSelect("msAssunto");
+    configurarMultiSelect("msDescritor");
+    document.addEventListener("click", fecharMultiSelect);
 
     await carregarTurmas();
 }
@@ -118,51 +188,32 @@ function atualizarFiltros(){
         q.NIVEL_ENSINO === nivel.value
     );
 
-    const filtroDiv = document.getElementById("filtro");
-    filtroDiv.innerHTML = "";
+    const listaAssuntos =
+        [...new Set(filtrado.map(q=>q.ASSUNTO))];
+
+    const listaDescritores =
+        [...new Set(filtrado.map(q=>q.DESCRITOR))];
+
+    listaAssuntosHTML(listaAssuntos);
+    listaDescritoresHTML(listaDescritores);
 
     if(modoGeracao === "ASSUNTO"){
-
-        const lista =
-            [...new Set(filtrado.map(q=>q.ASSUNTO))];
-
-        lista.forEach(a=>{
-            const el = document.createElement("div");
-            el.className = "multi-item";
-            el.innerText = a;
-            el.onclick = ()=>{
-                el.classList.toggle("selected");
-                mostrarQuestoes();
-            };
-            filtroDiv.appendChild(el);
-        });
-    }
-
-    if(modoGeracao === "DESCRITOR"){
-
-        const lista =
-            [...new Set(filtrado.map(q=>q.DESCRITOR))];
-
-        lista.forEach(d=>{
-            const el = document.createElement("div");
-            el.className = "multi-item";
-            el.innerText = d;
-            el.onclick = ()=>{
-                el.classList.toggle("selected");
-                mostrarQuestoes();
-            };
-            filtroDiv.appendChild(el);
-        });
+        blocoAssunto.style.display = "block";
+        blocoDescritor.style.display = "none";
+    }else{
+        blocoAssunto.style.display = "none";
+        blocoDescritor.style.display = "block";
     }
 }
 
 
-// ================= QUESTÕES =================
+// ================= LISTA QUESTÕES =================
 function mostrarQuestoes(){
 
     const selecionados =
-        [...document.querySelectorAll("#filtro .selected")]
-        .map(el=>el.innerText);
+        modoGeracao === "ASSUNTO"
+        ? [...document.querySelectorAll("#listaAssuntos .selected")].map(el=>el.dataset.value)
+        : [...document.querySelectorAll("#listaDescritores .selected")].map(el=>el.dataset.value);
 
     const filtradas = banco.filter(q => {
 
@@ -184,13 +235,20 @@ function mostrarQuestoes(){
     filtradas.forEach(q => {
 
         const div = document.createElement("div");
-        div.className = "preview-questao";
+        div.className = "questao-box";
 
         div.innerHTML = `
             <label>
                 <input type="checkbox" class="chkQuestao" value="${q.ID}">
                 <strong>${q.ENUNCIADO}</strong>
             </label>
+
+            <div class="alternativas">
+                A) ${q.ALT_A}<br>
+                B) ${q.ALT_B}<br>
+                C) ${q.ALT_C}<br>
+                D) ${q.ALT_D}
+            </div>
         `;
 
         area.appendChild(div);
@@ -213,33 +271,29 @@ function atualizarPreview(){
     const selecionadas =
         banco.filter(q => ids.includes(q.ID));
 
-    let preview = document.getElementById("preview");
-
-    if(!preview){
-        preview = document.createElement("div");
-        preview.id = "preview";
-        document.getElementById("areaQuestoes").appendChild(preview);
-    }
-
-    preview.innerHTML = "<hr><h3>Pré-visualização</h3>";
+    const preview = document.getElementById("preview");
+    preview.innerHTML = "<hr><h3>Questões selecionadas</h3>";
 
     selecionadas.forEach((q,i)=>{
 
         const div = document.createElement("div");
-        div.className = "preview-questao";
+        div.className = "preview-box";
 
         div.innerHTML = `
             <strong>${i+1}) ${q.ENUNCIADO}</strong>
 
-            <div>A) ${q.ALT_A}</div>
-            <div>B) ${q.ALT_B}</div>
-            <div>C) ${q.ALT_C}</div>
-            <div>D) ${q.ALT_D}</div>
+            <div class="alternativas">
+                A) ${q.ALT_A}<br>
+                B) ${q.ALT_B}<br>
+                C) ${q.ALT_C}<br>
+                D) ${q.ALT_D}
+            </div>
 
-            <label>Peso:
+            <div class="peso-box">
+                Peso:
                 <input type="number" class="peso"
                        value="1" step="0.1" min="0.1" max="10">
-            </label>
+            </div>
         `;
 
         preview.appendChild(div);
@@ -280,7 +334,7 @@ function gerarProva(){
         turmas: turmas
     }));
 
-    alert("Prova pronta. Próximo passo: preview.");
+    alert("Prova pronta.");
 }
 
 

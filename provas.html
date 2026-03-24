@@ -138,7 +138,6 @@ async function iniciar(){
 }
 
 
-// ================= RESET =================
 function resetarFluxo(){
 
     modoGeracao = null;
@@ -153,8 +152,13 @@ function resetarFluxo(){
     areaQuestoes.innerHTML = "";
     preview.innerHTML = "";
 
+    // 🔥 SEMPRE RECARREGA TURMAS
+    carregarTurmas();
+
     if(disciplina.value && nivel.value){
         etapaTurmas.style.display = "block";
+    }else{
+        etapaTurmas.style.display = "none";
     }
 }
 

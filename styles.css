@@ -1,3 +1,10 @@
+.modo-geracao label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+}
+
 /* ===== TOPO DIVIDIDO ===== GERADOR DE PROVAS*/
 
 .topo-prova {

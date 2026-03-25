@@ -13,14 +13,14 @@
 <div id="watermark"></div>	
 
 <div class="quiz-header">
-	<div id="qrFake" class="qr-fake"></div>
+	
     <div>
         <div class="quiz-titulo" id="tituloQuiz"></div>
         <div class="quiz-info" id="infoAluno"></div>
     </div>
 
     <img src="favicon.svg" class="quiz-logo-direita" alt="Avalia+">
-	<div id="qrFake" class="qr-fake"></div>
+	
 </div>
 
 <div class="quiz-container">
@@ -167,24 +167,32 @@ function mostrarQuestao(){
     }
 
     document.getElementById("areaQuestao").innerHTML = `
-        <div class="enunciado">
-            <div class="questao-numero">
-                Questão ${atual+1}
+    <div class="questao-layout">
+
+        <div class="questao-conteudo">
+            <div class="enunciado">
+                <div class="questao-numero">
+                    Questão ${atual+1}
+                </div>
+                <div class="questao-texto">
+                    ${q.ENUNCIADO}
+                </div>
             </div>
-            <div class="questao-texto">
-                ${q.ENUNCIADO}
+
+            <div class="alternativas">
+                ${alternativas.map((alt,i)=>`
+                    <label class="alt-item">
+                        <input type="radio" name="resp" value="${alt.letra}">
+                        <span>${String.fromCharCode(97+i)}) ${alt.texto}</span>
+                    </label>
+                `).join("")}
             </div>
         </div>
 
-        <div class="alternativas">
-            ${alternativas.map((alt,i)=>`
-                <label class="alt-item">
-                    <input type="radio" name="resp" value="${alt.letra}">
-                    <span>${String.fromCharCode(97+i)}) ${alt.texto}</span>
-                </label>
-            `).join("")}
-        </div>
-    `;
+        <div id="qrFake" class="qr-lateral"></div>
+
+    </div>
+`;
 
     const respAnterior = respostas.find(r => r.questao === q.ID);
     if(respAnterior){
@@ -197,6 +205,7 @@ function mostrarQuestao(){
     if(atual === quiz.questoes.length-1){
         document.getElementById("btnAvancar").innerText = "Finalizar";
     }
+	gerarQRFake();
 }
 
 
@@ -538,6 +547,48 @@ function gerarQRFake(){
             ${new Date().toLocaleTimeString().slice(0,5)}
         </div>
     `;
+}
+
+function monitorarComportamento(){
+
+    // troca de aba
+    document.addEventListener("visibilitychange", () => {
+        if(document.hidden){
+            mostrarAlerta("⚠️ Mudança de aba detectada");
+            registrarEvento("aba_oculta");
+        }
+    });
+
+    // perda de foco
+    window.addEventListener("blur", () => {
+        mostrarAlerta("⚠️ Saída da tela detectada");
+        registrarEvento("blur");
+    });
+
+    // tentativa de print (limitado)
+    document.addEventListener("keydown", (e)=>{
+        if(e.key === "PrintScreen"){
+            mostrarAlerta("⚠️ Captura de tela detectada");
+            registrarEvento("print");
+        }
+    });
+}
+
+function registrarEvento(tipo){
+    console.log("Evento:", tipo);
+
+    // opcional futuro (API)
+    /*
+    fetch(API,{
+        method:"POST",
+        body: JSON.stringify({
+            tipo:"evento",
+            evento: tipo,
+            aluno: quiz.alunoNome,
+            aplicacao: quiz.id
+        })
+    });
+    */
 }
 
 </script>

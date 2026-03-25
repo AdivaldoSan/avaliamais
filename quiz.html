@@ -573,8 +573,16 @@ function monitorarComportamento(){
         }
     });
 }
-
+	
+let ultimoEvento = 0;
 function registrarEvento(tipo){
+
+    const agora = Date.now();
+
+    if(agora - ultimoEvento < 3000) return; // 3s de intervalo
+
+    ultimoEvento = agora;
+
     console.log("Evento:", tipo);
 
     // opcional futuro (API)

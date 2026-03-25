@@ -271,7 +271,35 @@ function avancar(){
 
     mostrarQuestao();
 }
+async function enviarRespostasParcial(){
 
+    if(enviando) return;
+    enviando = true;
+
+    const envio = {
+        aplicacao: quiz.id,
+        nomeQuiz: quiz.nome,
+        aluno: quiz.alunoNome,
+        numero: quiz.alunoNumero,
+        turma: quiz.alunoTurma,
+        respostas: respostas
+    };
+
+    try {
+        await fetch(API,{
+            method:"POST",
+            body: JSON.stringify({
+                tipo:"respostas",
+                payload: envio
+            })
+        });
+
+        localStorage.removeItem("quizAtual");
+
+    } catch(e){
+        console.error("Erro ao enviar respostas");
+    }
+}
 
 // ===========================
 // FINALIZAR
@@ -643,28 +671,48 @@ window.onload = function(){
     iniciarIdentificacao();
 }	
 
-function bloquearPorSuspeita(){
+async function bloquearPorSuspeita(){
 
-    finalizar();
+    // envia sem renderizar tela final padrão
+    await enviarRespostasParcial();
 
-    setTimeout(()=>{
+    // esconde header
+    const header = document.querySelector(".quiz-header");
+    if(header){
+        header.style.display = "none";
+    }
 
-        const container = document.querySelector(".quiz-container");
+    // substitui tela
+    const container = document.querySelector(".quiz-container");
 
-        if(container){
-            container.innerHTML = `
-                <div class="final-card">
-                    <h2>⚠️ Atividade Encerrada</h2>
-                    <p>Detectamos múltiplas saídas da atividade.</p>
-                    <p>Sua prova foi finalizada automaticamente.</p>
-                    <p style="margin-top:15px;">
-                        Se foi um erro, procure o(a) professor(a).
+    if(container){
+        container.innerHTML = `
+            <div class="ident-page">
+
+                <div class="ident-card">
+
+                    <div class="ident-header">
+                        <img src="favicon.svg" class="ident-logo">
+                        <h1 class="ident-titulo">⚠️ Suspeita de Irregularidade</h1>
+                    </div>
+
+                    <p class="ident-sub">
+                        Detectamos múltiplas saídas da atividade.
                     </p>
-                </div>
-            `;
-        }
 
-    }, 500);
+                    <p class="ident-sub">
+                        Sua prova foi finalizada automaticamente.
+                    </p>
+
+                    <p style="margin-top:15px;">
+                        Caso considere um erro, procure seu professor.
+                    </p>
+
+                </div>
+
+            </div>
+        `;
+    }
 }
 
 </script>

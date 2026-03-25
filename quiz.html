@@ -132,7 +132,7 @@ let respostas = quiz.respostas || [];
 
 document.getElementById("tituloQuiz").innerText = quiz.nome;
 
-iniciarIdentificacao();
+//iniciarIdentificacao();
 
 
 // ===========================
@@ -536,6 +536,13 @@ function gerarQRFake(){
     const el = document.getElementById("qrFake");
     if(!el) return;
 
+    // 🔴 proteção absoluta
+    if(typeof QRCode === "undefined"){
+        console.warn("QRCode ainda não carregado");
+        setTimeout(gerarQRFake, 200); // tenta de novo
+        return;
+    }
+
     el.innerHTML = "";
 
     const id = `${quiz.alunoNumero}-${quiz.alunoTurma}-${quiz.id}`;
@@ -547,7 +554,7 @@ function gerarQRFake(){
     }, function (err, canvas) {
 
         if(err){
-            console.error(err);
+            console.error("Erro QR:", err);
             return;
         }
 
@@ -611,6 +618,10 @@ function registrarEvento(tipo){
     });
     */
 }
+
+window.onload = function(){
+    iniciarIdentificacao();
+}	
 
 </script>
 </body>

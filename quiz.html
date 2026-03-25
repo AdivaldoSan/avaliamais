@@ -53,6 +53,7 @@
 
 <script>
 let ultimoEvento = 0;
+let contadorSaidas = 0;
 	
 
 // ===========================
@@ -571,18 +572,28 @@ function gerarQRFake(){
 function monitorarComportamento(){
 
     // troca de aba
-    document.addEventListener("visibilitychange", () => {
+ document.addEventListener("visibilitychange", () => {
 
     if(document.hidden){
 
-        // Saiu da aba → mostra e NÃO some
-        mostrarAlerta("⚠️ Você saiu da atividade.", "erro");
+        contadorSaidas++;
+
         registrarEvento("aba_oculta");
+
+        if(contadorSaidas >= 3){
+
+            bloquearPorSuspeita();
+            return;
+        }
+
+        mostrarAlerta(
+            `⚠️ Saída da atividade detectada (${contadorSaidas}/3)`,
+            "erro"
+        );
 
     } else {
 
-        // Voltou → mantém visível por alguns segundos e depois some
-        mostrarAlerta("⚠️ Saída e retorno à tela detectado. Evite sair da atividade.", "erro");
+        mostrarAlerta("⚠️ Saída e retorno a tela detectado.", "erro");
         esconderAlertaDepois(6000);
     }
 
@@ -631,6 +642,36 @@ function registrarEvento(tipo){
 window.onload = function(){
     iniciarIdentificacao();
 }	
+
+function bloquearPorSuspeita(){
+
+    // envia primeiro
+    finalizar();
+
+    // depois trava tela
+    setTimeout(()=>{
+        document.body.innerHTML = `
+            <div style="
+                display:flex;
+                align-items:center;
+                justify-content:center;
+                height:100vh;
+                text-align:center;
+                padding:20px;
+                font-family:sans-serif;
+            ">
+                <div>
+                    <h2>⚠️ Atividade Encerrada</h2>
+                    <p>Detectamos múltiplas saídas da atividade.</p>
+                    <p>Sua prova foi finalizada automaticamente.</p>
+                    <p style="margin-top:15px;">
+                        Se foi um erro, procure o professor.
+                    </p>
+                </div>
+            </div>
+        `;
+    }, 500);
+}
 
 </script>
 </body>

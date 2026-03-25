@@ -70,12 +70,17 @@ function mostrarAlerta(mensagem, tipo = "normal"){
     }
 
     box.style.display = "block";
+}
+	
+function esconderAlertaDepois(tempo = 6000){
+    const box = document.getElementById("alertaQuiz");
 
     setTimeout(()=>{
-        box.style.display = "none";
-    }, 5000);
-}
-
+        if(box){
+            box.style.display = "none";
+        }
+    }, tempo);
+}	
 
 // ===========================
 // EMBARALHAR
@@ -567,11 +572,21 @@ function monitorarComportamento(){
 
     // troca de aba
     document.addEventListener("visibilitychange", () => {
-        if(document.hidden){
-            mostrarAlerta("⚠️ Mudança de aba detectada");
-            registrarEvento("aba_oculta");
-        }
-    });
+
+    if(document.hidden){
+
+        // Saiu da aba → mostra e NÃO some
+        mostrarAlerta("⚠️ Você saiu da atividade.", "erro");
+        registrarEvento("aba_oculta");
+
+    } else {
+
+        // Voltou → mantém visível por alguns segundos e depois some
+        mostrarAlerta("⚠️ Retorno detectado. Evite sair da atividade.", "erro");
+        esconderAlertaDepois(6000);
+    }
+
+});
 
     // perda de foco
     window.addEventListener("blur", () => {

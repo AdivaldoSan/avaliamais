@@ -494,6 +494,22 @@ function toggleTurma(el){
     }
 }
 
+// ================= AUX =================
+function preencherSelect(id, lista){
+
+    const sel = document.getElementById(id);
+
+    if(!sel) return;
+
+    sel.innerHTML = "<option value=''>Selecione</option>";
+
+    lista.forEach(v=>{
+        let op = document.createElement("option");
+        op.value = v;
+        op.textContent = v;
+        sel.appendChild(op);
+    });
+}    
 
 // ================= MULTI SELECT =================
 function configurarMultiSelect(id){

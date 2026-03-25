@@ -1,3 +1,22 @@
+/*=====Marca D'água Janela quiz=====*/
+#watermark{
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 200%;
+    height: 200%;
+    pointer-events: none;
+    z-index: 9999;
+
+    display: flex;
+    flex-wrap: wrap;
+    transform: rotate(-25deg);
+
+    font-size: 18px;
+    font-weight: bold;
+    color: rgba(0,0,0,0.06);
+}
+
 .layout-prova {
   display: flex;
   gap: 20px;

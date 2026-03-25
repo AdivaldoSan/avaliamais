@@ -537,23 +537,22 @@ function gerarQRFake(){
     const el = document.getElementById("qrFake");
     if(!el) return;
 
-    el.innerHTML = ""; // limpa antes de gerar
+    el.innerHTML = "";
 
-    const id = `${quiz.alunoNumero}-${quiz.alunoTurma}-${quiz.id}`;
-
-    const url = id;
+    // 🔥 ID REDUZIDO (CRÍTICO)
+    const idCurto = `${quiz.alunoNumero}${quiz.alunoTurma}${quiz.id.slice(-4)}`;
 
     new QRCode(el, {
-        text: url,
+        text: idCurto,
         width: 100,
-        height: 100
+        height: 100,
+        correctLevel: QRCode.CorrectLevel.L
     });
 
-    // texto abaixo do QR
     const info = document.createElement("div");
     info.style.fontSize = "10px";
     info.style.textAlign = "center";
-    info.innerHTML = `${quiz.alunoNumero}-${quiz.alunoTurma}`;
+    info.innerHTML = idCurto;
 
     el.appendChild(info);
 }

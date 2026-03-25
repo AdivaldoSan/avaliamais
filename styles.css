@@ -2227,16 +2227,25 @@ label {
 }
 /*AJUSTA MSG ERRO PAGINA ENTRADA DO ALUNO*/
 .alerta-erro {
-  background-color: #fdecea;
-  color: #b42318;
-  border: 1px solid #f5c2c7;
+  background-color: #b91c1c !important;
+  color: #fff !important;
+  border: 2px solid #7f1d1d !important;
+  font-weight: bold;
+  text-align: center;
+  animation: piscar 0.6s ease-in-out 3;
+}
+
+@keyframes piscar {
+  0% { opacity: 1; }
+  50% { opacity: 0.4; }
+  100% { opacity: 1; }
 }
 
 /* BASE DO ALERTA */
 .alerta {
-  background-color: #f1f3f5;
-  color: #333;
-  border: 1px solid #ddd;
+  background-color: #eef2ff;
+  color: #1e3a8a;
+  border: 1px solid #c7d2fe;
   padding: 10px;
   border-radius: 6px;
   margin-bottom: 10px;

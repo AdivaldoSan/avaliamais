@@ -10,8 +10,10 @@
 </head>
 
 <body class="quiz-page">
+<div id="watermark"></div>	
 
 <div class="quiz-header">
+	<div id="qrFake" class="qr-fake"></div> //qr code
     <div>
         <div class="quiz-titulo" id="tituloQuiz"></div>
         <div class="quiz-info" id="infoAluno"></div>
@@ -375,6 +377,28 @@ function iniciarIdentificacao(){
     </div>
 `;
 }
+
+function iniciarWatermark(){
+
+    const wm = document.getElementById("watermark");
+
+    function gerarTexto(){
+        return `${quiz.alunoNome || "ANON"} | ${quiz.alunoTurma || ""} | ${quiz.id} | ${new Date().toLocaleTimeString()}`;
+    }
+
+    function render(){
+        wm.innerHTML = "";
+        for(let i=0;i<40;i++){
+            const span = document.createElement("span");
+            span.innerText = gerarTexto();
+            span.style.margin = "40px";
+            wm.appendChild(span);
+        }
+    }
+
+    render();
+    setInterval(render, 5000); // atualiza a cada 5s
+}	
 
 
 function validarNumeroAluno(){

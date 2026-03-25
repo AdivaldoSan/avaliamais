@@ -17,6 +17,15 @@
     color: rgba(0,0,0,0.06);
 }
 
+.quiz-header{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+}
+
+/*==============================*/
+
 .layout-prova {
   display: flex;
   gap: 20px;

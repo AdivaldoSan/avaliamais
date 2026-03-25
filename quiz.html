@@ -645,31 +645,25 @@ window.onload = function(){
 
 function bloquearPorSuspeita(){
 
-    // envia primeiro
     finalizar();
 
-    // depois trava tela
     setTimeout(()=>{
-        document.body.innerHTML = `
-            <div style="
-                display:flex;
-                align-items:center;
-                justify-content:center;
-                height:100vh;
-                text-align:center;
-                padding:20px;
-                font-family:sans-serif;
-            ">
-                <div>
+
+        const container = document.querySelector(".quiz-container");
+
+        if(container){
+            container.innerHTML = `
+                <div class="final-card">
                     <h2>⚠️ Atividade Encerrada</h2>
                     <p>Detectamos múltiplas saídas da atividade.</p>
                     <p>Sua prova foi finalizada automaticamente.</p>
                     <p style="margin-top:15px;">
-                        Se foi um erro, procure o professor.
+                        Se foi um erro, procure o(a) professor(a).
                     </p>
                 </div>
-            </div>
-        `;
+            `;
+        }
+
     }, 500);
 }
 

@@ -389,8 +389,15 @@ lista.innerHTML = `
     });
 
     // 🔥 CONTROLE DO BOTÃO
-    acao.style.display =
-        questoesSelecionadas.length > 0 ? "block" : "none";
+    const previewBox = document.getElementById("preview");
+
+if(questoesSelecionadas.length > 0){
+    acao.style.display = "block";
+    previewBox.style.display = "block";
+}else{
+    acao.style.display = "none";
+    previewBox.style.display = "none";
+}
 }
 
 

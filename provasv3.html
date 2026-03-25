@@ -22,6 +22,7 @@ let modoGeracao = null;
 
 // 🔥 ESTADO GLOBAL (ESSENCIAL)
 let questoesSelecionadas = [];
+let turmasSelecionadas = [];
 
 
 // ================= INICIAR =================
@@ -460,10 +461,11 @@ async function carregarTurmas(){
         const label = document.createElement("label");
 
         label.innerHTML=`
-            <input type="checkbox"
+         <input type="checkbox"
               value="${nome}"
               class="chkTurma"
-              onclick="toggleTurma()">
+              ${turmasSelecionadas.includes(nome) ? "checked" : ""}
+              onclick="toggleTurma(this)">
             <span>${nome}</span>
         `;
 
@@ -471,31 +473,25 @@ async function carregarTurmas(){
     });
 }
 //===============================
-function toggleTurma(){
+function toggleTurma(el){
 
-    const selecionadas =
-        document.querySelectorAll(".chkTurma:checked");
+    const nome = el.value;
 
-    if(selecionadas.length > 0){
+    if(el.checked){
+        if(!turmasSelecionadas.includes(nome)){
+            turmasSelecionadas.push(nome);
+        }
+    }else{
+        turmasSelecionadas =
+            turmasSelecionadas.filter(t => t !== nome);
+    }
+
+    if(turmasSelecionadas.length > 0){
         etapaModo.style.display = "block";
     }else{
         etapaModo.style.display = "none";
         etapaFiltro.style.display = "none";
     }
-}
-
-// ================= AUX =================
-function preencherSelect(id, lista){
-
-    const sel=document.getElementById(id);
-    sel.innerHTML="<option value=''>Selecione</option>";
-
-    lista.forEach(v=>{
-        let op=document.createElement("option");
-        op.value=v;
-        op.textContent=v;
-        sel.appendChild(op);
-    });
 }
 
 

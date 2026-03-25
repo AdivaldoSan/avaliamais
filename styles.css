@@ -76,7 +76,7 @@
 
 /* COLUNA ESQUERDA (LISTA) */
 .col-questoes {
-  flex: 2;
+  flex: 1;
   max-height: 75vh;
   overflow-y: auto;
   padding-right: 10px;

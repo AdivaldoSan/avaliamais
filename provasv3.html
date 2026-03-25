@@ -32,8 +32,9 @@ function iniciarPagina(){
     document.getElementById("conteudo").innerHTML = `
         <h2>🧾 Gerador de Provas</h2>
 
-       <div class="card form-card prova-card">
+     <div class="card form-card prova-card">
 
+    <!-- ================= TOPO ================= -->
     <div class="topo-prova">
 
         <!-- COLUNA ESQUERDA -->
@@ -60,83 +61,85 @@ function iniciarPagina(){
                     <div id="listaTurmas" class="turmas-grid"></div>
                 </div>
             </div>
-            
-
-           
 
         </div>
-
 
         <!-- COLUNA DIREITA -->
-       <div class="topo-direita">
+        <div class="topo-direita">
 
-    <!-- ================= MODO ================= -->
-    <div id="etapaModo" style="display:none;">
-        <div class="form-group">
-            <label>Modo</label>
+            <!-- MODO -->
+            <div id="etapaModo" style="display:none;">
+                <div class="form-group">
+                    <label>Modo</label>
 
-            <div class="modo-geracao">
-                <label>
-                    <input type="radio" name="modo" value="ASSUNTO">
-                    Assunto
-                </label>
+                    <div class="modo-geracao">
+                        <label>
+                            <input type="radio" name="modo" value="ASSUNTO">
+                            Assunto
+                        </label>
 
-                <label>
-                    <input type="radio" name="modo" value="DESCRITOR">
-                    Descritor
-                </label>
+                        <label>
+                            <input type="radio" name="modo" value="DESCRITOR">
+                            Descritor
+                        </label>
+                    </div>
+                </div>
             </div>
-        </div>
-    </div>
 
-    <!-- ================= FILTRO ================= -->
-    <div id="etapaFiltro" style="display:none;">
+            <!-- FILTRO -->
+            <div id="etapaFiltro" style="display:none;">
 
-        <div class="form-group" id="blocoAssunto">
-            <label>Assunto:</label>
-            <div class="multi-select" id="msAssunto">
-                <div class="multi-header">Nenhum selecionado ▼</div>
-                <div class="multi-list" id="listaAssuntos"></div>
+                <div class="form-group" id="blocoAssunto">
+                    <label>Assunto:</label>
+                    <div class="multi-select" id="msAssunto">
+                        <div class="multi-header">Nenhum selecionado ▼</div>
+                        <div class="multi-list" id="listaAssuntos"></div>
+                    </div>
+                </div>
+
+                <div class="form-group" id="blocoDescritor" style="display:none;">
+                    <label>Descritor:</label>
+                    <div class="multi-select" id="msDescritor">
+                        <div class="multi-header">Nenhum selecionado ▼</div>
+                        <div class="multi-list" id="listaDescritores"></div>
+                    </div>
+                </div>
+
+                <button class="btn-primary" onclick="mostrarQuestoes()">
+                    Buscar questões
+                </button>
+
             </div>
+
         </div>
 
-        <div class="form-group" id="blocoDescritor" style="display:none;">
-            <label>Descritor:</label>
-            <div class="multi-select" id="msDescritor">
-                <div class="multi-header">Nenhum selecionado ▼</div>
-                <div class="multi-list" id="listaDescritores"></div>
-            </div>
-        </div>
+    </div> <!-- 🔥 FECHAMENTO CORRETO DO TOPO -->
 
-        <button class="btn-primary" onclick="mostrarQuestoes()">
-            Buscar questões
-        </button>
+    <!-- SEPARADOR -->
+    <hr style="margin:20px 0;">
 
-    </div>
+    <!-- ================= LAYOUT DAS QUESTÕES ================= -->
+    <div class="layout-prova">
 
-</div>
+        <!-- LISTA DE QUESTÕES -->
+        <div id="areaQuestoes" class="col-questoes"></div>
 
-            <hr style="margin:20px 0;">
-
-            <div class="layout-prova">
-
-            <div id="areaQuestoes" class="col-questoes"></div>
-
-            <div id="preview" class="col-preview">
+        <!-- SELECIONADAS -->
+        <div id="preview" class="col-preview">
 
             <div id="previewLista"></div>
 
             <div id="previewAcao" style="margin-top:15px; display:none;">
-           <button class="btn-primary" onclick="gerarProva()">
-            Gerar Prova
-            </button>
-         </div>
-
-</div>
-
+                <button class="btn-primary" onclick="gerarProva()">
+                    Gerar Prova
+                </button>
             </div>
 
         </div>
+
+    </div>
+
+</div>
     `;
 
     iniciar();

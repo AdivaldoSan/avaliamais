@@ -605,24 +605,27 @@ function monitorarComportamento(){
     if(document.hidden){
 
         contadorSaidas++;
-
         registrarEvento("aba_oculta");
 
         if(contadorSaidas >= 3){
-
             bloquearPorSuspeita();
             return;
         }
 
         mostrarAlerta(
-            `⚠️ Saída da atividade detectada (${contadorSaidas}/3)`,
+            `⚠️ Saída da atividade (${contadorSaidas}/3)`,
             "erro"
         );
 
     } else {
 
-        mostrarAlerta("⚠️ Saída e retorno a tela detectado.", "erro");
-        esconderAlertaDepois(6000);
+        // 🔥 AQUI ESTÁ A CORREÇÃO
+        setTimeout(() => {
+            gerarQRFake();
+        }, 300);
+
+        mostrarAlerta("⚠️ Retorno detectado.", "erro");
+        esconderAlertaDepois(4000);
     }
 
 });
@@ -667,9 +670,6 @@ function registrarEvento(tipo){
     */
 }
 
-window.onload = function(){
-    iniciarIdentificacao();
-}	
 
 async function bloquearPorSuspeita(){
 
@@ -715,6 +715,14 @@ async function bloquearPorSuspeita(){
     }
 }
 
+window.onload = function(){
+    iniciarIdentificacao();
+}	
+	
+window.addEventListener("focus", () => {
+    setTimeout(gerarQRFake, 300);
+});
+	
 </script>
 </body>
 </html>

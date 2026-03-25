@@ -126,7 +126,7 @@ function iniciarPagina(){
         <div id="areaQuestoes" class="col-questoes"></div>
 
         <!-- SELECIONADAS -->
-        <div id="preview" class="col-preview">
+        <div id="preview" class="col-preview" style="display:none;">
 
             <div id="previewLista"></div>
 
@@ -389,15 +389,15 @@ lista.innerHTML = `
     });
 
     // 🔥 CONTROLE DO BOTÃO
-    const previewBox = document.getElementById("preview");
-
-if(questoesSelecionadas.length > 0){
-    acao.style.display = "block";
-    previewBox.style.display = "block";
-}else{
-    acao.style.display = "none";
-    previewBox.style.display = "none";
-}
+     const previewBox = document.getElementById("preview");
+    
+    if(questoesSelecionadas.length > 0){
+        previewBox.style.display = "block";
+        acao.style.display = "block";
+    }else{
+        previewBox.style.display = "none";
+        acao.style.display = "none";
+    }
 }
 
 

@@ -13,7 +13,7 @@
 <div id="watermark"></div>	
 
 <div class="quiz-header">
-	<div id="qrFake" class="qr-fake"></div> //qr code
+	<div id="qrFake" class="qr-fake"></div>
     <div>
         <div class="quiz-titulo" id="tituloQuiz"></div>
         <div class="quiz-info" id="infoAluno"></div>
@@ -516,7 +516,28 @@ function mostrarOverlayEnvio(){
   `;
 
   document.body.appendChild(overlay);
-}    
+} 
+
+function gerarQRFake(){
+
+    const el = document.getElementById("qrFake");
+    if(!el) return; // evita erro se ainda não existir no DOM
+
+    const id = `${quiz.alunoNumero}-${quiz.alunoTurma}-${quiz.id}`;
+
+    el.innerHTML = `
+        <div style="
+            background:#000;
+            color:#fff;
+            padding:3px;
+            font-size:9px;
+            text-align:center;
+        ">
+            ${id}<br>
+            ${new Date().toLocaleTimeString().slice(0,5)}
+        </div>
+    `;
+}
 
 </script>
 </body>

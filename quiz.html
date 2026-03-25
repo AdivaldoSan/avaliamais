@@ -193,7 +193,16 @@ function mostrarQuestao(){
             </div>
         </div>
 
-        <div id="qrFake" class="qr-lateral"></div>
+        <div class="qr-lateral">
+
+    <div class="qr-alerta">
+        ⚠ Monitorada<br>
+        Proibido print e foto
+   	 </div>
+
+    <div id="qrFake"></div>
+
+	</div>
 
     </div>
 `;
@@ -539,7 +548,7 @@ function gerarQRFake(){
     el.innerHTML = "";
 
     // 🔥 ID ULTRA COMPACTO (GARANTIDO)
-    const idCurto = `${Number(quiz.alunoNumero)}${quiz.alunoTurma.replace(/\D/g,'')}${quiz.id.slice(-3)}`;
+    const idCurto = `${quiz.alunoNumero}${quiz.id.slice(-3)}`;
 
     new QRCode(el, {
         text: idCurto,

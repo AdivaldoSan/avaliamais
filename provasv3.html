@@ -68,51 +68,53 @@ function iniciarPagina(){
 
 
         <!-- COLUNA DIREITA -->
-        <div class="topo-direita" id="etapaFiltro" style="display:none;">
+       <div class="topo-direita">
 
-             <div id="etapaModo" style="display:none;">
-            
-                <div class="form-group">
-                    <label>Modo</label>
-                
-                    <div class="modo-geracao">
-                        <label>
-                            <input type="radio" name="modo" value="ASSUNTO">
-                            Assunto
-                        </label>
-                
-                        <label>
-                            <input type="radio" name="modo" value="DESCRITOR">
-                            Descritor
-                        </label>
-                    </div>
-                </div>
+    <!-- ================= MODO ================= -->
+    <div id="etapaModo" style="display:none;">
+        <div class="form-group">
+            <label>Modo</label>
+
+            <div class="modo-geracao">
+                <label>
+                    <input type="radio" name="modo" value="ASSUNTO">
+                    Assunto
+                </label>
+
+                <label>
+                    <input type="radio" name="modo" value="DESCRITOR">
+                    Descritor
+                </label>
             </div>
-        
+        </div>
+    </div>
 
-            <div class="form-group" id="blocoAssunto">
-                <label>Assunto:</label>
-                <div class="multi-select" id="msAssunto">
-                    <div class="multi-header">Nenhum selecionado ▼</div>
-                    <div class="multi-list" id="listaAssuntos"></div>
-                </div>
+    <!-- ================= FILTRO ================= -->
+    <div id="etapaFiltro" style="display:none;">
+
+        <div class="form-group" id="blocoAssunto">
+            <label>Assunto:</label>
+            <div class="multi-select" id="msAssunto">
+                <div class="multi-header">Nenhum selecionado ▼</div>
+                <div class="multi-list" id="listaAssuntos"></div>
             </div>
-
-            <div class="form-group" id="blocoDescritor" style="display:none;">
-                <label>Descritor:</label>
-                <div class="multi-select" id="msDescritor">
-                    <div class="multi-header">Nenhum selecionado ▼</div>
-                    <div class="multi-list" id="listaDescritores"></div>
-                </div>
-            </div>
-
-            <button class="btn-primary" onclick="mostrarQuestoes()">
-                Buscar questões
-            </button>
-
         </div>
 
+        <div class="form-group" id="blocoDescritor" style="display:none;">
+            <label>Descritor:</label>
+            <div class="multi-select" id="msDescritor">
+                <div class="multi-header">Nenhum selecionado ▼</div>
+                <div class="multi-list" id="listaDescritores"></div>
+            </div>
+        </div>
+
+        <button class="btn-primary" onclick="mostrarQuestoes()">
+            Buscar questões
+        </button>
+
     </div>
+
+</div>
 
             <hr style="margin:20px 0;">
 

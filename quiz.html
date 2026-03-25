@@ -539,7 +539,7 @@ function gerarQRFake(){
 
     const id = `${quiz.alunoNumero}-${quiz.alunoTurma}-${quiz.id}`;
 
-    const url = `https://avaliamaisedu.com.br/verificacao.html?id=${id}`;
+    const url = id;
 
     new QRCode(el, {
         text: url,

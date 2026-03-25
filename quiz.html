@@ -20,6 +20,7 @@
     </div>
 
     <img src="favicon.svg" class="quiz-logo-direita" alt="Avalia+">
+	<div id="qrFake" class="qr-fake"></div>
 </div>
 
 <div class="quiz-container">
@@ -309,9 +310,13 @@ async function finalizar(){
 function iniciarIdentificacao(){
 
     if(quiz.alunoNome){
-        mostrarQuestao();
-        return;
-    }
+    iniciarWatermark();
+    gerarQRFake();
+    monitorarComportamento();
+
+    mostrarQuestao();
+    return;
+  }
 
     const turmasPermitidas = quiz.turmas || [];
 

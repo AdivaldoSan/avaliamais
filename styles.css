@@ -2417,34 +2417,33 @@ border:6px solid transparent;
 border-top-color:#111827;
 }
 
-/* ===== DEBUG FORÇA TOTAL ===== */
+
+
+/* ===== IDENT MODE (FINAL DO CSS) ===== */
 
 body.ident-mode .quiz-container {
-  width: 100% !important;
-  max-width: 100% !important;
-  margin: 0 !important;
-  padding: 0 !important;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
 
-  display: flex !important;
-  justify-content: center !important;
-  align-items: center !important;
+  min-height: calc(100vh - 70px);
 
-  min-height: calc(100vh - 70px) !important;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-.ident-page {
-  width: 100% !important;
-  min-width: 100% !important;
-  flex-grow: 1 !important;
+body.ident-mode .ident-page {
+  width: 100%;
+  flex-grow: 1;
 
-  display: flex !important;
-  justify-content: center !important;
-  align-items: center !important;
-
-  background: rgba(255,0,0,0.1); /* 🔥 visual debug */
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-.ident-card {
-  width: 100% !important;
-  max-width: 700px !important;
+body.ident-mode .ident-card {
+  width: 100%;
+  max-width: 650px;
 }

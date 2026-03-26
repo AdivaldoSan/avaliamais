@@ -1155,17 +1155,18 @@ font-size:13px;
   align-items: center;     /* centraliza vertical */
 }
 
-
-
 body.ident-mode .quiz-container {
+  width: 100%;
   max-width: 100%;
   margin: 0;
-  padding: 0;            /* 🔥 FALTAVA ISSO (CRÍTICO) */
-  height: calc(100vh - 70px);
+  padding: 0;
+
+  min-height: calc(100vh - 70px); /* 🔥 melhor que height */
+
   display: flex;
-  justify-content: center; /* 🔥 GARANTE CENTRALIZAÇÃO */
-  align-items: center;     /* 🔥 GARANTE CENTRALIZAÇÃO */
 }
+
+
 .ident-card {
   background: white;
   padding: 60px 50px;

@@ -1025,6 +1025,10 @@ select {
 
 .quiz-page {
   margin: 0;
+}
+
+/* só aplica fundo cinza quando NÃO for identificação */
+.quiz-page:not(:has(.ident-page)) {
   background: #F3F4F6;
 }
 

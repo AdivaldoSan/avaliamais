@@ -47,6 +47,16 @@
     color: rgba(0,0,0,0.06);
 }
 
+.piscar {
+    animation: piscarTexto 1s infinite;
+}
+
+@keyframes piscarTexto {
+    0%   { opacity: 1; }
+    50%  { opacity: 0.3; }
+    100% { opacity: 1; }
+}
+
 .quiz-header{
     display: flex;
     align-items: center;

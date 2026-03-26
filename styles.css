@@ -1,3 +1,33 @@
+/*=======Ajuste topobar do quiz.html=====*/
+
+@media (max-width: 600px){
+
+    .quiz-header{
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        text-align: left; /* 🔥 força esquerda */
+    }
+
+    .quiz-header > div{
+        flex: 1;
+        text-align: left; /* 🔥 garante */
+    }
+
+    .quiz-titulo,
+    .quiz-info{
+        text-align: left; /* 🔥 mata qualquer herança */
+    }
+
+    .quiz-logo-direita{
+        width: 35px;
+        flex-shrink: 0;
+    }
+
+}
+
+
 /*=====Marca D'água Janela quiz=====*/
 #watermark{
     position: fixed;

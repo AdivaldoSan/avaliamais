@@ -1155,6 +1155,19 @@ font-size:13px;
   padding: 20px;
 }
 
+  .ident-page2 {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-gradient);
+  padding: 20px;
+}
+
+
+
+
+
 .ident-card {
   background: white;
   padding: 60px 50px;

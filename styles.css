@@ -2416,3 +2416,35 @@ transform:translateX(-50%);
 border:6px solid transparent;
 border-top-color:#111827;
 }
+
+/* ===== DEBUG FORÇA TOTAL ===== */
+
+body.ident-mode .quiz-container {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+
+  min-height: calc(100vh - 70px) !important;
+}
+
+.ident-page {
+  width: 100% !important;
+  min-width: 100% !important;
+  flex-grow: 1 !important;
+
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+
+  background: rgba(255,0,0,0.1); /* 🔥 visual debug */
+}
+
+.ident-card {
+  width: 100% !important;
+  max-width: 700px !important;
+}

@@ -373,80 +373,77 @@ async function finalizar(){
 // ===========================
 function iniciarIdentificacao(){
 
-	document.body.className = "quiz-page ident-mode";
+    // NÃO sobrescreve classes existentes
+    document.body.classList.add("ident-mode");
 
     if(quiz.alunoNome){
-    iniciarWatermark();
-    
-    monitorarComportamento();
-
-    mostrarQuestao();
-    return;
-  }
+        iniciarWatermark();
+        monitorarComportamento();
+        mostrarQuestao();
+        return;
+    }
 
     const turmasPermitidas = quiz.turmas || [];
 
-    document.body.innerHTML = `
-    <div class="ident-page">
+    // 🔥 ALTERAÇÃO CRÍTICA AQUI (ANTES ERA body.innerHTML)
+    document.querySelector(".quiz-container").innerHTML = `
+        <div class="ident-page">
 
-        <div class="ident-card">
+            <div class="ident-card">
 
-            <div class="ident-header">
-                <img src="favicon.svg" class="ident-logo" alt="Avalia+">
-                <h1 class="ident-titulo">${quiz.nome}</h1>
-            </div>
-
-            <p class="ident-sub">
-                Informe seus dados para iniciar a atividade.
-            </p>
-
-			<div id="alertaQuiz" class="alerta" style="display:none;"></div>
-            
-
-            <div class="ident-campo">
-                <input id="nomeAluno"
-                       placeholder="Nome Completo">
-            </div>
-
-            <div class="ident-linha">
-
-                <div class="ident-campo metade">
-                    <input 
-						  type="number"
-						  id="numeroAluno"
-						  min="1"
-						  max="50"
-						  placeholder="Número na chamada"
-						  oninput="validarNumeroAluno()"
-						>
+                <div class="ident-header">
+                    <img src="favicon.svg" class="ident-logo" alt="Avalia+">
+                    <h1 class="ident-titulo">${quiz.nome}</h1>
                 </div>
 
-                <div class="ident-campo metade">
-				
-                    <select id="turmaAluno">
-                        ${
-                            turmasPermitidas.length === 0
-                            ? `<option value="">Turma não definida</option>`
-                            : turmasPermitidas
-                                .map(t=>`<option value="${t}">${t}</option>`)
-                                .join("")
-                        }
-                    </select>
-				
+                <p class="ident-sub">
+                    Informe seus dados para iniciar a atividade.
+                </p>
+
+                <div id="alertaQuiz" class="alerta" style="display:none;"></div>
+
+                <div class="ident-campo">
+                    <input id="nomeAluno"
+                           placeholder="Nome Completo">
                 </div>
 
-            </div>
+                <div class="ident-linha">
 
-            <button id="btnIniciar"
-                class="btn-iniciar"
-                onclick="confirmarAluno()">
-               Iniciar Atividade
-            </button>
+                    <div class="ident-campo metade">
+                        <input 
+                            type="number"
+                            id="numeroAluno"
+                            min="1"
+                            max="50"
+                            placeholder="Número na chamada"
+                            oninput="validarNumeroAluno()"
+                        >
+                    </div>
+
+                    <div class="ident-campo metade">
+                        <select id="turmaAluno">
+                            ${
+                                turmasPermitidas.length === 0
+                                ? `<option value="">Turma não definida</option>`
+                                : turmasPermitidas
+                                    .map(t=>`<option value="${t}">${t}</option>`)
+                                    .join("")
+                            }
+                        </select>
+                    </div>
+
+                </div>
+
+                <button id="btnIniciar"
+                    class="btn-iniciar"
+                    onclick="confirmarAluno()">
+                   Iniciar Atividade
+                </button>
+
+            </div>
 
         </div>
-
-    </div>
-`;
+    `;
 }
 
 function iniciarWatermark(){

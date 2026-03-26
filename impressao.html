@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Impressão - Avalia+</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+<style>
+
+/* ===== BASE ===== */
+body{
+  margin:0;
+  font-family: Arial, sans-serif;
+  background:#e5e7eb;
+}
+
+/* ===== LAYOUT ===== */
+.layout{
+  display:flex;
+}
+
+/* ===== PAINEL ===== */
+.painel{
+  width:260px;
+  background:#f3f4f6;
+  padding:15px;
+  box-sizing:border-box;
+  border-right:1px solid #ccc;
+  height:100vh;
+  overflow:auto;
+}
+
+.painel h3{
+  margin-top:0;
+}
+
+.painel input{
+  width:100%;
+  margin-bottom:10px;
+  padding:6px;
+  box-sizing:border-box;
+}
+
+/* ===== PREVIEW ===== */
+.preview{
+  flex:1;
+  display:flex;
+  justify-content:center;
+  overflow:auto;
+  padding:20px;
+}
+
+/* ===== FOLHA A4 ===== */
+.pagina{
+  width:210mm;
+  min-height:297mm;
+  background:white;
+  padding:12mm;
+  margin-bottom:20px;
+  box-shadow:0 0 5px rgba(0,0,0,0.2);
+  box-sizing:border-box;
+}
+
+/* ===== CABEÇALHO ===== */
+.cabecalho{
+  display:flex;
+  justify-content:space-between;
+  border-bottom:1px solid #000;
+  padding-bottom:6px;
+  margin-bottom:10px;
+  font-size:12px;
+}
+
+	/*=======*/
+
+/* ===== BLOCO OTICO ===== */
+.bloco-otico{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:20px;
+  margin:10px 0 20px 0;
+  
+  width:100%;
+  position: relative;   /* 🔥 necessário */
+}
+
+.bloco-otico > div{
+  flex-shrink:0;
+}
+
+.lado-esquerdo{
+  display:flex;
+  justify-content:center;
+  padding-right: 150px;
+  
+}
+
+.lado-direito{
+  position: absolute;
+  top: 49px;
+  right: 0;
+}
+
+.box-nota{
+  border:1px solid #000;
+  width:90px;
+  height:90px;
+  display:flex;
+  flex-direction:column;
+  font-size:12px;
+  box-sizing:border-box;
+}
+
+.box-nota div:first-child{
+  /*border-bottom:1px solid #000;*/
+  text-align:center;
+  padding:4px;
+}
+
+.campo-nota{
+  flex:1;
+}
+
+
+/* ===== QUESTÕES ===== */
+.questoes{
+  column-count:2;
+  column-gap:30px;
+}
+
+.questao{
+  break-inside: avoid;
+  margin-bottom:12px;
+  font-size:12px;
+}
+
+.enunciado{
+  margin-bottom:4px;
+}
+
+.alternativas div{
+  margin-left:10px;
+}
+
+/* ===== IMAGEM ===== */
+.img-container{
+  position:relative;
+  display:inline-block;
+  max-width:100%;
+}
+
+.img-container img{
+  width:100%;
+  max-width:220px;
+}
+
+.resizer{
+  width:10px;
+  height:10px;
+  background:#2563EB;
+  position:absolute;
+  right:0;
+  bottom:0;
+  cursor:se-resize;
+}
+
+/* ===== BOTÕES ===== */
+button{
+  width:100%;
+  padding:8px;
+  margin-top:5px;
+  cursor:pointer;
+}
+
+/* ===== PRINT ===== */
+@media print{
+
+  .painel{
+    display:none;
+  }
+
+  .pagina{
+    box-shadow:none;
+    margin:0;
+    break-after: page;           /* padrão moderno */
+    page-break-after: always;    /* fallback */
+	page-break-inside: avoid;
+  }
+
+  .pagina:last-child{
+    break-after: auto;           /* 🔥 impede página extra */
+    page-break-after: auto;      /* fallback */
+  }
+
+  body{
+    background:white;
+  }
+}
+
+/* 🔥 ESCALA VISUAL DO CANVAS (NÃO ALTERA GEOMETRIA) */
+canvas{
+  width:500px;
+  height:auto;
+}
+
+.linha-divisoria{
+  border-bottom:1px solid #000;
+  margin:10px 0;
+}
+
+.mensagem-inicial{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  text-align:center;
+  color:#666;
+  font-size:16px;
+}
+
+.msg-centro{
+  max-width:300px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="layout">
+
+  <!-- ===== PAINEL ===== -->
+  <div class="painel">
+
+    <h3>Configuração</h3>
+
+    Escola:
+    <input id="escola" value="EEEFM Migrantes">
+
+    Disciplina:
+    <input id="disciplina" value="Matemática">
+
+    Turma:
+    <input id="turma" placeholder="Ex: 2A">
+
+    Quantidade:
+    <input id="qtd" type="number" value="10">
+
+    Extras:
+    <input id="extras" type="number" value="0">
+
+    <button onclick="gerarPreview()">Atualizar Preview</button>
+    <button onclick="window.print()">Imprimir / PDF</button>
+
+  </div>
+
+  <!-- ===== PREVIEW ===== -->
+  <div class="preview">
+    <div id="folhas">
+   
+   <div class="pagina mensagem-inicial">
+		<div class="msg-centro">
+		  Preencha os dados à esquerda e clique em "Atualizar Preview"
+		</div>
+  </div>
+</div>
+  </div>
+
+</div>
+
+<script>
+
+/* ================= CONFIG LAB (INALTERADO) ================= */
+
+const config = {
+  qrOffsetX: 166,
+  qrOffsetY: -29,
+  gabaritoOffsetX: 189,
+  gabaritoOffsetY: 0,
+  marcadorOffsetX: 343,
+  marcadorOffsetY: -4,
+  dy: 35,
+  topoLetras: -24
+}
+
+const qrSize = 160
+
+/* ================= GERAÇÃO DO CANVAS REAL ================= */
+
+function gerarCanvasReal(canvas){
+
+  const q = 10
+
+  const ctx = canvas.getContext("2d")
+  ctx.translate(-100, 0)
+
+  canvas.width = 900
+  canvas.height = 300 + config.dy*q
+
+  ctx.fillStyle="white"
+  ctx.fillRect(0,0,canvas.width,canvas.height)
+
+  let inicioX = 400 + config.gabaritoOffsetX
+  let inicioY = 200 + config.gabaritoOffsetY
+
+  let dx = 40
+  let raio = 8
+
+  ctx.fillStyle="black"
+  ctx.font="12px Arial"
+  ctx.textAlign="center"
+  ctx.textBaseline="middle"
+
+  let letras=["A","B","C","D"]
+
+  for(let c=0;c<4;c++){
+    let x = inicioX + c*dx
+    ctx.fillText(letras[c], x, inicioY + config.topoLetras)
+  }
+
+  for(let i=0;i<q;i++){
+
+    let y = inicioY + i*config.dy
+
+    ctx.textAlign="right"
+    ctx.fillText((i+1)+"   ", inicioX-10, y+2)
+
+    ctx.textAlign="center"
+
+    for(let c=0;c<4;c++){
+      let x = inicioX + c*dx
+
+      ctx.beginPath()
+      ctx.setLineDash([2,2])
+      ctx.arc(x,y,raio,0,Math.PI*2)
+      ctx.stroke()
+      ctx.setLineDash([])
+    }
+  }
+
+  /* MARCADORES */
+
+  let marcador = 30
+
+  const TLx = 160 + config.marcadorOffsetX
+  const TRx = TLx + 250
+
+  ctx.fillRect(TLx, 90 + config.marcadorOffsetY, marcador, marcador)
+  ctx.fillRect(TRx, 90 + config.marcadorOffsetY, marcador, marcador)
+
+  let baseY = inicioY + config.dy*q + 40
+
+  ctx.fillRect(TLx, baseY + config.marcadorOffsetY, marcador, marcador)
+  ctx.fillRect(TRx, baseY + config.marcadorOffsetY, marcador, marcador)
+
+  /* QR */
+
+  const qrDiv = document.createElement("div")
+
+  new QRCode(qrDiv,{
+    text:"AVALIA+|Q=10|G=ABCDABCDAB",
+    width:qrSize,
+    height:qrSize
+  })
+
+  setTimeout(()=>{
+
+    const qrCanvas = qrDiv.querySelector("canvas")
+    const img = new Image()
+    img.src = qrCanvas.toDataURL()
+
+    img.onload = ()=>{
+
+      const topo = inicioY + config.topoLetras - 20
+      const base = inicioY + config.dy*q + 60
+      const centro = (topo + base)/2
+
+      ctx.drawImage(
+        img,
+        config.qrOffsetX,
+        centro - qrSize/2 + config.qrOffsetY,
+        qrSize,
+        qrSize
+      )
+    }
+
+  },100)
+}
+
+/* ================= GERAR PREVIEW ================= */
+
+function gerarPreview(){
+
+  const escola = document.getElementById("escola").value
+  const disciplina = document.getElementById("disciplina").value
+  const turma = document.getElementById("turma").value
+
+  const qtd = parseInt(document.getElementById("qtd").value) || 0
+  const extras = parseInt(document.getElementById("extras").value) || 0
+
+  const total = qtd + extras
+
+  const folhas = document.getElementById("folhas")
+  folhas.innerHTML = ""
+
+  for(let i=1;i<=total;i++){
+
+    const pagina = document.createElement("div")
+    pagina.className = "pagina"
+
+    pagina.innerHTML = `
+      <div class="cabecalho">
+        <div>
+          <strong>${escola}</strong><br>
+          ${disciplina}<br>
+          Turma: ${turma}
+        </div>
+
+        <div style="text-align:right">
+          Nº: ${i}<br>
+          Nome: ________________________
+        </div>
+      </div>
+
+      <div class="bloco-otico">
+
+        <div class="lado-esquerdo">
+          <canvas class="canvasGabarito"></canvas>
+        </div>
+
+        <div class="lado-direito">
+          <div class="box-nota">
+            <div>Nota</div>
+            <div class="campo-nota"></div>
+          </div>
+        </div>
+
+      </div>
+	  
+	  <div class="linha-divisoria"></div>
+
+      <div class="questoes">
+        ${gerarQuestoesDemo()}
+      </div>
+    `
+
+    folhas.appendChild(pagina)
+
+    const canvas = pagina.querySelector(".canvasGabarito")
+    gerarCanvasReal(canvas)
+  }
+
+  ativarResize()
+}
+
+/* ===== QUESTÕES DEMO ===== */
+
+function gerarQuestoesDemo(){
+  return `
+    <div class="questao">
+      <div class="enunciado"><strong>1.</strong> Questão exemplo</div>
+      <div class="alternativas">
+        <div>A) ...</div>
+        <div>B) ...</div>
+        <div>C) ...</div>
+        <div>D) ...</div>
+      </div>
+    </div>
+  `
+}
+
+/* ===== RESIZE IMAGEM ===== */
+
+function ativarResize(){
+
+  document.querySelectorAll(".resizer").forEach(resizer => {
+
+    let img = resizer.previousElementSibling
+
+    let startX, startWidth
+
+    resizer.onmousedown = (e)=>{
+      startX = e.clientX
+      startWidth = img.offsetWidth
+
+      document.onmousemove = (e)=>{
+        let newWidth = startWidth + (e.clientX - startX)
+        if(newWidth > 80 && newWidth < 400){
+          img.style.width = newWidth + "px"
+        }
+      }
+
+      document.onmouseup = ()=>{
+        document.onmousemove = null
+      }
+    }
+
+  })
+}
+
+/* INIT */
+//gerarPreview()
+
+</script>
+
+</body>
+</html>

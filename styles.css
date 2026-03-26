@@ -1154,7 +1154,9 @@ font-size:13px;
   background: var(--bg-gradient);
   padding: 20px;
 }
-
+body.ident-mode .quiz-header {
+    display: none;
+}
 .ident-card {
   background: white;
   padding: 60px 50px;

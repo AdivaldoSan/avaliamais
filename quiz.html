@@ -387,7 +387,7 @@ function iniciarIdentificacao(){
     const turmasPermitidas = quiz.turmas || [];
 
     document.body.innerHTML = `
-    <div class="ident-page">
+    <div class="ident-page2">
 
         <div class="ident-card">
 
@@ -454,7 +454,7 @@ function iniciarWatermark(){
     const wm = document.getElementById("watermark");
 
     function gerarTexto(){
-        return `${quiz.alunoNome || "ANON"} | ${quiz.alunoTurma || ""} | ${quiz.id} | ${new Date().toLocaleTimeString()}`;
+        return `${quiz.alunoNome || "ANON"} | ${quiz.alunoTurma || ""} | ${quiz.nome} | ${new Date().toLocaleTimeString()}`;
     }
 
     function render(){

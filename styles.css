@@ -1148,24 +1148,23 @@ font-size:13px;
 /* ===== IDENTIFICAÇÃO ALUNO ===== */
 
 .ident-page {
+  flex: 1;                 /* ocupa toda altura disponível */
+  width: 100%;             /* ocupa toda largura */
   display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--bg-gradient);
-  padding: 20px;
-  height: 100%;
-}
-.ident-page {
-  flex: 1; /* 🔥 ESSENCIAL */
+  justify-content: center; /* centraliza horizontal */
+  align-items: center;     /* centraliza vertical */
 }
 
 
 
 body.ident-mode .quiz-container {
-  margin: 0;
   max-width: 100%;
+  margin: 0;
+  padding: 0;            /* 🔥 FALTAVA ISSO (CRÍTICO) */
   height: calc(100vh - 70px);
   display: flex;
+  justify-content: center; /* 🔥 GARANTE CENTRALIZAÇÃO */
+  align-items: center;     /* 🔥 GARANTE CENTRALIZAÇÃO */
 }
 .ident-card {
   background: white;

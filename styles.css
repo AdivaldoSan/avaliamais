@@ -1027,11 +1027,9 @@ select {
   margin: 0;
 }
 
-/* só aplica fundo cinza quando NÃO for identificação */
-.quiz-page:not(:has(.ident-page)) {
+.quiz-page:not(.ident-mode) {
   background: #F3F4F6;
 }
-
 .quiz-header {
   background: var(--bg-gradient);
   color: white;

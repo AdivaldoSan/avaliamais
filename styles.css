@@ -982,10 +982,39 @@ select {
 .aluno-header {
   background: var(--bg-gradient);
   color: white;
-  padding: 18px;
-  text-align: left;
-  font-size: 13px;
-  font-weight: bold;
+  padding: 14px 20px;
+
+  display: flex;                /* 🔥 chave */
+  justify-content: space-between;
+  align-items: center;
+}
+.aluno-header {
+  background: var(--bg-gradient);
+  color: white;
+  padding: 14px 20px;
+
+  display: flex;                /* 🔥 chave */
+  justify-content: space-between;
+  align-items: center;
+}
+
+@media (max-width: 600px){
+
+  .aluno-header{
+    align-items: flex-start;
+  }
+
+  .aluno-header-left{
+    font-size: 13px;
+    line-height: 1.2;
+    text-align: left;
+    flex: 1;
+  }
+
+  .aluno-logo-direita{
+    width: 30px;
+  }
+
 }
 
 .aluno-container {

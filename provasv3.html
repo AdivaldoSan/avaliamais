@@ -429,12 +429,31 @@ function gerarProva(){
         [...document.querySelectorAll(".chkTurma:checked")]
         .map(el=>el.value);
 
-    localStorage.setItem("provaGerada", JSON.stringify({
-        questoes: questoesSelecionadas,
-        turmas: turmas
-    }));
+          localStorage.setItem("provaGerada", JSON.stringify({
+          id: "PRV_" + Date.now(),
+        
+          disciplina: document.getElementById("disciplina").value,
+        
+          nivel: document.getElementById("nivel").value,
+        
+          turmas: turmas,
+        
+          questoes: questoesSelecionadas.map(q => ({
+            ID: q.ID,
+            ENUNCIADO: q.ENUNCIADO,
+            ALT_A: q.ALT_A,
+            ALT_B: q.ALT_B,
+            ALT_C: q.ALT_C,
+            ALT_D: q.ALT_D,
+            GABARITO: q.GABARITO,
+            PESO: q.PESO
+          }))
+        }));
 
     alert("Prova pronta.");
+    
+    window.location.href = "impressao.html"
+    
 }
 
 

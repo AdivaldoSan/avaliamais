@@ -498,6 +498,17 @@ async function confirmarAluno(){
         return;
     }
 
+			// 🔥 VALIDA NOME COMPLETO
+		const partes = nome.split(" ").filter(p => p.length >= 3);
+		
+		if(partes.length < 2){
+		    mostrarAlerta("Digite nome e sobrenome válidos.", "erro");
+		    btn.classList.remove("btn-loading");
+		    btn.disabled = false;
+		    btn.innerText = textoOriginal;
+		    return;
+		}
+
 	if(!numero || !validarNumeroAluno()){
 		mostrarAlerta("Número inválido. Use o número da chamada do diário.", "erro");
 

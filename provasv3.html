@@ -445,7 +445,13 @@ function gerarProva(){
             ALT_B: q.ALT_B,
             ALT_C: q.ALT_C,
             ALT_D: q.ALT_D,
-            GABARITO: q.GABARITO,
+            GABARITO: (
+                          q.GABARITO ||
+                          q.RESPOSTA ||
+                          q.CORRETA ||
+                          q.GAB ||
+                          ""
+                        ).toString().trim().toUpperCase(),
             PESO: q.PESO
           }))
         }));

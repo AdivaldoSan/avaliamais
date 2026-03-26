@@ -62,6 +62,7 @@ let contadorSaidas = 0;
 function mostrarAlerta(mensagem, tipo = "normal"){
 
     const box = document.getElementById("alertaQuiz");
+
     box.innerText = mensagem;
 
     box.classList.remove("alerta-erro");
@@ -71,6 +72,13 @@ function mostrarAlerta(mensagem, tipo = "normal"){
     }
 
     box.style.display = "block";
+
+    // 🔥 ÚNICA MUDANÇA — auto sumir sempre
+    setTimeout(()=>{
+        if(box){
+            box.style.display = "none";
+        }
+    }, 4000);
 }
 	
 function esconderAlertaDepois(tempo = 6000){

@@ -448,34 +448,41 @@ function gerarCanvasReal(canvas, q, qrData){
 
   const qrDiv = document.createElement("div")
 
-  new QRCode(qrDiv,{
-    text: qrData,
-    width:qrSize,
-    height:qrSize
-  })
+new QRCode(qrDiv,{
+  text: qrData,
+  width: qrSize,
+  height: qrSize
+})
 
-  setTimeout(()=>{
+function renderQR(){
 
-    const qrCanvas = qrDiv.querySelector("canvas")
-    const img = new Image()
-    img.src = qrCanvas.toDataURL()
+  const qrCanvas = qrDiv.querySelector("canvas")
 
-    img.onload = ()=>{
+  if(!qrCanvas){
+    requestAnimationFrame(renderQR)
+    return
+  }
 
-      const topo = inicioY + config.topoLetras - 20
-      const base = inicioY + config.dy*q + 60
-      const centro = (topo + base)/2
+  const img = new Image()
+  img.src = qrCanvas.toDataURL()
 
-      ctx.drawImage(
-        img,
-        config.qrOffsetX,
-        centro - qrSize/2 + config.qrOffsetY,
-        qrSize,
-        qrSize
-      )
-    }
+  img.onload = ()=>{
 
-  },100)
+    const topo = inicioY + config.topoLetras - 20
+    const base = inicioY + config.dy*q + 60
+    const centro = (topo + base)/2
+
+    ctx.drawImage(
+      img,
+      config.qrOffsetX,
+      centro - qrSize/2 + config.qrOffsetY,
+      qrSize,
+      qrSize
+    )
+  }
+}
+
+renderQR()
 }
 //========Gerar Versoes=======
 function gerarVersoes(questoes, qtdVersoes = 4){
@@ -665,7 +672,7 @@ console.log("VERSÕES:", prova.versoes);
 
 const canvas = pagina.querySelector(".canvasGabarito")
 
-const qrData = `AVALIA+|ID=${prova.id}|T=${turma}|V=${versaoAtual.v}|F=${i}|Q=${questoesVersao.length}`;
+const qrData = `ID=${prova.id}|V=${versaoAtual.v}|F=${i}`;
 
 gerarCanvasReal(canvas, questoesVersao.length, qrData);
 	  

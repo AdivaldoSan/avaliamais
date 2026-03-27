@@ -340,14 +340,15 @@ function atualizarPreview(){
     const total = questoesSelecionadas
     .reduce((soma, q) => soma + (parseFloat(q.PESO) || 0), 0);
 
-lista.innerHTML = `
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-        <h3>Selecionadas</h3>
-        <div style="font-weight:bold; color:#2563EB;">
-            Peso total: ${total.toFixed(1)}
+    lista.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h3>Selecionadas</h3>
+            <div style="font-weight:bold; color:#2563EB;">
+                Peso total: ${total.toFixed(1)}
+            </div>
         </div>
-    </div>
-`;
+    `;
+
     questoesSelecionadas.forEach((q,i)=>{
 
         function alt(letra, texto){
@@ -375,6 +376,14 @@ lista.innerHTML = `
 
             </div>
 
+            ${q.IMG ? `
+                <div style="text-align:center; margin:10px 0;">
+                    <img src="${q.IMG}"
+                         style="max-width:220px; max-height:160px; width:auto; height:auto;"
+                         onerror="this.style.display='none'">
+                </div>
+            ` : ""}
+
             <div style="margin-top:10px;">
                 ${alt("A", q.ALT_A)}
                 ${alt("B", q.ALT_B)}
@@ -397,7 +406,7 @@ lista.innerHTML = `
     });
 
     // 🔥 CONTROLE DO BOTÃO
-     const previewBox = document.getElementById("preview");
+    const previewBox = document.getElementById("preview");
     
     if(questoesSelecionadas.length > 0){
         previewBox.style.display = "block";

@@ -146,6 +146,12 @@ body{
   flex:1;
 }
 
+/*====Instruções====*/
+.instrucoes{
+  font-size:12px;
+  margin:8px 0;
+  line-height:1.4;
+}
 
 /* ===== QUESTÕES ===== */
 .questoes{
@@ -456,6 +462,8 @@ function gerarPreview(){
   const folhas = document.getElementById("folhas")
   folhas.innerHTML = ""
 
+  const instrucoes = document.getElementById("instrucoes").value	
+
   for(let i=1;i<=total;i++){
 
     const pagina = document.createElement("div")
@@ -490,6 +498,12 @@ function gerarPreview(){
 
       </div>
 	  
+	  <div class="linha-divisoria"></div>
+
+	  <div class="instrucoes">
+		  ${instrucoes}
+	  </div>
+		
 	  <div class="linha-divisoria"></div>
 
       <div class="questoes">

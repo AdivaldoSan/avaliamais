@@ -430,7 +430,7 @@ function gerarProva(){
         .map(el=>el.value);
 
           localStorage.setItem("provaGerada", JSON.stringify({
-          id: "PRV_" + Date.now(),
+          id: "PRV_" + Date.now().toString().slice(-6),
         
           disciplina: document.getElementById("disciplina").value,
         

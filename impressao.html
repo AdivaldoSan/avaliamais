@@ -234,6 +234,9 @@ canvas{
   <div class="painel">
 
     <h3>Configuração</h3>
+	  
+	Nome da Prova:
+	<input id="nomeProva" placeholder="Ex: Simulado SAERO 1">
 
     Escola:
     <input id="escola" value="EEEFM Migrantes">
@@ -241,8 +244,8 @@ canvas{
     Disciplina:
     <input id="disciplina" value="Matemática">
 
-    Turma:
-    <input id="turma" placeholder="Ex: 2A">
+    Turmas:
+	<div id="listaTurmas"></div>
 
     Quantidade:
     <input id="qtd" type="number" value="10">
@@ -270,6 +273,15 @@ canvas{
 </div>
 
 <script>
+const prova = JSON.parse(localStorage.getItem("provaGerada"))
+
+function carregarPainel(){
+
+  if(!prova) return
+
+  document.getElementById("disciplina").value = prova.disciplina
+
+}
 
 /* ================= CONFIG LAB (INALTERADO) ================= */
 
@@ -501,6 +513,7 @@ function ativarResize(){
 
 /* INIT */
 //gerarPreview()
+window.onload = carregarPainel
 
 </script>
 

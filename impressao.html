@@ -462,7 +462,21 @@ function gerarPreview(){
   const folhas = document.getElementById("folhas")
   folhas.innerHTML = ""
 
-  const instrucoes = document.getElementById("instrucoes").value	
+  const textoInstrucoes = document.getElementById("instrucoes").value.trim()
+
+  let instrucoesHTML = ""
+	
+	if(textoInstrucoes){
+	  const linhas = textoInstrucoes.split("\n").filter(l => l.trim() !== "")
+	
+	  instrucoesHTML = `
+	    <div class="instrucoes">
+	      <strong>Instruções:</strong>
+	      ${linhas.map(l => `<div>${l}</div>`).join("")}
+	    </div>
+	    <div class="linha-divisoria"></div>
+	  `
+	}	
 
   for(let i=1;i<=total;i++){
 
@@ -500,11 +514,7 @@ function gerarPreview(){
 	  
 	  <div class="linha-divisoria"></div>
 
-	  <div class="instrucoes">
-		  ${instrucoes}
-	  </div>
-		
-	  <div class="linha-divisoria"></div>
+      ${instrucoesHTML}
 
       <div class="questoes">
         ${gerarQuestoesHTML()}

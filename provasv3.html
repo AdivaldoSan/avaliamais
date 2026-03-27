@@ -14,7 +14,29 @@
 <script src="./js/layout.js"></script>
 
 <script>
+function normalizarImagem(url){
 
+  if(!url) return "";
+
+  url = url.trim();
+
+  if(url.includes("drive.google.com")){
+
+    const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+
+    if(match && match[1]){
+      return `https://drive.google.com/uc?export=view&id=${match[1]}`;
+    }
+
+    if(url.includes("uc?export=view")){
+      return url;
+    }
+  }
+
+  return url;
+}
+
+    
 let banco = [];
 let descritoresBanco = [];
 let mapaDescritores = {};
@@ -288,13 +310,16 @@ function mostrarQuestoes(){
                 <strong>${q.ENUNCIADO}</strong>
             </label>
 
-            ${q.IMG ? `
-                <div style="text-align:center; margin:10px 0;">
-                    <img src="${q.IMG}"
-                         style="max-width:220px; max-height:160px; width:auto; height:auto;"
-                         onerror="this.style.display='none'">
+               ${(() => {
+                const img = normalizarImagem(q.IMG);
+                return img ? `
+                    <div style="text-align:center; margin:10px 0;">
+                    <img src="${img}"
+                     style="max-width:220px; max-height:160px; width:auto; height:auto;"
+                         onerror="this.parentElement.style.display='none'">
                 </div>
-            ` : ""}
+            ` : "";
+            })()}
 
             <div style="margin-left:10px;">
                 A) ${q.ALT_A}<br>
@@ -376,13 +401,16 @@ function atualizarPreview(){
 
             </div>
 
-            ${q.IMG ? `
-                <div style="text-align:center; margin:10px 0;">
-                    <img src="${q.IMG}"
-                         style="max-width:220px; max-height:160px; width:auto; height:auto;"
-                         onerror="this.style.display='none'">
-                </div>
-            ` : ""}
+            ${(() => {
+                const img = normalizarImagem(q.IMG);
+                return img ? `
+                    <div style="text-align:center; margin:10px 0;">
+                        <img src="${img}"
+                             style="max-width:220px; max-height:160px; width:auto; height:auto;"
+                             onerror="this.parentElement.style.display='none'">
+                    </div>
+                ` : "";
+            })()}
 
             <div style="margin-top:10px;">
                 ${alt("A", q.ALT_A)}
@@ -462,7 +490,7 @@ function gerarProva(){
             ALT_B: q.ALT_B,
             ALT_C: q.ALT_C,
             ALT_D: q.ALT_D,
-            IMAGEM: q.IMG || "",
+            IMAGEM: normalizarImagem(q.IMG),
             GABARITO: (
                           q.GABARITO ||
                           q.RESPOSTA ||

@@ -477,6 +477,29 @@ function gerarCanvasReal(canvas, q){
 
   },100)
 }
+//========Gerar Versoes=======
+function gerarVersoes(questoes, qtdVersoes = 4){
+
+  const versoes = [];
+
+  for(let v = 1; v <= qtdVersoes; v++){
+
+    const embaralhadas = [...questoes]
+      .sort(() => Math.random() - 0.5);
+
+    const gabarito = embaralhadas
+      .map(q => String(q.GABARITO).trim().toUpperCase())
+      .join("");
+
+    versoes.push({
+      v,
+      ordem: embaralhadas.map(q => q.ID),
+      gabarito
+    });
+  }
+
+  return versoes;
+}	
 
 /* ================= GERAR PREVIEW ================= */
 
@@ -540,7 +563,20 @@ function gerarPreview(){
 		
 		  return
 		}
+	  
+        // 🔥 INICIALIZA ID DA PROVA (UMA VEZ)
+if(!prova.id){
+  prova.id = "PRV_" + Date.now();
+}
 
+// 🔥 GERA VERSÕES (UMA VEZ)
+if(!prova.versoes){
+  prova.versoes = gerarVersoes(prova.questoes, 4);
+}
+
+// 🔥 DEBUG (CONFIRMAR)
+console.log("ID PROVA:", prova.id);
+console.log("VERSÕES:", prova.versoes);
 
 		  const extrasInput = document.getElementById("extras")
 		let extras = parseInt(extrasInput.value)

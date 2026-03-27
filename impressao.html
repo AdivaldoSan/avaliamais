@@ -607,25 +607,33 @@ function gerarQuestoesHTML(){
 
   return prova.questoes.map((q, i) => {
 
+    const temImagem = q.IMAGEM && q.IMAGEM.trim() !== ""
+
     return `
       <div class="questao">
 
         <div class="enunciado">
-          <strong>Q${i+1} - Peso ${Number(q.PESO).toFixed(1)}</strong> - ${q.ENUNCIADO}
+          <strong>Q${i+1} - Peso ${Number(q.PESO || 1).toFixed(1)}</strong> - ${q.ENUNCIADO}
         </div>
 
+        ${temImagem ? `
+          <div class="img-container">
+            <img src="${q.IMAGEM}" loading="lazy" onerror="this.style.display='none'">
+            <div class="resizer"></div>
+          </div>
+        ` : ""}
+
         <div class="alternativas">
-       	    <div>A) ${String(q.ALT_A)}</div>
-			<div>B) ${String(q.ALT_B)}</div>
-			<div>C) ${String(q.ALT_C)}</div>
-			<div>D) ${String(q.ALT_D)}</div>
+          <div>A) ${String(q.ALT_A)}</div>
+          <div>B) ${String(q.ALT_B)}</div>
+          <div>C) ${String(q.ALT_C)}</div>
+          <div>D) ${String(q.ALT_D)}</div>
         </div>
 
       </div>
     `
   }).join("")
-}
-	
+}	
 /* ===== RESIZE IMAGEM ===== */
 
 function ativarResize(){

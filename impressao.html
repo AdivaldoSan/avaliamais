@@ -640,10 +640,11 @@ function ativarResize(){
 
   document.querySelectorAll(".resizer").forEach(resizer => {
 
-    let img = resizer.previousElementSibling
+    const img = resizer.previousElementSibling
 
     let startX, startWidth
 
+    // ===== MOUSE =====
     resizer.onmousedown = (e)=>{
       startX = e.clientX
       startWidth = img.offsetWidth
@@ -657,6 +658,23 @@ function ativarResize(){
 
       document.onmouseup = ()=>{
         document.onmousemove = null
+      }
+    }
+
+    // ===== TOUCH (CELULAR) =====
+    resizer.ontouchstart = (e)=>{
+      startX = e.touches[0].clientX
+      startWidth = img.offsetWidth
+
+      document.ontouchmove = (e)=>{
+        let newWidth = startWidth + (e.touches[0].clientX - startX)
+        if(newWidth > 80 && newWidth < 400){
+          img.style.width = newWidth + "px"
+        }
+      }
+
+      document.ontouchend = ()=>{
+        document.ontouchmove = null
       }
     }
 

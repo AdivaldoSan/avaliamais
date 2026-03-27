@@ -665,7 +665,7 @@ console.log("VERSÕES:", prova.versoes);
 
 const canvas = pagina.querySelector(".canvasGabarito")
 
-const qrData = `AVALIA+|ID=${prova.id}|V=${versaoAtual.v}|F=${i}|Q=${questoesVersao.length}`;
+const qrData = `AVALIA+|ID=${prova.id}|T=${turma}|V=${versaoAtual.v}|F=${i}|Q=${questoesVersao.length}`;
 
 gerarCanvasReal(canvas, questoesVersao.length, qrData);
 	  

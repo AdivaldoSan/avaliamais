@@ -284,12 +284,12 @@ function carregarPainel(){
   const lista = document.getElementById("listaTurmas")
   lista.innerHTML = ""
 
-  prova.turmas.forEach(t => {
+  prova.turmas.forEach((t, i) => {
 
     const label = document.createElement("label")
 
     label.innerHTML = `
-      <input type="checkbox" value="${t}" checked>
+      <input type="radio" name="turma" value="${t}" ${i === 0 ? "checked" : ""}>
       ${t}
     `
 
@@ -421,9 +421,8 @@ function gerarPreview(){
   const escola = document.getElementById("escola").value
   const disciplina = document.getElementById("disciplina").value
 	
-  const turmasSelecionadas = [...document.querySelectorAll("#listaTurmas input:checked")]
-  .map(el => el.value)
-  const turma = turmasSelecionadas.join(", ")
+  const turmaSelecionada = document.querySelector("#listaTurmas input:checked")
+  const turma = turmaSelecionada ? turmaSelecionada.value : ""
 
   const qtd = parseInt(document.getElementById("qtd").value) || 0
   const extras = parseInt(document.getElementById("extras").value) || 0
@@ -497,10 +496,10 @@ function gerarQuestoesHTML(){
         </div>
 
         <div class="alternativas">
-          <div>A) ${q.ALT_A}</div>
-          <div>B) ${q.ALT_B}</div>
-          <div>C) ${q.ALT_C}</div>
-          <div>D) ${q.ALT_D}</div>
+       	    <div>A) ${String(q.ALT_A)}</div>
+			<div>B) ${String(q.ALT_B)}</div>
+			<div>C) ${String(q.ALT_C)}</div>
+			<div>D) ${String(q.ALT_D)}</div>
         </div>
 
       </div>

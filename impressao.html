@@ -618,7 +618,7 @@ function gerarQuestoesHTML(){
 
         ${temImagem ? `
           <div class="img-container">
-            <img src="${q.IMAGEM}" loading="lazy" onerror="this.style.display='none'">
+            <img src="${q.IMAGEM}" loading="lazy" onerror="this.parentElement.style.display='none'">
             <div class="resizer"></div>
           </div>
         ` : ""}

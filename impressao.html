@@ -314,9 +314,9 @@ const qrSize = 160
 
 /* ================= GERAÇÃO DO CANVAS REAL ================= */
 
-function gerarCanvasReal(canvas){
+function gerarCanvasReal(canvas, q){
 
-  const q = 10
+  //const q = 10
 
   const ctx = canvas.getContext("2d")
   ctx.translate(-100, 0)
@@ -477,7 +477,7 @@ function gerarPreview(){
     folhas.appendChild(pagina)
 
     const canvas = pagina.querySelector(".canvasGabarito")
-    gerarCanvasReal(canvas)
+    gerarCanvasReal(canvas, prova.questoes.length)
   }
 
   ativarResize()

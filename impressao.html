@@ -470,7 +470,7 @@ function gerarPreview(){
 	  <div class="linha-divisoria"></div>
 
       <div class="questoes">
-        ${gerarQuestoesDemo()}
+        ${prova.questoes}
       </div>
     `
 
@@ -481,22 +481,6 @@ function gerarPreview(){
   }
 
   ativarResize()
-}
-
-/* ===== QUESTÕES DEMO ===== */
-
-function gerarQuestoesDemo(){
-  return `
-    <div class="questao">
-      <div class="enunciado"><strong>1.</strong> Questão exemplo</div>
-      <div class="alternativas">
-        <div>A) ...</div>
-        <div>B) ...</div>
-        <div>C) ...</div>
-        <div>D) ...</div>
-      </div>
-    </div>
-  `
 }
 
 /* ===== RESIZE IMAGEM ===== */

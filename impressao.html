@@ -615,7 +615,11 @@ console.log("VERSÕES:", prova.versoes);
 	}	
 
   for(let i=1;i<=total;i++){
+    const versaoAtual = prova.versoes[(i-1) % prova.versoes.length];
 
+    const questoesVersao = versaoAtual.ordem.map(id =>
+    prova.questoes.find(q => q.ID === id)
+    );
     const pagina = document.createElement("div")
     pagina.className = "pagina"
 
@@ -653,7 +657,7 @@ console.log("VERSÕES:", prova.versoes);
       ${instrucoesHTML}
 
       <div class="questoes">
-        ${gerarQuestoesHTML()}
+        ${gerarQuestoesHTML(questoesVersao)}
       </div>
     `
 
@@ -666,11 +670,11 @@ console.log("VERSÕES:", prova.versoes);
   ativarResize()
 }
 
-function gerarQuestoesHTML(){
-
+function gerarQuestoesHTML(listaQuestoes){
+	
   if(!prova || !prova.questoes) return ""
 
-  return prova.questoes.map((q, i) => {
+  return listaQuestoes.map((q, i) => {
 
     const temImagem = q.IMAGEM && q.IMAGEM.trim() !== ""
 

@@ -5,6 +5,7 @@
 <title>Impressão - Avalia+</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<link rel="stylesheet" href="styles.css">
 
 <style>
 
@@ -263,6 +264,8 @@ canvas{
   <div class="painel">
 
     <h3>Configuração</h3>
+	<div id="msgErro" class="alerta" style="display:none;"></div>	
+
 	  
 	<label>Nome da Prova:</label>
 	<input id="nomeProva" placeholder="Ex: Simulado SAERO 1">
@@ -303,6 +306,7 @@ canvas{
   </div>
 
 </div>
+
 
 <script>
 const prova = JSON.parse(localStorage.getItem("provaGerada"))
@@ -448,16 +452,82 @@ function gerarCanvasReal(canvas, q){
 /* ================= GERAR PREVIEW ================= */
 
 function gerarPreview(){
+  const msgBox = document.getElementById("msgErro")
 
+	msgBox.style.display = "none"
+	msgBox.classList.remove("alerta-erro")
+	msgBox.innerHTML = ""
+	
+	// limpa inputs
+	document.querySelectorAll(".painel input, .painel select").forEach(el=>{
+	  el.classList.remove("input-erro")
+	})
+
+	let erros = []
+
+		const nomeProva = document.getElementById("nomeProva")
+		const escolaInput = document.getElementById("escola")
+		const qtdInput = document.getElementById("qtd")
+		
+		if(!nomeProva.value.trim()){
+		  erros.push("Nome da prova é obrigatório")
+		  nomeProva.classList.add("input-erro")
+		}
+		
+		if(!escolaInput.value.trim()){
+		  erros.push("Escola é obrigatória")
+		  escolaInput.classList.add("input-erro")
+		}
+		
+	
   const escola = document.getElementById("escola").value
   const disciplina = document.getElementById("disciplina").value
 	
   const turma = document.getElementById("turmaSelect").value
 
-  const qtd = parseInt(document.getElementById("qtd").value) || 0
-  const extras = parseInt(document.getElementById("extras").value) || 0
+  let qtd = parseInt(qtdInput.value)
 
-  const total = qtd + extras
+		if(isNaN(qtd) || qtd < 1){
+		  erros.push("Quantidade mínima é 1")
+		  qtd = 1
+		  qtdInput.classList.add("input-erro")
+		}
+		
+		if(qtd > 100){
+		  erros.push("Quantidade máxima é 100")
+		  qtd = 100
+		  qtdInput.classList.add("input-erro")
+		}
+		
+		qtdInput.value = qtd
+
+		
+		if(erros.length > 0){
+		
+		  msgBox.innerHTML = erros.map(e => `• ${e}`).join("<br>")
+		  msgBox.style.display = "block"
+		  msgBox.classList.add("alerta-erro")
+		
+		  return
+		}
+
+
+		  const extrasInput = document.getElementById("extras")
+		let extras = parseInt(extrasInput.value)
+		
+		if(isNaN(extras) || extras < 0){
+		  extras = 0
+		}
+		
+		if(extras > 5){
+		  erros.push("Extras máximo é 5")
+		  extras = 5
+		  extrasInput.classList.add("input-erro")
+		}
+		
+		extrasInput.value = extras
+		
+		  const total = qtd + extras
 
   const folhas = document.getElementById("folhas")
   folhas.innerHTML = ""

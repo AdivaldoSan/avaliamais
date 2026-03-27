@@ -199,23 +199,28 @@ body{
 
 /* ===== IMAGEM ===== */
 .img-container{
-  text-align:center;
+  position: relative;
+  display: flex;
+  justify-content: center;   /* centraliza horizontal */
+  margin: 10px 0;
 }
 
 .img-container img{
-  max-width:220px;
-  height:auto;
-  display:block;
-  margin:auto;
+  max-width: 100%;          /* respeita coluna */
+  width: auto;
+  height: auto;
+  display: block;
 }
+
 .resizer{
-  width:10px;
-  height:10px;
+  width:12px;
+  height:12px;
   background:#2563EB;
   position:absolute;
   right:0;
   bottom:0;
   cursor:se-resize;
+  border-radius:2px;
 }
 
 /* ===== BOTÕES ===== */
@@ -640,7 +645,7 @@ function gerarQuestoesHTML(){
 
         ${temImagem ? `
           <div class="img-container">
-            <img src="${q.IMAGEM}" loading="lazy" onerror="this.parentElement.style.display='none'">
+            <img src="${q.IMAGEM}" loading="lazy">
             <div class="resizer"></div>
           </div>
         ` : ""}

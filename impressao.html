@@ -281,6 +281,20 @@ function carregarPainel(){
 
   document.getElementById("disciplina").value = prova.disciplina
 
+  const lista = document.getElementById("listaTurmas")
+  lista.innerHTML = ""
+
+  prova.turmas.forEach(t => {
+
+    const label = document.createElement("label")
+
+    label.innerHTML = `
+      <input type="checkbox" value="${t}" checked>
+      ${t}
+    `
+
+    lista.appendChild(label)
+  })
 }
 
 /* ================= CONFIG LAB (INALTERADO) ================= */
@@ -406,7 +420,10 @@ function gerarPreview(){
 
   const escola = document.getElementById("escola").value
   const disciplina = document.getElementById("disciplina").value
-  const turma = document.getElementById("turma").value
+	
+  const turmasSelecionadas = [...document.querySelectorAll("#listaTurmas input:checked")]
+  .map(el => el.value)
+  const turma = turmasSelecionadas.join(", ")
 
   const qtd = parseInt(document.getElementById("qtd").value) || 0
   const extras = parseInt(document.getElementById("extras").value) || 0

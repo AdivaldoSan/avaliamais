@@ -543,6 +543,12 @@ function gerarPreview(){
   const disciplina = document.getElementById("disciplina").value
 	
   const turma = document.getElementById("turmaSelect").value
+  const turmaCodigo = prova.mapaTurmas[turma];
+
+if(!turmaCodigo){
+  console.error("Turma não mapeada:", turma);
+}
+	
 
   let qtd = parseInt(qtdInput.value)
 
@@ -575,6 +581,20 @@ function gerarPreview(){
 if(!prova.id){
   prova.id = "PRV_" + Date.now();
 }
+
+// ===== MAPA DE TURMAS (FIXO DA PROVA) =====
+if(!prova.mapaTurmas){
+
+  const turmasOrdenadas = [...prova.turmas].sort();
+
+  prova.mapaTurmas = {};
+
+  turmasOrdenadas.forEach((t, i) => {
+    prova.mapaTurmas[t] = i + 1;
+  });
+
+  console.log("MAPA TURMAS:", prova.mapaTurmas);
+}	
 
 // 🔥 GERA VERSÕES (UMA VEZ)
 if(!prova.versoes){
@@ -672,13 +692,13 @@ console.log("VERSÕES:", prova.versoes);
 
 const canvas = pagina.querySelector(".canvasGabarito")
 
-const qrData = `ID=${prova.id}|V=${versaoAtual.v}|F=${i}`;
-
+const qrData = `ID=${prova.id}|T=${turmaCodigo}|V=${versaoAtual.v}|F=${i}`;
 gerarCanvasReal(canvas, questoesVersao.length, qrData);
 	  
   }
 
   ativarResize()
+ localStorage.setItem("provaGerada", JSON.stringify(prova));	
 }
 
 function gerarQuestoesHTML(listaQuestoes){

@@ -41,6 +41,21 @@ body{
   padding:6px;
   box-sizing:border-box;
 }
+.painel label{
+  display:block;
+  margin-top:8px;
+  margin-bottom:3px;
+  font-size:13px;
+}
+
+.painel input,
+.painel select{
+  width:100%;
+  margin-bottom:10px;
+  padding:6px;
+  box-sizing:border-box;
+  font-size:13px;
+}
 
 /* ===== PREVIEW ===== */
 .preview{
@@ -235,23 +250,23 @@ canvas{
 
     <h3>Configuração</h3>
 	  
-	Nome da Prova:
+	<label>Nome da Prova:</label>:
 	<input id="nomeProva" placeholder="Ex: Simulado SAERO 1">
 
-    Escola:
+    <label>Escola:</label>
     <input id="escola" value="EEEFM Migrantes">
 
-    Disciplina:
+    <label>Disciplina:</label>
     <input id="disciplina" value="Matemática">
 
-    Turmas:
+    <label>Turma:</label>
 	<select id="turmaSelect"></select>
-
-    Quantidade:
-    <input id="qtd" type="number" value="10">
-
-    Extras:
-    <input id="extras" type="number" value="0">
+	
+	<label>Quantidade:</label>
+	<input id="qtd" type="number">
+	
+	<label>Extras:</label>
+	<input id="extras" type="number">
 
     <button onclick="gerarPreview()">Atualizar Preview</button>
     <button onclick="window.print()">Imprimir / PDF</button>

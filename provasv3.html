@@ -281,20 +281,28 @@ function mostrarQuestoes(){
         div.className = "preview-questao";
 
         div.innerHTML = `
-    <label>
-        <input type="checkbox"
-               ${jaSelecionada ? "checked" : ""}
-               onchange="toggleQuestao('${q.ID}')">
-        <strong>${q.ENUNCIADO}</strong>
-    </label>
+            <label>
+                <input type="checkbox"
+                       ${jaSelecionada ? "checked" : ""}
+                       onchange="toggleQuestao('${q.ID}')">
+                <strong>${q.ENUNCIADO}</strong>
+            </label>
 
-    <div style="margin-left:10px;">
-        A) ${q.ALT_A}<br>
-        B) ${q.ALT_B}<br>
-        C) ${q.ALT_C}<br>
-        D) ${q.ALT_D}
-    </div>
-`;
+            ${q.IMG ? `
+                <div style="text-align:center; margin:10px 0;">
+                    <img src="${q.IMG}"
+                         style="max-width:220px; max-height:160px; width:auto; height:auto;"
+                         onerror="this.style.display='none'">
+                </div>
+            ` : ""}
+
+            <div style="margin-left:10px;">
+                A) ${q.ALT_A}<br>
+                B) ${q.ALT_B}<br>
+                C) ${q.ALT_C}<br>
+                D) ${q.ALT_D}
+            </div>
+        `;
 
         areaQuestoes.appendChild(div);
     });

@@ -470,7 +470,7 @@ function gerarPreview(){
 	  <div class="linha-divisoria"></div>
 
       <div class="questoes">
-        ${prova.questoes}
+        ${gerarQuestoesHTML()}
       </div>
     `
 
@@ -483,6 +483,31 @@ function gerarPreview(){
   ativarResize()
 }
 
+function gerarQuestoesHTML(){
+
+  if(!prova || !prova.questoes) return ""
+
+  return prova.questoes.map((q, i) => {
+
+    return `
+      <div class="questao">
+
+        <div class="enunciado">
+          <strong>Q${i+1} - Peso ${Number(q.PESO).toFixed(1)}</strong> - ${q.ENUNCIADO}
+        </div>
+
+        <div class="alternativas">
+          <div>A) ${q.ALT_A}</div>
+          <div>B) ${q.ALT_B}</div>
+          <div>C) ${q.ALT_C}</div>
+          <div>D) ${q.ALT_D}</div>
+        </div>
+
+      </div>
+    `
+  }).join("")
+}
+	
 /* ===== RESIZE IMAGEM ===== */
 
 function ativarResize(){

@@ -491,22 +491,69 @@ function gerarVersoes(questoes, qtdVersoes = 4){
 
   for(let v = 1; v <= qtdVersoes; v++){
 
-    const embaralhadas = [...questoes]
+    // 🔀 embaralha ordem das questões
+    const questoesEmbaralhadas = [...questoes]
       .sort(() => Math.random() - 0.5);
 
-    const gabarito = embaralhadas
-      .map(q => String(q.GABARITO).trim().toUpperCase())
+    const questoesProcessadas = [];
+
+    questoesEmbaralhadas.forEach(q => {
+
+      const alternativas = [
+        { letra: "A", texto: q.ALT_A },
+        { letra: "B", texto: q.ALT_B },
+        { letra: "C", texto: q.ALT_C },
+        { letra: "D", texto: q.ALT_D }
+      ];
+
+      // identifica correta original
+      const corretaOriginal = String(q.GABARITO).trim().toUpperCase();
+
+      // marca correta
+      alternativas.forEach(alt => {
+        alt.correta = (alt.letra === corretaOriginal);
+      });
+
+      // 🔀 embaralha alternativas
+      const embaralhadas = [...alternativas]
+        .sort(() => Math.random() - 0.5);
+
+      // redefine letras (A,B,C,D)
+      const letras = ["A","B","C","D"];
+
+      embaralhadas.forEach((alt, i) => {
+        alt.novaLetra = letras[i];
+      });
+
+      // encontra nova correta
+      const novaCorreta = embaralhadas.find(a => a.correta).novaLetra;
+
+      questoesProcessadas.push({
+        ID: q.ID,
+        ENUNCIADO: q.ENUNCIADO,
+        IMAGEM: q.IMAGEM,
+        PESO: q.PESO,
+
+        alternativas: embaralhadas,
+        resposta: novaCorreta
+      });
+
+    });
+
+    // monta gabarito da versão
+    const gabarito = questoesProcessadas
+      .map(q => q.resposta)
       .join("");
 
     versoes.push({
       v,
-      ordem: embaralhadas.map(q => q.ID),
+      questoes: questoesProcessadas,
       gabarito
     });
   }
 
   return versoes;
-}	
+}
 
 /* ================= GERAR PREVIEW ================= */
 
@@ -646,9 +693,9 @@ console.log("VERSÕES:", prova.versoes);
   for(let i=1;i<=total;i++){
     const versaoAtual = prova.versoes[(i-1) % prova.versoes.length];
 
-    const questoesVersao = versaoAtual.ordem.map(id =>
-    prova.questoes.find(q => q.ID === id)
-    );
+    const questoesVersao = versaoAtual.questoes;
+
+	
     const pagina = document.createElement("div")
     pagina.className = "pagina"
 
@@ -704,8 +751,6 @@ gerarCanvasReal(canvas, questoesVersao.length, qrData);
 }
 
 function gerarQuestoesHTML(listaQuestoes){
-	
-  if(!prova || !prova.questoes) return ""
 
   return listaQuestoes.map((q, i) => {
 
@@ -726,16 +771,15 @@ function gerarQuestoesHTML(listaQuestoes){
         ` : ""}
 
         <div class="alternativas">
-          <div>A) ${String(q.ALT_A)}</div>
-          <div>B) ${String(q.ALT_B)}</div>
-          <div>C) ${String(q.ALT_C)}</div>
-          <div>D) ${String(q.ALT_D)}</div>
+          ${q.alternativas.map(a => `
+            <div>${a.novaLetra}) ${a.texto}</div>
+          `).join("")}
         </div>
 
       </div>
     `
   }).join("")
-}	
+}
 /* ===== RESIZE IMAGEM ===== */
 
 function ativarResize(){

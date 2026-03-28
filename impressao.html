@@ -646,13 +646,11 @@ if(!turmaCodigo){
 }
 
 // 🔥 GERA VERSÕES (UMA VEZ)
-if(!prova.versoes){
-  prova.versoes = gerarVersoes(prova.questoes, 4);
-}
+prova.versoes = gerarVersoes(prova.questoes, 4);
 
 // 🔥 DEBUG (CONFIRMAR)
-console.log("ID PROVA:", prova.id);
-console.log("VERSÕES:", prova.versoes);
+//console.log("ID PROVA:", prova.id);
+//console.log("VERSÕES:", prova.versoes);
 
 		  const extrasInput = document.getElementById("extras")
 		let extras = parseInt(extrasInput.value)
@@ -694,6 +692,11 @@ console.log("VERSÕES:", prova.versoes);
     const versaoAtual = prova.versoes[(i-1) % prova.versoes.length];
 
     const questoesVersao = versaoAtual.questoes;
+
+	  if(!questoesVersao){
+      console.error("Versão inválida:", versaoAtual);
+      continue;
+  	  }
 
 	
     const pagina = document.createElement("div")

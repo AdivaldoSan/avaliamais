@@ -792,6 +792,7 @@ prova.versoes = gerarVersoes(prova.questoes, 4);
     `
 
     folhas.appendChild(pagina)
+	ajustarPagina(pagina)
 
 const img = pagina.querySelector(".imgGabarito")
 
@@ -835,6 +836,50 @@ function gerarQuestoesHTML(listaQuestoes){
     `
   }).join("")
 }
+
+function ajustarPagina(pagina){
+
+  const limite = pagina.clientHeight
+  const questoes = pagina.querySelector(".questoes")
+
+  while(pagina.scrollHeight > limite){
+
+    // cria nova página limpa
+    const novaPagina = document.createElement("div")
+    novaPagina.className = "pagina"
+
+    // pega só a estrutura SEM questões
+    const cabecalho = pagina.querySelector(".cabecalho").outerHTML
+    const bloco = pagina.querySelector(".bloco-otico").outerHTML
+    const instrucoes = pagina.querySelector(".instrucoes")?.outerHTML || ""
+    const linha = `<div class="linha-divisoria"></div>`
+
+    novaPagina.innerHTML = `
+      ${cabecalho}
+      ${bloco}
+      ${linha}
+      ${instrucoes}
+      <div class="questoes"></div>
+    `
+
+    const novaLista = novaPagina.querySelector(".questoes")
+
+    // move questões até caber
+    while(pagina.scrollHeight > limite){
+
+      const ultima = questoes.lastElementChild
+      if(!ultima) break
+
+      novaLista.prepend(ultima)
+    }
+
+    pagina.parentNode.insertBefore(novaPagina, pagina.nextSibling)
+
+    // continua verificando (caso ainda precise dividir)
+    pagina = novaPagina
+  }
+  }
+	
 /* ===== RESIZE IMAGEM ===== */
 
 function ativarResize(){

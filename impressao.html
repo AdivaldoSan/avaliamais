@@ -5,6 +5,9 @@
 <title>Impressão - Avalia+</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+	
 <link rel="stylesheet" href="styles.css">
 
 <style>
@@ -90,6 +93,11 @@ body{
   box-sizing:border-box;
   font-size:13px;
   resize:vertical;
+}
+
+button:disabled{
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 /* ===== PREVIEW ===== */
 .preview{
@@ -324,8 +332,8 @@ canvas{
     <textarea id="instrucoes" rows="4" placeholder="Ex: Resolva as questões com atenção..."></textarea>  
 
     <button onclick="gerarPreview()">Atualizar Preview</button>
-    <button onclick="window.print()">Imprimir / PDF</button>
-
+	  
+    <button id="btnPDF" onclick="gerarPDF()">Gerar PDF</button>
   </div>
 
   <!-- ===== PREVIEW ===== -->
@@ -849,6 +857,56 @@ function ativarResize(){
     }
 
   })
+}
+
+async function gerarPDF(){
+
+  const btn = document.getElementById("btnPDF")
+
+  btn.disabled = true
+  btn.innerText = "Gerando PDF..."
+
+  const { jsPDF } = window.jspdf
+  const paginas = document.querySelectorAll(".pagina")
+
+  if(paginas.length === 0){
+    btn.disabled = false
+    btn.innerText = "Gerar PDF"
+    alert("Nada para gerar")
+    return
+  }
+
+  const pdf = new jsPDF("p", "mm", "a4")
+
+  for(let i = 0; i < paginas.length; i++){
+
+    btn.innerText = `Gerando ${i+1}/${paginas.length}...`
+
+    const el = paginas[i]
+
+    const canvas = await html2canvas(el, {
+      scale: 2,
+      useCORS: true
+    })
+
+    const imgData = canvas.toDataURL("image/jpeg", 0.8)
+
+    const imgWidth = 210
+    const imgHeight = (canvas.height * imgWidth) / canvas.width
+
+    if(i > 0) pdf.addPage()
+
+    pdf.addImage(imgData, "JPEG", 0, 0, imgWidth, imgHeight)
+  }
+
+  btn.innerText = "Finalizando..."
+
+  await new Promise(r => setTimeout(r, 300))
+
+  pdf.save("prova.pdf")
+
+  btn.disabled = false
+  btn.innerText = "Gerar PDF"
 }
 
 /* INIT */

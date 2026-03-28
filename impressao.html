@@ -362,6 +362,10 @@ canvas{
 
 <script>
 const prova = JSON.parse(localStorage.getItem("provaGerada"))
+// 🔥 controle de travamento do nome
+if(!prova.nomeTravado){
+  prova.nomeTravado = false
+}
 
 function carregarPainel(){
 
@@ -382,6 +386,10 @@ prova.turmas.forEach((t, i) => {
 
   select.appendChild(option)
 })
+	// 🔥 mantém nome travado ao recarregar
+  if(prova.nomeTravado){
+  document.getElementById("nomeProva").disabled = true
+}
 }	
 
 /* ================= CONFIG LAB (INALTERADO) ================= */
@@ -660,6 +668,8 @@ function gerarPreview(){
 if(!prova.id){
   prova.id = "PRV_" + Date.now();
 }
+// 🔥 salva nome da prova no objeto
+prova.nome = document.getElementById("nomeProva").value
 
 
 // ===== MAPA DE TURMAS (FIXO DA PROVA) =====
@@ -931,6 +941,13 @@ resizers.forEach(r => r.style.display = "none")
   await new Promise(r => setTimeout(r, 300))
 
   pdf.save("prova.pdf")
+
+ // 🔥 trava nome após primeiro PDF
+if(!prova.nomeTravado){
+  document.getElementById("nomeProva").disabled = true
+  prova.nomeTravado = true
+  localStorage.setItem("provaGerada", JSON.stringify(prova))
+}
 
   // 🔥 restaurar resizers depois do PDF
   resizers.forEach(r => r.style.display = "block")

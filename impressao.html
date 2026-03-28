@@ -576,13 +576,9 @@ if(!prova.id){
   prova.id = "PRV_" + Date.now();
 }
 
+
 // ===== MAPA DE TURMAS (FIXO DA PROVA) =====
 if(!prova.mapaTurmas){
-  const turmaCodigo = prova.mapaTurmas[turma];
-
-  if(!turmaCodigo){
-  console.error("Turma não mapeada:", turma);
-  }
 
   const turmasOrdenadas = [...prova.turmas].sort();
 
@@ -593,7 +589,14 @@ if(!prova.mapaTurmas){
   });
 
   console.log("MAPA TURMAS:", prova.mapaTurmas);
-}	
+}
+
+// 🔥 AGORA SIM usa o mapa
+const turmaCodigo = prova.mapaTurmas[turma];
+
+if(!turmaCodigo){
+  console.error("Turma não mapeada:", turma);
+}
 
 // 🔥 GERA VERSÕES (UMA VEZ)
 if(!prova.versoes){

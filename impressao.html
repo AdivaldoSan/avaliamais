@@ -543,13 +543,7 @@ function gerarPreview(){
   const disciplina = document.getElementById("disciplina").value
 	
   const turma = document.getElementById("turmaSelect").value
-  const turmaCodigo = prova.mapaTurmas[turma];
-
-if(!turmaCodigo){
-  console.error("Turma não mapeada:", turma);
-}
-	
-
+  
   let qtd = parseInt(qtdInput.value)
 
 		if(isNaN(qtd) || qtd < 1){
@@ -584,6 +578,11 @@ if(!prova.id){
 
 // ===== MAPA DE TURMAS (FIXO DA PROVA) =====
 if(!prova.mapaTurmas){
+  const turmaCodigo = prova.mapaTurmas[turma];
+
+  if(!turmaCodigo){
+  console.error("Turma não mapeada:", turma);
+  }
 
   const turmasOrdenadas = [...prova.turmas].sort();
 

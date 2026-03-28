@@ -172,6 +172,12 @@ body{
   flex:1;
 }
 
+.imgGabarito{
+  width:500px;
+  height:auto;
+  display:block;
+}
+
 /*====Instruções====*/
 .instrucoes{
   font-size:12px;
@@ -484,6 +490,21 @@ function renderQR(){
 
 renderQR()
 }
+	
+function gerarImagemGabarito(imgEl, q, qrData){
+
+  const canvas = document.createElement("canvas")
+
+  // reutiliza sua função atual
+  gerarCanvasReal(canvas, q, qrData)
+
+  // 🔥 espera o QR desenhar
+  setTimeout(() => {
+    imgEl.src = canvas.toDataURL("image/png")
+  }, 500)
+}
+
+	
 //========Gerar Versoes=======
 function gerarVersoes(questoes, qtdVersoes = 4){
 
@@ -719,7 +740,7 @@ prova.versoes = gerarVersoes(prova.questoes, 4);
       <div class="bloco-otico">
 
         <div class="lado-esquerdo">
-          <canvas class="canvasGabarito"></canvas>
+          <img class="imgGabarito">
         </div>
 
         <div class="lado-direito">
@@ -742,10 +763,10 @@ prova.versoes = gerarVersoes(prova.questoes, 4);
 
     folhas.appendChild(pagina)
 
-const canvas = pagina.querySelector(".canvasGabarito")
+const img = pagina.querySelector(".imgGabarito")
 
 const qrData = `ID=${prova.id}|T=${turmaCodigo}|V=${versaoAtual.v}|F=${i}`;
-gerarCanvasReal(canvas, questoesVersao.length, qrData);
+gerarImagemGabarito(img, questoesVersao.length, qrData);
 	  
   }
 

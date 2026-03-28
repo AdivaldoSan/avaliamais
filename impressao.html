@@ -238,6 +238,11 @@ button:disabled{
   cursor:se-resize;
   border-radius:2px;
 }
+@media print{
+  .resizer{
+    display:none;
+  }
+}
 
 /* ===== BOTÕES ===== */
 button{
@@ -245,6 +250,10 @@ button{
   padding:8px;
   margin-top:5px;
   cursor:pointer;
+}
+#btnPDF{
+  position: relative;
+  overflow: hidden;
 }
 
 /* ===== PRINT ===== */
@@ -333,7 +342,7 @@ canvas{
 
     <button onclick="gerarPreview()">Atualizar Preview</button>
 	  
-    <button id="btnPDF" onclick="gerarPDF()">Gerar PDF</button>
+    <button id="btnPDF" onclick="gerarPDF()" style="display:none;">Gerar PDF</button>
   </div>
 
   <!-- ===== PREVIEW ===== -->
@@ -779,7 +788,8 @@ gerarImagemGabarito(img, questoesVersao.length, qrData);
   }
 
   ativarResize()
- localStorage.setItem("provaGerada", JSON.stringify(prova));	
+ localStorage.setItem("provaGerada", JSON.stringify(prova));
+ document.getElementById("btnPDF").style.display = "block"
 }
 
 function gerarQuestoesHTML(listaQuestoes){
@@ -860,6 +870,12 @@ function ativarResize(){
 }
 
 async function gerarPDF(){
+  // 🔥 remove páginas vazias antes de gerar PDF
+     document.querySelectorAll(".pagina").forEach(p => {
+      if(p.innerText.trim().length < 10){
+      p.remove()
+  }
+})
 
   const btn = document.getElementById("btnPDF")
 
@@ -894,7 +910,14 @@ async function gerarPDF(){
     const imgWidth = 210
     const imgHeight = (canvas.height * imgWidth) / canvas.width
 
-    if(i > 0) pdf.addPage()
+    if(i > 0){
+    const isBlank = paginas[i].innerText.trim().length < 10
+    if(!isBlank){
+    pdf.addPage()
+    }else{
+    continue
+  }
+}
 
     pdf.addImage(imgData, "JPEG", 0, 0, imgWidth, imgHeight)
   }
@@ -911,7 +934,14 @@ async function gerarPDF(){
 
 /* INIT */
 //gerarPreview()
-window.onload = carregarPainel
+//window.onload = carregarPainel
+window.onload = () => {
+  carregarPainel()
+
+  document.getElementById("turmaSelect").addEventListener("change", () => {
+    document.getElementById("btnPDF").style.display = "none"
+  })
+}
 
 </script>
 

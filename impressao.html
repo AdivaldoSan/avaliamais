@@ -927,10 +927,7 @@ resizers.forEach(r => r.style.display = "none")
 
     let imgHeight = (canvas.height * imgWidth) / canvas.width
 
-    // 🔥 AJUSTE AUTOMÁTICO PARA NÃO CORTAR
-    if (imgHeight > pageHeight) {
-    imgHeight = pageHeight
-    }  
+      
 
     if(i > 0){
     const isBlank = paginas[i].innerText.trim().length < 10

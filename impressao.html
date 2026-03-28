@@ -870,6 +870,10 @@ function ativarResize(){
 }
 
 async function gerarPDF(){
+	// 🔥 esconder resizers antes do capture
+const resizers = document.querySelectorAll(".resizer")
+resizers.forEach(r => r.style.display = "none")
+	
   // 🔥 remove páginas vazias antes de gerar PDF
      document.querySelectorAll(".pagina").forEach(p => {
       if(p.innerText.trim().length < 10){
@@ -928,8 +932,12 @@ async function gerarPDF(){
 
   pdf.save("prova.pdf")
 
+  // 🔥 restaurar resizers depois do PDF
+  resizers.forEach(r => r.style.display = "block")
+
   btn.disabled = false
   btn.innerText = "Gerar PDF"
+  
 }
 
 /* INIT */

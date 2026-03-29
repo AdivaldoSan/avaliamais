@@ -518,13 +518,8 @@ function gerarPreview(){
 
   let qtd = parseInt(qtdInput.value)
 
-  if(isNaN(qtd) || qtd < 1){
-    qtd = 1
-  }
-
-  if(qtd > 100){
-    qtd = 100
-  }
+  if(isNaN(qtd) || qtd < 1) qtd = 1
+  if(qtd > 100) qtd = 100
 
   qtdInput.value = qtd
 
@@ -538,18 +533,17 @@ function gerarPreview(){
   const disciplina = document.getElementById("disciplina").value
   const turma = document.getElementById("turmaSelect").value
 
-  // 🔥 ID fixo da prova
+  // ID fixo
   if(!prova.id){
     prova.id = "PRV_" + Date.now();
   }
 
   prova.nome = nomeProva.value
 
-  // 🔥 mapa de turmas
+  // mapa de turmas
   if(!prova.mapaTurmas){
     const turmasOrdenadas = [...prova.turmas].sort()
     prova.mapaTurmas = {}
-
     turmasOrdenadas.forEach((t, i)=>{
       prova.mapaTurmas[t] = i + 1
     })
@@ -557,19 +551,14 @@ function gerarPreview(){
 
   const turmaCodigo = prova.mapaTurmas[turma]
 
-  // 🔥 gera versões
+  // versões
   prova.versoes = gerarVersoes(prova.questoes, 4)
 
   const extrasInput = document.getElementById("extras")
   let extras = parseInt(extrasInput.value)
 
-  if(isNaN(extras) || extras < 0){
-    extras = 0
-  }
-
-  if(extras > 5){
-    extras = 5
-  }
+  if(isNaN(extras) || extras < 0) extras = 0
+  if(extras > 5) extras = 5
 
   extrasInput.value = extras
 
@@ -584,7 +573,6 @@ function gerarPreview(){
 
   if(textoInstrucoes){
     const linhas = textoInstrucoes.split("\n").filter(l => l.trim() !== "")
-
     instrucoesHTML = `
       <div class="instrucoes">
         <strong>Instruções:</strong>
@@ -594,7 +582,6 @@ function gerarPreview(){
     `
   }
 
-  // 🔥 LOOP DAS PROVAS
   for(let i=1;i<=total;i++){
 
     const versaoAtual = prova.versoes[(i-1) % prova.versoes.length];
@@ -642,45 +629,41 @@ function gerarPreview(){
 
     folhas.appendChild(pagina)
 
-    // 🔥 QR
+    // QR
     const img = pagina.querySelector(".imgGabarito")
     const qrData = `ID=${prova.id}|T=${turmaCodigo}|V=${versaoAtual.v}|F=${i}`;
     gerarImagemGabarito(img, questoesVersao.length, qrData);
 
-    // 🔥 COLUNAS
     let colEsq = pagina.querySelector(".col-esq")
     let colDir = pagina.querySelector(".col-dir")
-	let areaQuestoes = pagina.querySelector(".questoes")
+    let areaQuestoes = pagina.querySelector(".questoes")
 
-    let lado = "esq"
+    const LIMITE = pagina.clientHeight - areaQuestoes.offsetTop - 40
 
     questoesVersao.forEach((q, index) => {
 
       const questao = criarQuestaoHTML(q, index)
 
-      if(lado === "esq"){
-        colEsq.appendChild(questao)
+      // tenta esquerda
+      colEsq.appendChild(questao)
 
-        const LIMITE = pagina.clientHeight - areaQuestoes.offsetTop - 40
-		if(areaQuestoes.scrollHeight > LIMITE){
-          colEsq.removeChild(questao)
-          lado = "dir"
-        }
-      }
+      if(areaQuestoes.scrollHeight > LIMITE){
 
-      const LIMITE = pagina.clientHeight - areaQuestoes.offsetTop - 40
-	   if(areaQuestoes.scrollHeight > LIMITE){
+        colEsq.removeChild(questao)
+
+        // tenta direita
         colDir.appendChild(questao)
 
-        if(pagina.scrollHeight > pagina.clientHeight){
+        if(areaQuestoes.scrollHeight > LIMITE){
 
           colDir.removeChild(questao)
 
+          // nova página
           let novaPagina = document.createElement("div")
           novaPagina.className = "pagina"
 
           novaPagina.innerHTML = `
-		    <div class="linha-divisoria"></div>
+            <div class="linha-divisoria"></div>
             <div class="questoes">
               <div class="coluna col-esq"></div>
               <div class="coluna col-dir"></div>
@@ -692,9 +675,7 @@ function gerarPreview(){
           pagina = novaPagina
           colEsq = pagina.querySelector(".col-esq")
           colDir = pagina.querySelector(".col-dir")
-		  areaQuestoes = pagina.querySelector(".questoes")
-
-          lado = "esq"
+          areaQuestoes = pagina.querySelector(".questoes")
 
           colEsq.appendChild(questao)
         }
@@ -706,7 +687,7 @@ function gerarPreview(){
   localStorage.setItem("provaGerada", JSON.stringify(prova))
   document.getElementById("btnPDF").style.display = "block"
 }
-
+          
 
 /*=====Criar Questoes no  HTML =====*/
 function criarQuestaoHTML(q, i){

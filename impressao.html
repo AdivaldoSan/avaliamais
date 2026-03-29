@@ -604,8 +604,14 @@ function distribuirQuestoes(pagina, questoes, folhas){
   if(linhaDivisoria) alturaOcupada += linhaDivisoria.offsetHeight
   if(instrucoes) alturaOcupada += instrucoes.offsetHeight
 
-  const margemInferior = 20
-  const alturaPagina = pagina.clientHeight
+  const margemInferior = 30
+	
+  const estilo = getComputedStyle(pagina)
+
+  const paddingTop = parseFloat(estilo.paddingTop)
+  const paddingBottom = parseFloat(estilo.paddingBottom)
+	
+	const alturaPagina = pagina.clientHeight - paddingTop - paddingBottom
 
   const alturaDisponivel = alturaPagina - alturaOcupada - margemInferior
 

@@ -198,6 +198,29 @@ button{
   }
 }
 
+.pagina{
+  position: relative; /* necessário pro rodapé */
+}
+
+.linha-divisoria.final{
+  position: absolute;
+  left: 12mm;
+  right: 12mm;
+  bottom: 25px;
+  border-top: 1px solid #000;
+}
+
+.paginacao{
+  position: absolute;
+  left: 12mm;
+  right: 12mm;
+  bottom: 8px;
+
+  font-size: 10px;
+  display: flex;
+  justify-content: space-between;
+}
+
 </style>
 </head>
 
@@ -535,6 +558,14 @@ function criarPaginaCompleta(escola, disciplina, turma, numero, instrucoesHTML){
       <div class="coluna col-esq"></div>
       <div class="coluna col-dir"></div>
     </div>
+	
+    <div class="linha-divisoria final"></div>
+	
+	<div class="paginacao">
+	  <span class="id-prova"></span>
+	  <span class="num-pagina"></span>
+	</div>
+	
   `
 
   return div
@@ -551,6 +582,13 @@ function criarPaginaContinua(){
       <div class="coluna col-esq"></div>
       <div class="coluna col-dir"></div>
     </div>
+
+	<div class="linha-divisoria final"></div>
+
+	<div class="paginacao">
+	  <span class="id-prova"></span>
+	  <span class="num-pagina"></span>
+	</div>
   `
 
   return div
@@ -831,6 +869,7 @@ async function gerarPreview(){
   }
 
   // ================= LOOP DAS PROVAS =================
+  let paginasDaProva = []
   for(let i=1;i<=total;i++){
 
     const versaoAtual = prova.versoes[(i-1) % prova.versoes.length]
@@ -845,6 +884,7 @@ async function gerarPreview(){
     )
 
     folhas.appendChild(pagina)
+    paginasDaProva.push(pagina)
 
     // 🔥 QR
     const img = pagina.querySelector(".imgGabarito")
@@ -872,6 +912,26 @@ async function gerarPreview(){
 
     // 🔥 distribuição inteligente
     distribuirQuestoes(pagina, questoesComAltura, folhas)
+	// 🔥 pega páginas adicionais geradas (continuação)
+	const todasPaginas = Array.from(folhas.children)
+	const novasPaginas = todasPaginas.slice(paginasDaProva.length)
+	
+	novasPaginas.forEach(p => paginasDaProva.push(p))
+	const totalPaginas = paginasDaProva.length
+
+	paginasDaProva.forEach((pag, index) => {
+	
+	  const idEl = pag.querySelector(".id-prova")
+	  const pagEl = pag.querySelector(".num-pagina")
+	
+	  if(idEl){
+	    idEl.textContent = `ID: ${prova.id}`
+	  }
+	
+	  if(pagEl){
+	    pagEl.textContent = `Página ${index + 1} de ${totalPaginas}`
+	  }
+	})
   }
 
   localStorage.setItem("provaGerada", JSON.stringify(prova))

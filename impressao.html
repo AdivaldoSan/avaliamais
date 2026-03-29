@@ -650,6 +650,7 @@ function gerarPreview(){
     // 🔥 COLUNAS
     let colEsq = pagina.querySelector(".col-esq")
     let colDir = pagina.querySelector(".col-dir")
+	let areaQuestoes = pagina.querySelector(".questoes")
 
     let lado = "esq"
 
@@ -660,17 +661,15 @@ function gerarPreview(){
       if(lado === "esq"){
         colEsq.appendChild(questao)
 
-        const LIMITE = pagina.clientHeight - 80
-
-		if(pagina.scrollHeight > LIMITE){
+        const LIMITE = pagina.clientHeight - areaQuestoes.offsetTop - 40
+		if(areaQuestoes.scrollHeight > LIMITE){
           colEsq.removeChild(questao)
           lado = "dir"
         }
       }
 
-      const LIMITE = pagina.clientHeight - 80
-
-		if(pagina.scrollHeight > LIMITE){
+      const LIMITE = pagina.clientHeight - areaQuestoes.offsetTop - 40
+	   if(areaQuestoes.scrollHeight > LIMITE){
         colDir.appendChild(questao)
 
         if(pagina.scrollHeight > pagina.clientHeight){
@@ -693,6 +692,7 @@ function gerarPreview(){
           pagina = novaPagina
           colEsq = pagina.querySelector(".col-esq")
           colDir = pagina.querySelector(".col-dir")
+		  areaQuestoes = pagina.querySelector(".questoes")
 
           lado = "esq"
 

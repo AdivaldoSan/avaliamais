@@ -586,14 +586,26 @@ function distribuirQuestoes(pagina, questoes, folhas){
 
   let colunaAtual = "esq"
 
-  const topoQuestoes = pagina.querySelector(".questoes").offsetTop
-  const limitePagina = pagina.clientHeight - 20
+    const areaQuestoes = pagina.querySelector(".questoes")
+	pagina.offsetHeight
 
-  let limite = limitePagina - topoQuestoes
+	const topoQuestoes = areaQuestoes.offsetTop
+	const limitePagina = pagina.clientHeight - 20
+	
+	const alturaDisponivel = limitePagina - topoQuestoes
+	
+	// 🔥 ESSENCIAL
+	areaQuestoes.style.height = alturaDisponivel + "px"
+	areaQuestoes.style.overflow = "hidden"
+	
+	let limite = alturaDisponivel
 
   questoes.forEach((q, index)=>{
 
     const alturaQ = medirQuestao(q)
+	  if(alturaQ > limite){
+		  console.warn("Questão maior que a página:", index)
+		}
     const bloco = criarQuestaoHTML(q, index)
 
     // ===== ESQUERDA =====
@@ -622,14 +634,23 @@ function distribuirQuestoes(pagina, questoes, folhas){
       // ===== NOVA PÁGINA =====
       const nova = criarPaginaContinua()
       folhas.appendChild(nova)
+	  nova.offsetHeight
 
       colEsq = nova.querySelector(".col-esq")
       colDir = nova.querySelector(".col-dir")
 
-      const topoNova = nova.querySelector(".questoes").offsetTop
-      const limiteNova = nova.clientHeight - 20
-
-      limite = limiteNova - topoNova
+     const areaNova = nova.querySelector(".questoes")
+		
+		const topoNova = areaNova.offsetTop
+		const limiteNova = nova.clientHeight - 20
+		
+		const alturaNova = limiteNova - topoNova
+		
+		// 🔥 ESSENCIAL
+		areaNova.style.height = alturaNova + "px"
+		areaNova.style.overflow = "hidden"
+		
+		limite = alturaNova
 
       alturaEsq = 0
       alturaDir = 0

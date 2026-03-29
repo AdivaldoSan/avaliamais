@@ -574,6 +574,46 @@ function medirQuestao(q){
 
   return h
 }
+/*================PREPARAR QUESTOES====================*/
+async function prepararQuestoesParaLayout(questoes, larguraColuna){
+
+  const resultado = []
+
+  for(const q of questoes){
+
+    const temp = document.createElement("div")
+
+    temp.style.position = "absolute"
+    temp.style.visibility = "hidden"
+    temp.style.width = larguraColuna + "px"
+
+    const bloco = criarQuestaoHTML(q, 0)
+
+    temp.appendChild(bloco)
+    document.body.appendChild(temp)
+
+    // 🔥 esperar imagens (CRÍTICO)
+    const imgs = temp.querySelectorAll("img")
+
+    await Promise.all([...imgs].map(img => {
+      return new Promise(res => {
+        if(img.complete) res()
+        else img.onload = res
+      })
+    }))
+
+    const altura = temp.offsetHeight
+
+    document.body.removeChild(temp)
+
+    resultado.push({
+      ...q,
+      altura
+    })
+  }
+
+  return resultado
+}
 	
 /*==========MOTOR DE DISTRIBUIÇÃO DE QUESTOES==========*/
 function distribuirQuestoes(pagina, questoes, folhas){
@@ -584,14 +624,12 @@ function distribuirQuestoes(pagina, questoes, folhas){
   let alturaEsq = 0
   let alturaDir = 0
 
-  let colunaAtual = "esq"
-
   const areaQuestoes = pagina.querySelector(".questoes")
 
-  // 🔥 FORÇA LAYOUT PRONTO
+  // 🔥 FORÇA RENDER
   pagina.offsetHeight
 
-  // 🔥 CALCULA ÁREA REAL
+  // ================= CÁLCULO ÁREA ÚTIL =================
   const cabecalho = pagina.querySelector(".cabecalho")
   const blocoOtico = pagina.querySelector(".bloco-otico")
   const instrucoes = pagina.querySelector(".instrucoes")
@@ -605,17 +643,15 @@ function distribuirQuestoes(pagina, questoes, folhas){
   if(instrucoes) alturaOcupada += instrucoes.offsetHeight
 
   const margemInferior = 30
-	
-  const estilo = getComputedStyle(pagina)
 
+  const estilo = getComputedStyle(pagina)
   const paddingTop = parseFloat(estilo.paddingTop)
   const paddingBottom = parseFloat(estilo.paddingBottom)
-	
-	const alturaPagina = pagina.clientHeight - paddingTop - paddingBottom
 
+  const alturaPagina = pagina.clientHeight - paddingTop - paddingBottom
   const alturaDisponivel = alturaPagina - alturaOcupada - margemInferior
 
-  // 🔥 TRAVA ÁREA VISUAL
+  // 🔥 TRAVA VISUAL
   areaQuestoes.style.height = alturaDisponivel + "px"
   areaQuestoes.style.overflow = "hidden"
 
@@ -623,76 +659,61 @@ function distribuirQuestoes(pagina, questoes, folhas){
 
   console.log("Área disponível:", limite)
 
-  // ================= LOOP =================
+  // ================= DISTRIBUIÇÃO =================
   questoes.forEach((q, index)=>{
 
-    const bloco = criarQuestaoHTML(q, index)
+    const altura = q.altura
 
-    // ================= ESQUERDA =================
-    if(colunaAtual === "esq"){
+    // ===== TENTA ESQUERDA =====
+    if(alturaEsq + altura <= limite){
 
+      const bloco = criarQuestaoHTML(q, index)
       colEsq.appendChild(bloco)
-
-      const alturaReal = bloco.offsetHeight
-
-      if(alturaEsq + alturaReal <= limite){
-
-        alturaEsq += alturaReal
-        return
-      }
-
-      // ❌ não coube → remove
-      colEsq.removeChild(bloco)
-
-      colunaAtual = "dir"
+      alturaEsq += altura
+      return
     }
 
-    // ================= DIREITA =================
-    if(colunaAtual === "dir"){
+    // ===== TENTA DIREITA =====
+    if(alturaDir + altura <= limite){
 
+      const bloco = criarQuestaoHTML(q, index)
       colDir.appendChild(bloco)
-
-      const alturaReal = bloco.offsetHeight
-
-      if(alturaDir + alturaReal <= limite){
-
-        alturaDir += alturaReal
-        return
-      }
-
-      // ❌ não coube → remove
-      colDir.removeChild(bloco)
-
-      // ================= NOVA PÁGINA =================
-      const nova = criarPaginaContinua()
-      folhas.appendChild(nova)
-
-      // 🔥 FORÇA RENDER
-      nova.offsetHeight
-
-      colEsq = nova.querySelector(".col-esq")
-      colDir = nova.querySelector(".col-dir")
-
-      const areaNova = nova.querySelector(".questoes")
-
-      const topoNova = areaNova.offsetTop
-      const limiteNova = nova.clientHeight - 20
-      const alturaNova = limiteNova - topoNova
-
-      areaNova.style.height = alturaNova + "px"
-      areaNova.style.overflow = "hidden"
-
-      limite = alturaNova
-
-      alturaEsq = 0
-      alturaDir = 0
-      colunaAtual = "esq"
-
-      // 🔥 AGORA INSERE DE VERDADE
-      colEsq.appendChild(bloco)
-      alturaEsq += bloco.offsetHeight
+      alturaDir += altura
+      return
     }
 
+    // ===== NOVA PÁGINA =====
+    const nova = criarPaginaContinua()
+    folhas.appendChild(nova)
+
+    nova.offsetHeight
+
+    colEsq = nova.querySelector(".col-esq")
+    colDir = nova.querySelector(".col-dir")
+
+    const areaNova = nova.querySelector(".questoes")
+
+    // 🔥 cálculo REAL da nova página
+    const rectPagina = nova.getBoundingClientRect()
+    const rectQuestoes = areaNova.getBoundingClientRect()
+
+    const topoReal = rectQuestoes.top - rectPagina.top
+    const margemInferiorNova = 30
+
+    const alturaNova = nova.clientHeight - topoReal - margemInferiorNova
+
+    areaNova.style.height = alturaNova + "px"
+    areaNova.style.overflow = "hidden"
+
+    limite = alturaNova
+
+    alturaEsq = 0
+    alturaDir = 0
+
+    // 🔥 INSERE NA NOVA PÁGINA
+    const bloco = criarQuestaoHTML(q, index)
+    colEsq.appendChild(bloco)
+    alturaEsq += altura
   })
 }
 
@@ -846,6 +867,12 @@ async function gerarPreview(){
     const qrData = `ID=${prova.id}|T=${turmaCodigo}|V=${versaoAtual.v}|F=${i}`;
 	  
     gerarImagemGabarito(img, questoesVersao.length, qrData)
+	const larguraColuna = pagina.querySelector(".col-esq").clientWidth
+
+const questoesComAltura = await prepararQuestoesParaLayout(
+  questoesVersao,
+  larguraColuna
+)
 
 	// 🔥 espera layout REAL (não só imagem)
 	await esperarRenderCompleto(pagina)
@@ -853,8 +880,14 @@ async function gerarPreview(){
 	// 🔥 força render final
 	pagina.offsetHeight
 	
-	distribuirQuestoes(pagina, questoesVersao, folhas)
-	
+    const larguraColuna = pagina.querySelector(".col-esq").clientWidth
+
+	const questoesComAltura = await prepararQuestoesParaLayout(
+    questoesVersao,
+    larguraColuna
+    )
+
+distribuirQuestoes(pagina, questoesComAltura, folhas)	
 	}
 
   localStorage.setItem("provaGerada", JSON.stringify(prova))

@@ -142,10 +142,12 @@ body{
 
 /* ================= QUESTÕES (GRID CONTROLADO) ================= */
 .questoes{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  column-gap:30px;
-  align-items:start;
+  display:flex;
+  gap:30px;
+}
+
+.coluna{
+  flex:1;
 }
 
 .questao{
@@ -493,120 +495,85 @@ function gerarVersoes(questoes, qtdVersoes = 4){
 }
 
 /* ================= GERAR PREVIEW ================= */
-
 function gerarPreview(){
+
   const msgBox = document.getElementById("msgErro")
 
-	msgBox.style.display = "none"
-	msgBox.classList.remove("alerta-erro")
-	msgBox.innerHTML = ""
-	
-	// limpa inputs
-	document.querySelectorAll(".painel input, .painel select").forEach(el=>{
-	  el.classList.remove("input-erro")
-	})
+  msgBox.style.display = "none"
+  msgBox.innerHTML = ""
 
-	let erros = []
+  const nomeProva = document.getElementById("nomeProva")
+  const escolaInput = document.getElementById("escola")
+  const qtdInput = document.getElementById("qtd")
 
-		const nomeProva = document.getElementById("nomeProva")
-		const escolaInput = document.getElementById("escola")
-		const qtdInput = document.getElementById("qtd")
-		
-		if(!nomeProva.value.trim()){
-		  erros.push("Nome da prova é obrigatório")
-		  nomeProva.classList.add("input-erro")
-		}
-		
-		if(!escolaInput.value.trim()){
-		  erros.push("Escola é obrigatória")
-		  escolaInput.classList.add("input-erro")
-		}
-		
-	
-  const escola = document.getElementById("escola").value
-  const disciplina = document.getElementById("disciplina").value
-	
-  const turma = document.getElementById("turmaSelect").value
-  
+  let erros = []
+
+  if(!nomeProva.value.trim()){
+    erros.push("Nome da prova é obrigatório")
+  }
+
+  if(!escolaInput.value.trim()){
+    erros.push("Escola é obrigatória")
+  }
+
   let qtd = parseInt(qtdInput.value)
 
-		if(isNaN(qtd) || qtd < 1){
-			
-		  erros.push("Quantidade mínima é 1")
-		  qtd = 1
-		  qtdInput.classList.add("input-erro")
-		}
-		
-		if(qtd > 100){
-		  erros.push("Quantidade máxima é 100")
-		  qtd = 100
-		  qtdInput.classList.add("input-erro")
-		}
-		
-		qtdInput.value = qtd
+  if(isNaN(qtd) || qtd < 1){
+    qtd = 1
+  }
 
-		
-		if(erros.length > 0){
-		
-		  msgBox.innerHTML = erros.map(e => `• ${e}`).join("<br>")
-		  msgBox.style.display = "block"
-		  msgBox.classList.add("alerta-erro")
-		
-		  return
-		}
-	  
-        // 🔥 INICIALIZA ID DA PROVA (UMA VEZ)
-if(!prova.id){
-  prova.id = "PRV_" + Date.now();
-}
-// 🔥 salva nome da prova no objeto
-prova.nome = document.getElementById("nomeProva").value
+  if(qtd > 100){
+    qtd = 100
+  }
 
+  qtdInput.value = qtd
 
-// ===== MAPA DE TURMAS (FIXO DA PROVA) =====
-if(!prova.mapaTurmas){
+  if(erros.length > 0){
+    msgBox.innerHTML = erros.join("<br>")
+    msgBox.style.display = "block"
+    return
+  }
 
-  const turmasOrdenadas = [...prova.turmas].sort();
+  const escola = escolaInput.value
+  const disciplina = document.getElementById("disciplina").value
+  const turma = document.getElementById("turmaSelect").value
 
-  prova.mapaTurmas = {};
+  // 🔥 ID fixo da prova
+  if(!prova.id){
+    prova.id = "PRV_" + Date.now();
+  }
 
-  turmasOrdenadas.forEach((t, i) => {
-    prova.mapaTurmas[t] = i + 1;
-  });
+  prova.nome = nomeProva.value
 
-  console.log("MAPA TURMAS:", prova.mapaTurmas);
-}
+  // 🔥 mapa de turmas
+  if(!prova.mapaTurmas){
+    const turmasOrdenadas = [...prova.turmas].sort()
+    prova.mapaTurmas = {}
 
-// 🔥 AGORA SIM usa o mapa
-const turmaCodigo = prova.mapaTurmas[turma];
+    turmasOrdenadas.forEach((t, i)=>{
+      prova.mapaTurmas[t] = i + 1
+    })
+  }
 
-if(!turmaCodigo){
-  console.error("Turma não mapeada:", turma);
-}
+  const turmaCodigo = prova.mapaTurmas[turma]
 
-// 🔥 GERA VERSÕES (UMA VEZ)
-prova.versoes = gerarVersoes(prova.questoes, 4);
+  // 🔥 gera versões
+  prova.versoes = gerarVersoes(prova.questoes, 4)
 
-// 🔥 DEBUG (CONFIRMAR)
-//console.log("ID PROVA:", prova.id);
-//console.log("VERSÕES:", prova.versoes);
+  const extrasInput = document.getElementById("extras")
+  let extras = parseInt(extrasInput.value)
 
-		  const extrasInput = document.getElementById("extras")
-		let extras = parseInt(extrasInput.value)
-		
-		if(isNaN(extras) || extras < 0){
-		  extras = 0
-		}
-		
-		if(extras > 5){
-		  erros.push("Extras máximo é 5")
-		  extras = 5
-		  extrasInput.classList.add("input-erro")
-		}
-		
-		extrasInput.value = extras
-		
-		  const total = qtd + extras
+  if(isNaN(extras) || extras < 0){
+    extras = 0
+  }
+
+  if(extras > 5){
+    extras = 5
+  }
+
+  extrasInput.value = extras
+
+  const total = qtd + extras
 
   const folhas = document.getElementById("folhas")
   folhas.innerHTML = ""
@@ -614,31 +581,26 @@ prova.versoes = gerarVersoes(prova.questoes, 4);
   const textoInstrucoes = document.getElementById("instrucoes").value.trim()
 
   let instrucoesHTML = ""
-	
-	if(textoInstrucoes){
-	  const linhas = textoInstrucoes.split("\n").filter(l => l.trim() !== "")
-	
-	  instrucoesHTML = `
-	    <div class="instrucoes">
-	      <strong>Instruções:</strong>
-	      ${linhas.map(l => `<div>${l}</div>`).join("")}
-	    </div>
-	    <div class="linha-divisoria"></div>
-	  `
-	}	
 
+  if(textoInstrucoes){
+    const linhas = textoInstrucoes.split("\n").filter(l => l.trim() !== "")
+
+    instrucoesHTML = `
+      <div class="instrucoes">
+        <strong>Instruções:</strong>
+        ${linhas.map(l => `<div>${l}</div>`).join("")}
+      </div>
+      <div class="linha-divisoria"></div>
+    `
+  }
+
+  // 🔥 LOOP DAS PROVAS
   for(let i=1;i<=total;i++){
-    const versaoAtual = prova.versoes[(i-1) % prova.versoes.length];
 
+    const versaoAtual = prova.versoes[(i-1) % prova.versoes.length];
     const questoesVersao = versaoAtual.questoes;
 
-	  if(!questoesVersao){
-      console.error("Versão inválida:", versaoAtual);
-      continue;
-  	  }
-
-	
-    const pagina = document.createElement("div")
+    let pagina = document.createElement("div")
     pagina.className = "pagina"
 
     pagina.innerHTML = `
@@ -656,7 +618,6 @@ prova.versoes = gerarVersoes(prova.questoes, 4);
       </div>
 
       <div class="bloco-otico">
-
         <div class="lado-esquerdo">
           <img class="imgGabarito">
         </div>
@@ -667,32 +628,83 @@ prova.versoes = gerarVersoes(prova.questoes, 4);
             <div class="campo-nota"></div>
           </div>
         </div>
-
       </div>
-	  
-	  <div class="linha-divisoria"></div>
+
+      <div class="linha-divisoria"></div>
 
       ${instrucoesHTML}
 
       <div class="questoes">
-        ${gerarQuestoesHTML(questoesVersao)}
+        <div class="coluna col-esq"></div>
+        <div class="coluna col-dir"></div>
       </div>
     `
 
     folhas.appendChild(pagina)
-	
-const img = pagina.querySelector(".imgGabarito")
 
-const qrData = `ID=${prova.id}|T=${turmaCodigo}|V=${versaoAtual.v}|F=${i}`;
-gerarImagemGabarito(img, questoesVersao.length, qrData);
-	  
+    // 🔥 QR
+    const img = pagina.querySelector(".imgGabarito")
+    const qrData = `ID=${prova.id}|T=${turmaCodigo}|V=${versaoAtual.v}|F=${i}`;
+    gerarImagemGabarito(img, questoesVersao.length, qrData);
+
+    // 🔥 COLUNAS
+    let colEsq = pagina.querySelector(".col-esq")
+    let colDir = pagina.querySelector(".col-dir")
+
+    let lado = "esq"
+
+    questoesVersao.forEach((q, index) => {
+
+      const questao = criarQuestaoHTML(q, index)
+
+      if(lado === "esq"){
+        colEsq.appendChild(questao)
+
+        if(pagina.scrollHeight > pagina.clientHeight){
+          colEsq.removeChild(questao)
+          lado = "dir"
+        }
+      }
+
+      if(lado === "dir"){
+        colDir.appendChild(questao)
+
+        if(pagina.scrollHeight > pagina.clientHeight){
+
+          colDir.removeChild(questao)
+
+          let novaPagina = document.createElement("div")
+          novaPagina.className = "pagina"
+
+          novaPagina.innerHTML = `
+            <div class="questoes">
+              <div class="coluna col-esq"></div>
+              <div class="coluna col-dir"></div>
+            </div>
+          `
+
+          folhas.appendChild(novaPagina)
+
+          pagina = novaPagina
+          colEsq = pagina.querySelector(".col-esq")
+          colDir = pagina.querySelector(".col-dir")
+
+          lado = "esq"
+
+          colEsq.appendChild(questao)
+        }
+      }
+
+    })
   }
 
-  ativarResize()
- localStorage.setItem("provaGerada", JSON.stringify(prova));
- document.getElementById("btnPDF").style.display = "block"
+  localStorage.setItem("provaGerada", JSON.stringify(prova))
+  document.getElementById("btnPDF").style.display = "block"
 }
 
+	
+
+//=====================================================
 function gerarQuestoesHTML(listaQuestoes){
 
   return listaQuestoes.map((q, i) => {
@@ -723,6 +735,35 @@ function gerarQuestoesHTML(listaQuestoes){
     `
   }).join("")
 }
+
+/*=====Criar Questoes no  HTML =====*/
+function criarQuestaoHTML(q, i){
+
+  const div = document.createElement("div")
+  div.className = "questao"
+
+  const temImagem = q.IMAGEM && q.IMAGEM.trim() !== ""
+
+  div.innerHTML = `
+    <div class="enunciado">
+      <strong>Q${i+1} - Peso ${Number(q.PESO || 1).toFixed(1)}</strong> - ${q.ENUNCIADO}
+    </div>
+
+    ${temImagem ? `
+      <div class="img-container">
+        <img src="${q.IMAGEM}">
+      </div>
+    ` : ""}
+
+    <div class="alternativas">
+      ${q.alternativas.map(a => `
+        <div>${a.novaLetra}) ${a.texto}</div>
+      `).join("")}
+    </div>
+  `
+
+  return div
+}	
 
 /* ===== RESIZE IMAGEM ===== */
 

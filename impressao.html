@@ -556,24 +556,7 @@ function criarPaginaContinua(){
   return div
 }
 /*======Medir Questao======*/
-function medirQuestao(q){
 
-  const temp = document.createElement("div")
-
-  temp.style.position = "absolute"
-  temp.style.visibility = "hidden"
-  temp.style.width = "45%" // mesma largura da coluna
-
-  temp.appendChild(criarQuestaoHTML(q, 0))
-
-  document.body.appendChild(temp)
-
-  const h = temp.offsetHeight
-
-  document.body.removeChild(temp)
-
-  return h
-}
 /*================PREPARAR QUESTOES====================*/
 async function prepararQuestoesParaLayout(questoes, larguraColuna){
 
@@ -791,7 +774,7 @@ async function gerarPreview(){
   const disciplina = document.getElementById("disciplina").value
   const turma = document.getElementById("turmaSelect").value
 
-  // 🔥 ID fixo da prova
+  // 🔥 ID fixo
   if(!prova.id){
     prova.id = "PRV_" + Date.now();
   }
@@ -810,7 +793,7 @@ async function gerarPreview(){
 
   const turmaCodigo = prova.mapaTurmas[turma]
 
-  // 🔥 gera versões
+  // 🔥 versões
   prova.versoes = gerarVersoes(prova.questoes, 4)
 
   const extrasInput = document.getElementById("extras")
@@ -847,48 +830,49 @@ async function gerarPreview(){
     `
   }
 
-  // 🔥 LOOP DAS PROVAS
+  // ================= LOOP DAS PROVAS =================
   for(let i=1;i<=total;i++){
 
-    const versaoAtual = prova.versoes[(i-1) % prova.versoes.length];
-    const questoesVersao = versaoAtual.questoes;
-    let pagina = criarPaginaCompleta(
-	  escola,
-	  disciplina,
-	  turma,
-	  i,
-	  instrucoesHTML
-	)
-	
-	folhas.appendChild(pagina)
-    
-    // 🔥 QR
-    const img = pagina.querySelector(".imgGabarito")
-    const qrData = `ID=${prova.id}|T=${turmaCodigo}|V=${versaoAtual.v}|F=${i}`;
-	  
-    gerarImagemGabarito(img, questoesVersao.length, qrData)
-	const larguraColuna = pagina.querySelector(".col-esq").clientWidth
+    const versaoAtual = prova.versoes[(i-1) % prova.versoes.length]
+    const questoesVersao = versaoAtual.questoes
 
-const questoesComAltura = await prepararQuestoesParaLayout(
-  questoesVersao,
-  larguraColuna
-)
-
-	// 🔥 espera layout REAL (não só imagem)
-	await esperarRenderCompleto(pagina)
-	
-	// 🔥 força render final
-	pagina.offsetHeight
-	
-    const larguraColuna = pagina.querySelector(".col-esq").clientWidth
-
-	const questoesComAltura = await prepararQuestoesParaLayout(
-    questoesVersao,
-    larguraColuna
+    const pagina = criarPaginaCompleta(
+      escola,
+      disciplina,
+      turma,
+      i,
+      instrucoesHTML
     )
 
-distribuirQuestoes(pagina, questoesComAltura, folhas)	
-	}
+    folhas.appendChild(pagina)
+
+    // 🔥 QR
+    const img = pagina.querySelector(".imgGabarito")
+    const qrData = `ID=${prova.id}|T=${turmaCodigo}|V=${versaoAtual.v}|F=${i}`
+
+    gerarImagemGabarito(img, questoesVersao.length, qrData)
+
+    // 🔥 CRÍTICO: espera layout real (QR + bloco ótico)
+    await esperarRenderCompleto(pagina)
+
+    // 🔥 garante DOM pronto
+    pagina.offsetHeight
+
+    // 🔥 pega largura REAL da coluna
+    const larguraColuna = pagina.querySelector(".col-esq").clientWidth
+
+    // 🔥 mede TODAS as questões com layout correto
+    const questoesComAltura = await prepararQuestoesParaLayout(
+      questoesVersao,
+      larguraColuna
+    )
+
+    // 🔥 DEBUG (pode remover depois)
+    console.log("Alturas:", questoesComAltura.map(q => q.altura))
+
+    // 🔥 distribuição inteligente
+    distribuirQuestoes(pagina, questoesComAltura, folhas)
+  }
 
   localStorage.setItem("provaGerada", JSON.stringify(prova))
   document.getElementById("btnPDF").style.display = "block"

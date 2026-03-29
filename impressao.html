@@ -645,7 +645,7 @@ function distribuirQuestoes(pagina, questoes, folhas){
   // ================= DISTRIBUIÇÃO =================
   questoes.forEach((q, index)=>{
 
-    const altura = q.altura
+    const altura = q.altura + 12
 
     // ===== TENTA ESQUERDA =====
     if(alturaEsq + altura <= limite){

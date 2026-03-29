@@ -660,13 +660,17 @@ function gerarPreview(){
       if(lado === "esq"){
         colEsq.appendChild(questao)
 
-        if(pagina.scrollHeight > pagina.clientHeight){
+        const LIMITE = pagina.clientHeight - 80
+
+		if(pagina.scrollHeight > LIMITE){
           colEsq.removeChild(questao)
           lado = "dir"
         }
       }
 
-      if(lado === "dir"){
+      const LIMITE = pagina.clientHeight - 80
+
+		if(pagina.scrollHeight > LIMITE){
         colDir.appendChild(questao)
 
         if(pagina.scrollHeight > pagina.clientHeight){
@@ -677,6 +681,7 @@ function gerarPreview(){
           novaPagina.className = "pagina"
 
           novaPagina.innerHTML = `
+		    <div class="linha-divisoria"></div>
             <div class="questoes">
               <div class="coluna col-esq"></div>
               <div class="coluna col-dir"></div>
@@ -702,39 +707,6 @@ function gerarPreview(){
   document.getElementById("btnPDF").style.display = "block"
 }
 
-	
-
-//=====================================================
-function gerarQuestoesHTML(listaQuestoes){
-
-  return listaQuestoes.map((q, i) => {
-
-    const temImagem = q.IMAGEM && q.IMAGEM.trim() !== ""
-
-    return `
-      <div class="questao">
-
-        <div class="enunciado">
-          <strong>Q${i+1} - Peso ${Number(q.PESO || 1).toFixed(1)}</strong> - ${q.ENUNCIADO}
-        </div>
-
-        ${temImagem ? `
-          <div class="img-container">
-            <img src="${q.IMAGEM}" loading="lazy">
-            <div class="resizer"></div>
-          </div>
-        ` : ""}
-
-        <div class="alternativas">
-          ${q.alternativas.map(a => `
-            <div>${a.novaLetra}) ${a.texto}</div>
-          `).join("")}
-        </div>
-
-      </div>
-    `
-  }).join("")
-}
 
 /*=====Criar Questoes no  HTML =====*/
 function criarQuestaoHTML(q, i){

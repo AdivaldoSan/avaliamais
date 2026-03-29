@@ -687,6 +687,26 @@ function distribuirQuestoes(pagina, questoes, folhas){
   })
 }
 
+/*==============================================*/
+function esperarRenderCompleto(pagina){
+  return new Promise(resolve => {
+
+    const img = pagina.querySelector(".imgGabarito")
+
+    function check(){
+      const bloco = pagina.querySelector(".bloco-otico")
+
+      if(img && img.complete && bloco.offsetHeight > 100){
+        resolve()
+      }else{
+        requestAnimationFrame(check)
+      }
+    }
+
+    check()
+  })
+}
+
 /*==================================================*/
 function esperarImagem(img){
   return new Promise(resolve => {
@@ -818,14 +838,15 @@ async function gerarPreview(){
 	  
     gerarImagemGabarito(img, questoesVersao.length, qrData)
 
-	// 🔥 AGORA SIM — espera render real
-	await esperarImagem(img)
+	// 🔥 espera layout REAL (não só imagem)
+	await esperarRenderCompleto(pagina)
 	
-	// 🔥 força cálculo de layout
+	// 🔥 força render final
 	pagina.offsetHeight
 	
 	distribuirQuestoes(pagina, questoesVersao, folhas)
-	  }
+	
+	}
 
   localStorage.setItem("provaGerada", JSON.stringify(prova))
   document.getElementById("btnPDF").style.display = "block"

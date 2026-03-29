@@ -555,71 +555,88 @@ function criarPaginaContinua(){
 
   return div
 }
+/*======Medir Questao======*/
+function medirQuestao(q){
+
+  const temp = document.createElement("div")
+
+  temp.style.position = "absolute"
+  temp.style.visibility = "hidden"
+  temp.style.width = "45%" // mesma largura da coluna
+
+  temp.appendChild(criarQuestaoHTML(q, 0))
+
+  document.body.appendChild(temp)
+
+  const h = temp.offsetHeight
+
+  document.body.removeChild(temp)
+
+  return h
+}
+	
 /*==========MOTOR DE DISTRIBUIÇÃO DE QUESTOES==========*/
 function distribuirQuestoes(pagina, questoes, folhas){
 
   let colEsq = pagina.querySelector(".col-esq")
   let colDir = pagina.querySelector(".col-dir")
-  let colunaAtual = colEsq
+
+  let alturaEsq = 0
+  let alturaDir = 0
+
+  let colunaAtual = "esq"
 
   const topoQuestoes = pagina.querySelector(".questoes").offsetTop
-  const limitePagina = pagina.clientHeight - 20 // margem inferior segura
+  const limitePagina = pagina.clientHeight - 20
 
   let limite = limitePagina - topoQuestoes
 
   questoes.forEach((q, index)=>{
 
+    const alturaQ = medirQuestao(q)
     const bloco = criarQuestaoHTML(q, index)
 
-    colunaAtual.appendChild(bloco)
+    // ===== ESQUERDA =====
+    if(colunaAtual === "esq"){
 
-    if(colunaAtual.scrollHeight > limite){
+      if(alturaEsq + alturaQ <= limite){
 
-      colunaAtual.removeChild(bloco)
-
-      // tenta direita
-      if(colunaAtual === colEsq){
-
-        colunaAtual = colDir
-        colunaAtual.appendChild(bloco)
-
-        if(colunaAtual.scrollHeight > limite){
-
-          colunaAtual.removeChild(bloco)
-
-          // nova página
-          const nova = criarPaginaContinua()
-          folhas.appendChild(nova)
-
-          colEsq = nova.querySelector(".col-esq")
-          colDir = nova.querySelector(".col-dir")
-          colunaAtual = colEsq
-
-          const topoNova = nova.querySelector(".questoes").offsetTop
-		  const limiteNova = nova.clientHeight - 20
-			
-			limite = limiteNova - topoNova
-
-          colunaAtual.appendChild(bloco)
-        }
-
-      }else{
-
-        // já está na direita → nova página
-        const nova = criarPaginaContinua()
-        folhas.appendChild(nova)
-
-        colEsq = nova.querySelector(".col-esq")
-        colDir = nova.querySelector(".col-dir")
-        colunaAtual = colEsq
-
-        const topoNova = nova.querySelector(".questoes").offsetTop
-		const limiteNova = nova.clientHeight - 20
-		
-		limite = limiteNova - topoNova
-
-        colunaAtual.appendChild(bloco)
+        colEsq.appendChild(bloco)
+        alturaEsq += alturaQ
+        return
       }
+
+      colunaAtual = "dir"
+    }
+
+    // ===== DIREITA =====
+    if(colunaAtual === "dir"){
+
+      if(alturaDir + alturaQ <= limite){
+
+        colDir.appendChild(bloco)
+        alturaDir += alturaQ
+        return
+      }
+
+      // ===== NOVA PÁGINA =====
+      const nova = criarPaginaContinua()
+      folhas.appendChild(nova)
+
+      colEsq = nova.querySelector(".col-esq")
+      colDir = nova.querySelector(".col-dir")
+
+      const topoNova = nova.querySelector(".questoes").offsetTop
+      const limiteNova = nova.clientHeight - 20
+
+      limite = limiteNova - topoNova
+
+      alturaEsq = 0
+      alturaDir = 0
+      colunaAtual = "esq"
+
+      colEsq.appendChild(bloco)
+      alturaEsq += alturaQ
     }
 
   })

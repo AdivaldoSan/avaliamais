@@ -74,7 +74,7 @@ body{
 /* ================= PREVIEW ================= */
 .preview{
   margin-left: 350px;
-  margin-top: 50px;
+  margin-top: 60px;
 
   width: calc(100% - 350px); /* 🔥 ESSENCIAL */
 
@@ -279,16 +279,21 @@ button:hover{
 /*=========TOPBAR========*/
 .topbar {
   position: fixed;
+  top: 0;
+  left: 0;           /* 🔥 garante início na borda */
+  width: 100%;       /* 🔥 ocupa toda largura */
+
   height: 60px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 0 20px;
 
-  background: linear-gradient(90deg, #1E3A8A, #3B82F6); /* 🔥 azul gradiente */
+  background: var(--bg-gradient); /* ou sua variável correta */
   color: #fff;
 
   box-sizing: border-box;
+  z-index: 1000;     /* 🔥 fica acima do painel */
 }
 
 /* LADO ESQUERDO */

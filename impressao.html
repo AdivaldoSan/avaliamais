@@ -615,34 +615,16 @@ function criarPaginaCompleta(escola, disciplina, turma, numero, instrucoesHTML){
 /*======Justificar  Colunas======*/
 function justificarColuna(col){
 
+  // 🔥 só justifica se foi marcada como cheia
+  if(col.dataset.cheia !== "true") return
+
   const itens = Array.from(col.children)
+
   if(itens.length < 2) return
 
-  const areaQuestoes = col.closest(".questoes")
-  const alturaLimite = areaQuestoes.getBoundingClientRect().height
+  // 🔥 evita distorção
+  if(itens.length <= 3) return
 
-  let alturaTotal = 0
-
-  itens.forEach(el => {
-    const style = getComputedStyle(el)
-    alturaTotal += el.offsetHeight + parseFloat(style.marginBottom || 0)
-  })
-
-  const espacoLivre = alturaLimite - alturaTotal
-
-  // 🔥 se está praticamente cheia → não mexe
-  if(espacoLivre < 15){
-    col.style.display = "block"
-    return
-  }
-
-  // 🔥 poucas questões → não exagera
-  if(itens.length <= 3){
-    col.style.display = "block"
-    return
-  }
-
-  // 🔥 aplica alinhamento topo-base
   col.style.display = "flex"
   col.style.flexDirection = "column"
   col.style.justifyContent = "space-between"
@@ -757,6 +739,8 @@ function distribuirQuestoes(pagina, questoes, folhas){
       alturaEsq += altura
       return
     }
+	// 🔥 coluna esquerda encheu
+    colEsq.dataset.cheia = "true"  
 
     // ===== TENTA DIREITA =====
     if(alturaDir + altura <= limite){
@@ -766,6 +750,8 @@ function distribuirQuestoes(pagina, questoes, folhas){
       alturaDir += altura
       return
     }
+	// 🔥 coluna direita encheu
+    colDir.dataset.cheia = "true"
 
     // ===== NOVA PÁGINA =====
     const nova = criarPaginaContinua(pagina.dataset.folha)

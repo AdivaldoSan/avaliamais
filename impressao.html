@@ -640,6 +640,19 @@ function esperarLayoutEstavel(){
     })
   })
 }
+/*==============================*/
+async function esperarImagensQuestoes(){
+
+  const imgs = document.querySelectorAll(".questao img")
+
+  await Promise.all([...imgs].map(img => {
+    return new Promise(resolve => {
+      if(img.complete) return resolve()
+      img.onload = resolve
+      img.onerror = resolve
+    })
+  }))
+}
 
 /*================PREPARAR QUESTOES====================*/
 async function prepararQuestoesParaLayout(questoes, larguraColuna){
@@ -977,8 +990,12 @@ async function gerarPreview(){
       }
     })
   }
-	 // 🔥 AGUARDA LAYOUT REAL
+
+	// 🔥 garante layout + imagens
 	await esperarLayoutEstavel()
+	await esperarImagensQuestoes()
+	// 🔥 força reflow real após imagens
+    document.body.offsetHeight
 	
 	// 🔥 JUSTIFICAÇÃO CORRETA
 	const todasPaginas = Array.from(document.querySelectorAll(".pagina"))

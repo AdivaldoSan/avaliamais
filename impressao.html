@@ -522,6 +522,7 @@ function criarPaginaCompleta(escola, disciplina, turma, numero, instrucoesHTML){
 
   const div = document.createElement("div")
   div.className = "pagina"
+  div.dataset.folha = numero
 
   div.innerHTML = `
     <div class="cabecalho">
@@ -571,10 +572,11 @@ function criarPaginaCompleta(escola, disciplina, turma, numero, instrucoesHTML){
   return div
 }
 /*=========CRIAR PAGINA CONTINUA==========*/
-function criarPaginaContinua(){
-
+  function criarPaginaContinua(numero){
+	  
   const div = document.createElement("div")
   div.className = "pagina"
+  div.dataset.folha = numero
 
   div.innerHTML = `
     <div class="linha-divisoria"></div>
@@ -704,7 +706,7 @@ function distribuirQuestoes(pagina, questoes, folhas){
     }
 
     // ===== NOVA PÁGINA =====
-    const nova = criarPaginaContinua()
+    const nova = criarPaginaContinua(pagina.dataset.folha)
     folhas.appendChild(nova)
 
     nova.offsetHeight
@@ -814,7 +816,7 @@ async function gerarPreview(){
 
   // 🔥 ID fixo
   if(!prova.id){
-    prova.id = "PRV_" + Date.now();
+    prova.id = "PRV_" + Date.now()
   }
 
   prova.nome = nomeProva.value
@@ -869,7 +871,6 @@ async function gerarPreview(){
   }
 
   // ================= LOOP DAS PROVAS =================
-  let paginasDaProva = []
   for(let i=1;i<=total;i++){
 
     const versaoAtual = prova.versoes[(i-1) % prova.versoes.length]
@@ -884,7 +885,6 @@ async function gerarPreview(){
     )
 
     folhas.appendChild(pagina)
-    paginasDaProva.push(pagina)
 
     // 🔥 QR
     const img = pagina.querySelector(".imgGabarito")
@@ -892,46 +892,65 @@ async function gerarPreview(){
 
     gerarImagemGabarito(img, questoesVersao.length, qrData)
 
-    // 🔥 CRÍTICO: espera layout real (QR + bloco ótico)
+    // 🔥 espera layout real
     await esperarRenderCompleto(pagina)
 
-    // 🔥 garante DOM pronto
     pagina.offsetHeight
 
-    // 🔥 pega largura REAL da coluna
+    // 🔥 largura real
     const larguraColuna = pagina.querySelector(".col-esq").clientWidth
 
-    // 🔥 mede TODAS as questões com layout correto
+    // 🔥 mede questões
     const questoesComAltura = await prepararQuestoesParaLayout(
       questoesVersao,
       larguraColuna
     )
 
-    // 🔥 DEBUG (pode remover depois)
-    console.log("Alturas:", questoesComAltura.map(q => q.altura))
-
-    // 🔥 distribuição inteligente
+    // 🔥 distribuição
     distribuirQuestoes(pagina, questoesComAltura, folhas)
-	// 🔥 pega páginas adicionais geradas (continuação)
-	const todasPaginas = Array.from(folhas.children)
-	const novasPaginas = todasPaginas.slice(paginasDaProva.length)
-	
-	novasPaginas.forEach(p => paginasDaProva.push(p))
-	const totalPaginas = paginasDaProva.length
 
-	paginasDaProva.forEach((pag, index) => {
-	
-	  const idEl = pag.querySelector(".id-prova")
-	  const pagEl = pag.querySelector(".num-pagina")
-	
-	  if(idEl){
-	    idEl.textContent = `ID: ${prova.id}`
-	  }
-	
-	  if(pagEl){
-	    pagEl.textContent = `Página ${index + 1} de ${totalPaginas}`
-	  }
-	})
+    // ================= PAGINAÇÃO CORRETA =================
+    const paginasDaFolha = Array.from(folhas.children)
+      .filter(p => p.dataset.folha == i)
+
+    const totalPaginas = paginasDaFolha.length
+
+    paginasDaFolha.forEach((pag, index) => {
+
+      const idEl = pag.querySelector(".id-prova")
+      const pagEl = pag.querySelector(".num-pagina")
+
+      if(idEl){
+        idEl.textContent = `${prova.id}.${i}`
+      }
+
+      if(pagEl){
+        pagEl.textContent = `Página ${index + 1} de ${totalPaginas}`
+      }
+    })
+  }
+
+  localStorage.setItem("provaGerada", JSON.stringify(prova))
+  document.getElementById("btnPDF").style.display = "block"
+}
+
+  // ================= LOOP DAS PROVAS =================
+  for(let i=1;i<=total;i++){
+	let paginasDaFolha = []
+
+    const versaoAtual = prova.versoes[(i-1) % prova.versoes.length]
+    const questoesVersao = versaoAtual.questoes
+
+    const pagina = criarPaginaCompleta(
+      escola,
+      disciplina,
+      turma,
+      i,
+      instrucoesHTML
+    )
+
+    folhas.appendChild(pagina)
+   
   }
 
   localStorage.setItem("provaGerada", JSON.stringify(prova))

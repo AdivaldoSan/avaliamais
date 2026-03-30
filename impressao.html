@@ -168,7 +168,7 @@ body{
 
 .questao{
   break-inside:avoid;
-  margin-bottom:12px;
+  margin-bottom:0;
   font-size:12px;
 }
 
@@ -296,22 +296,22 @@ button{
 
 
 <script>
-const prova = JSON.parse(localStorage.getItem("provaGerada"))
-// 🔥 controle de travamento do nome
+const prova = JSON.parse(localStorage.getItem("provaGerada")) || {}
+
 if(!prova.nomeTravado){
   prova.nomeTravado = false
 }
 
 function carregarPainel(){
 
-  if(!prova) return
+  if(!prova || !prova.turmas) return
 
-  document.getElementById("disciplina").value = prova.disciplina
+  document.getElementById("disciplina").value = prova.disciplina || ""
 
   const select = document.getElementById("turmaSelect")
-select.innerHTML = ""
+  select.innerHTML = ""
 
-prova.turmas.forEach((t, i) => {
+  prova.turmas.forEach((t, i) => {
 
   const option = document.createElement("option")
   option.value = t
@@ -975,17 +975,14 @@ async function gerarPreview(){
     // 🔥 distribuição
     distribuirQuestoes(pagina, questoesComAltura, folhas)
 
-	// 🔥 JUSTIFICAÇÃO VERTICAL (APÓS DISTRIBUIÇÃO)
-	const paginasDaFolha = Array.from(folhas.children)
+		// 🔥 JUSTIFICAÇÃO
+	const paginasJustificar = Array.from(folhas.children)
 	  .filter(p => p.dataset.folha == i)
 	
 	paginasJustificar.forEach(p => justificarColunas(p))
-
-    // ================= PAGINAÇÃO CORRETA =================
-    const paginasDaFolha = Array.from(folhas.children)
-      .filter(p => p.dataset.folha == i)
-
-    const totalPaginas = paginasDaFolha.length
+	
+	// ================= PAGINAÇÃO CORRETA =================
+	const paginasDaFolha = paginasJustificar
 
     paginasDaFolha.forEach((pag, index) => {
 

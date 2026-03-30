@@ -27,11 +27,12 @@ body{
 /* ================= PAINEL ================= */
 .painel{
   position: fixed;
-  top: 50px;
+  top: 60px;
   left: 0;
 
   width: 350px;
-  height: calc(100vh - 50px);
+  height: calc(100vh - 60px);
+  margin-top: 60px;
 
   background: var(--card);
   border-right: 1px solid var(--border);
@@ -281,18 +282,16 @@ button:hover{
   left: 0;
   right: 0;
 
-  height: 50px;
+  height: 60px;
 
-  background: white;
-  color: var(--text);
-
-  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  background: var(--bg-gradient); /* 🔥 azul padrão */
+  color: white;
 
   display: flex;
   align-items: center;
   justify-content: space-between;
 
-  padding: 0 15px;
+  padding: 0 20px;
 
   z-index: 1000;
 }
@@ -320,15 +319,15 @@ button:hover{
 
 <body>
 <div class="topbar">
-  <div class="topbar-left">
-    <strong>Avalia+</strong> | Pré-visualização
+
+  <div style="font-weight: bold;">
+    Avalia<span style="color:#93c5fd;">+</span>
   </div>
 
-  <div class="topbar-right">
-    <button onclick="novaProva()" class="btn-top">
-      Nova Prova
-    </button>
+  <div style="display:flex; gap:10px; align-items:center;">
+  
   </div>
+
 </div>
 
 	

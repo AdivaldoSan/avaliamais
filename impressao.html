@@ -620,7 +620,7 @@ function justificarColuna(col){
   if(itens.length < 3) return
 
   const areaQuestoes = col.closest(".questoes")
-  const alturaLimite = areaQuestoes.clientHeight
+  const alturaLimite = areaQuestoes.getBoundingClientRect().height
 
   let alturaTotal = 0
 
@@ -642,6 +642,17 @@ function justificarColuna(col){
   col.style.display = "flex"
   col.style.flexDirection = "column"
   col.style.gap = gap + "px"
+}
+
+/*==============*/	
+function esperarLayoutEstavel(){
+  return new Promise(resolve => {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        resolve()
+      })
+    })
+  })
 }
 
 /*================PREPARAR QUESTOES====================*/
@@ -976,22 +987,21 @@ async function gerarPreview(){
       }
     })
   }
-  // 🔥 JUSTIFICAÇÃO GLOBAL (DEPOIS DE TUDO PRONTO)
-const todasPaginas = Array.from(document.querySelectorAll(".pagina"))
-
-setTimeout(() => {
-
-  todasPaginas.forEach(p => {
-
-    const colEsq = p.querySelector(".col-esq")
-    const colDir = p.querySelector(".col-dir")
-
-    if(colEsq) justificarColuna(colEsq)
-    if(colDir) justificarColuna(colDir)
-
-  })
-
-}, 100)
+	 // 🔥 AGUARDA LAYOUT REAL
+	await esperarLayoutEstavel()
+	
+	// 🔥 JUSTIFICAÇÃO CORRETA
+	const todasPaginas = Array.from(document.querySelectorAll(".pagina"))
+	
+	todasPaginas.forEach(p => {
+	
+	  const colEsq = p.querySelector(".col-esq")
+	  const colDir = p.querySelector(".col-dir")
+	
+	  if(colEsq) justificarColuna(colEsq)
+	  if(colDir) justificarColuna(colDir)
+	
+	})
   localStorage.setItem("provaGerada", JSON.stringify(prova))
   document.getElementById("btnPDF").style.display = "block"
 }

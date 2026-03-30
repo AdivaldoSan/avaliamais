@@ -274,64 +274,14 @@ button:hover{
   justify-content: space-between;
 }
 
-/*=========TOPBAR========*/
-.topbar{
-  position: fixed;
-  top: 0;
-  left: 360px;
-  right: 0;
-
-  height: 60px;
-
-  background: var(--bg-gradient); /* 🔥 AQUI ESTÁ O AZUL */
-  color: white;
-
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-
-  padding: 15px 20px;
-
-  z-index: 1000;
-}
-
-.topbar-left{
-  font-size: 14px;
-}
-
-.topbar-right{
-  display: flex;
-  gap: 10px;
-}
-
-.btn-top{
-  background: #2563eb;
-  color: white;
-  border: none;
-  padding: 6px 10px;
-  cursor: pointer;
-  border-radius: 4px;
-}
 
 </style>
 </head>
 
 <body>
+<script src="./js/layout.js"></script>	
 	
-<div class="topbar">
 
-  <div>
-    <div style="font-weight:bold;">Avalia+</div>
-    <div style="font-size:13px; opacity:0.9;">
-      Pré-visualização da prova
-    </div>
-  </div>
-
-  <button class="btn-logout" onclick="novaProva()">
-    Nova Prova
-  </button>
-
-</div>
 
 	
 <div class="layout">
@@ -1279,13 +1229,73 @@ function novaProva(){
   }
 }	
 /*============================*/	
-window.onload = () => {
+/*window.onload = () => {
   carregarPainel()
 
   document.getElementById("turmaSelect").addEventListener("change", () => {
     document.getElementById("btnPDF").style.display = "none"
   })
-}
+}*/
+window.onload = () => {
+
+  // 🔥 1. cria layout padrão (topbar + estrutura)
+  criarLayout()
+
+  const conteudo = document.getElementById("conteudo")
+
+  // 🔥 2. injeta sua tela dentro do sistema
+  conteudo.innerHTML = `
+    <div class="layout">
+
+      <div class="painel">
+        <h3>Configuração</h3>
+        <div id="msgErro" class="alerta" style="display:none;"></div>	
+
+        <label>Nome da Prova:</label>
+        <input id="nomeProva">
+
+        <label>Escola:</label>
+        <input id="escola">
+
+        <label>Disciplina:</label>
+        <input id="disciplina">
+
+        <label>Turma:</label>
+        <select id="turmaSelect"></select>
+
+        <label>Quantidade:</label>
+        <input id="qtd" type="number">
+
+        <label>Extras:</label>
+        <input id="extras" type="number">
+
+        <label>Instruções:</label>
+        <textarea id="instrucoes"></textarea>
+
+        <button onclick="gerarPreview()">Atualizar Preview</button>
+        <button id="btnPDF" onclick="gerarPDF()" style="display:none;">Gerar PDF</button>
+
+        <button onclick="novaProva()" style="background:#dc2626;">
+          Nova Prova
+        </button>
+      </div>
+
+      <div class="preview">
+        <div id="folhas"></div>
+      </div>
+
+    </div>
+  `
+
+  // 🔥 3. agora o DOM existe → pode usar
+  carregarPainel()
+
+  // 🔥 4. eventos
+  document.getElementById("turmaSelect")
+    .addEventListener("change", () => {
+      document.getElementById("btnPDF").style.display = "none"
+    })
+}	
 
 </script>
 

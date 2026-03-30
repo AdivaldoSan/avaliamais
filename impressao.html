@@ -293,6 +293,9 @@ button{
     <button onclick="gerarPreview()">Atualizar Preview</button>
 	  
     <button id="btnPDF" onclick="gerarPDF()" style="display:none;">Gerar PDF</button>
+	<button onclick="novaProva()" style="background:#dc2626; color:white;">
+     Nova Prova
+    </button>
   </div>
 
   <!-- ===== PREVIEW ===== -->
@@ -1193,6 +1196,15 @@ if(!prova.nomeTravado){
 /* INIT */
 //gerarPreview()
 //window.onload = carregarPainel
+
+function novaProva(){
+
+  if(confirm("Deseja iniciar uma nova prova?")){
+    localStorage.removeItem("provaGerada")
+    window.location.href = "provas.html"
+  }
+}	
+/*============================*/	
 window.onload = () => {
   carregarPainel()
 

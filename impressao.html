@@ -161,14 +161,11 @@ body{
 
 .coluna{
   flex:1;
-  display:flex;
-  flex-direction:column;
-  gap:12px;
 }
 
 .questao{
   break-inside:avoid;
-  margin-bottom:0;
+  margin-bottom:12px;
   font-size:12px;
 }
 
@@ -296,22 +293,22 @@ button{
 
 
 <script>
-const prova = JSON.parse(localStorage.getItem("provaGerada")) || {}
-
+const prova = JSON.parse(localStorage.getItem("provaGerada"))
+// 🔥 controle de travamento do nome
 if(!prova.nomeTravado){
   prova.nomeTravado = false
 }
 
 function carregarPainel(){
 
-  if(!prova || !prova.turmas) return
+  if(!prova) return
 
-  document.getElementById("disciplina").value = prova.disciplina || ""
+  document.getElementById("disciplina").value = prova.disciplina
 
   const select = document.getElementById("turmaSelect")
-  select.innerHTML = ""
+select.innerHTML = ""
 
-  prova.turmas.forEach((t, i) => {
+prova.turmas.forEach((t, i) => {
 
   const option = document.createElement("option")
   option.value = t
@@ -615,54 +612,8 @@ function criarPaginaCompleta(escola, disciplina, turma, numero, instrucoesHTML){
 
   return div
 }
-/*======JUTIFICAR COLUNA INTELIGENTE======*/
-function justificarColunaInteligente(col){
+/*======Medir Questao======*/
 
-  const itens = Array.from(col.children)
-
-  if(itens.length <= 1) return
-
-  const alturaColuna = col.clientHeight
-
-  let alturaTotal = 0
-
-  itens.forEach(el => {
-    alturaTotal += el.offsetHeight
-  })
-
-  const gapBase = 12
-  const gapsMinimos = (itens.length - 1) * gapBase
-
-  const espacoLivre = alturaColuna - alturaTotal - gapsMinimos
-
-  if(espacoLivre <= 0) return
-
-  const extraPorGap = espacoLivre / (itens.length - 1)
-
-  col.style.gap = (gapBase + extraPorGap) + "px"
-}
-/*============JUSTIFICA APENAS SE TIVER CONTEUDO=============*/
-	function justificarColunas(pagina){
-
-  const colEsq = pagina.querySelector(".col-esq")
-  const colDir = pagina.querySelector(".col-dir")
-
-  const qtdEsq = colEsq.children.length
-  const qtdDir = colDir.children.length
-
-  // 🔥 REGRA: só justifica se AS DUAS COLUNAS têm conteúdo
-  if(qtdEsq > 0 && qtdDir > 0){
-
-    justificarColunaInteligente(colEsq)
-    justificarColunaInteligente(colDir)
-
-  }else{
-
-    // 🔥 mantém empilhado padrão
-    colEsq.style.gap = "12px"
-    colDir.style.gap = "12px"
-  }
-}
 /*================PREPARAR QUESTOES====================*/
 async function prepararQuestoesParaLayout(questoes, larguraColuna){
 
@@ -975,12 +926,11 @@ async function gerarPreview(){
     // 🔥 distribuição
     distribuirQuestoes(pagina, questoesComAltura, folhas)
 
-		// 🔥 JUSTIFICAÇÃO
-	const paginasJustificar = Array.from(folhas.children)
-	  .filter(p => p.dataset.folha == i)
-	
-	// ================= PAGINAÇÃO CORRETA =================
-	const paginasDaFolha = paginasJustificar
+    // ================= PAGINAÇÃO CORRETA =================
+    const paginasDaFolha = Array.from(folhas.children)
+      .filter(p => p.dataset.folha == i)
+
+    const totalPaginas = paginasDaFolha.length
 
     paginasDaFolha.forEach((pag, index) => {
 
@@ -996,13 +946,9 @@ async function gerarPreview(){
       }
     })
   }
-	  // 🔥 JUSTIFICAÇÃO GLOBAL (APÓS TODAS AS PÁGINAS GERADAS)
-		const todasPaginas = Array.from(folhas.children)
-		
-		todasPaginas.forEach(p => justificarColunas(p))
-		
-	  localStorage.setItem("provaGerada", JSON.stringify(prova))
-	  document.getElementById("btnPDF").style.display = "block"
+
+  localStorage.setItem("provaGerada", JSON.stringify(prova))
+  document.getElementById("btnPDF").style.display = "block"
 }
 
   /*=====Criar Questoes no  HTML =====*/

@@ -278,19 +278,21 @@ button:hover{
 .topbar{
   position: fixed;
   top: 0;
-  left: 360px;
+  left: 0;
   right: 0;
 
-  height: 60px;
+  height: 50px;
 
-  background: var(--bg-gradient); /* 🔥 AQUI ESTÁ O AZUL */
-  color: white;
+  background: white;
+  color: var(--text);
+
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
 
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
 
-  padding: 15px 20px;
+  padding: 0 15px;
 
   z-index: 1000;
 }
@@ -317,20 +319,16 @@ button:hover{
 </head>
 
 <body>
-	
 <div class="topbar">
-
-  <div>
-    <div style="font-weight:bold;">Avalia+</div>
-    <div style="font-size:13px; opacity:0.9;">
-      Pré-visualização da prova
-    </div>
+  <div class="topbar-left">
+    <strong>Avalia+</strong> | Pré-visualização
   </div>
 
-  <button class="btn-logout" onclick="novaProva()">
-    Nova Prova
-  </button>
-
+  <div class="topbar-right">
+    <button onclick="novaProva()" class="btn-top">
+      Nova Prova
+    </button>
+  </div>
 </div>
 
 	

@@ -161,8 +161,6 @@ body{
 
 .coluna{
   flex:1;
-  display:flex;
-  flex-direction:column;
 }
 
 .questao{
@@ -614,33 +612,7 @@ function criarPaginaCompleta(escola, disciplina, turma, numero, instrucoesHTML){
 
   return div
 }
-	
-/*======Justificacao Inteligente======*/
-function justificarColuna(col, alturaLimite){
-
-  const itens = Array.from(col.children)
-
-  if(itens.length < 3) return
-
-  let alturaTotal = 0
-
-  itens.forEach(el => {
-    alturaTotal += el.offsetHeight
-  })
-
-  const espacoLivre = alturaLimite - alturaTotal
-
-  // 🔥 margem de segurança (evita estouro)
-  if(espacoLivre <= 10) return
-
-  const gap = espacoLivre / (itens.length - 1)
-
-  // 🔥 LIMITADOR (CRÍTICO)
-  if(gap > 40) return
-
-  col.style.gap = gap + "px"
-}
-	
+/*======Medir Questao======*/
 
 /*================PREPARAR QUESTOES====================*/
 async function prepararQuestoesParaLayout(questoes, larguraColuna){
@@ -951,16 +923,8 @@ async function gerarPreview(){
       larguraColuna
     )
 
-    const areaQuestoes = pagina.querySelector(".questoes")
-    const alturaUtil = areaQuestoes.clientHeight
-
-    const colEsq = pagina.querySelector(".col-esq")
-    const colDir = pagina.querySelector(".col-dir")
-
-    setTimeout(() => {
-    justificarColuna(colEsq, alturaUtil)
-    justificarColuna(colDir, alturaUtil)
-    }, 50)
+    // 🔥 distribuição
+    distribuirQuestoes(pagina, questoesComAltura, folhas)
 
     // ================= PAGINAÇÃO CORRETA =================
     const paginasDaFolha = Array.from(folhas.children)

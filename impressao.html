@@ -277,52 +277,50 @@ button:hover{
 }
 
 /*=========TOPBAR========*/
-.topbar{
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
+.topbar {
+  height: 60px; /* padrão global */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+  background: #fff;
+  box-sizing: border-box;
+}
 
-  height: 60px;
-
-  background: var(--bg-gradient); /* 🔥 azul padrão */
-  color: white;
-
+/* LADO ESQUERDO */
+.topbar-left {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-
-  padding: 0 20px;
-
-  z-index: 1000;
+  gap: 12px; /* espaço entre botão e texto */
 }
 
-.topbar-left{
-  font-size: 14px;
-}
-
-.topbar-right{
-  display: flex;
-  gap: 10px;
-}
-
-.btn-top{
-  background: #2563eb;
-  color: white;
+/* BOTÃO VOLTAR */
+.btn-voltar {
+  background: none;
   border: none;
-  padding: 6px 10px;
+  font-size: 20px;
   cursor: pointer;
-  border-radius: 4px;
+  padding: 6px 8px;
+  line-height: 1;
 }
 
-.topbar-right{
-  display:flex;
-  align-items:center;
-  gap:15px;
+/* TEXTO PADRÃO */
+.topbar-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
 }
 
-.logo-top{
-  height:28px;
+/* LADO DIREITO */
+.topbar-right {
+  display: flex;
+  align-items: center;
+}
+
+/* LOGO PADRÃO GLOBAL */
+.logo {
+  height: 36px; /* 🔥 mantenha isso igual em todas as telas */
+  object-fit: contain;
 }
 
 </style>
@@ -330,21 +328,14 @@ button:hover{
 
 <body>
 <div class="topbar">
-
   <div class="topbar-left">
-    Avalia<span style="color:#93c5fd;">+</span>
+    <button class="btn-voltar" onclick="history.back()">←</button>
+    <span class="topbar-title">Título da Página</span>
   </div>
 
   <div class="topbar-right">
-
-    <img src="favicon.svg" class="logo-top">
-
-    <button onclick="novaProva()" class="btn-top">
-      Voltar
-    </button>
-
+    <img src="favicon.svg" alt="Logo" class="logo">
   </div>
-
 </div>
 
 	

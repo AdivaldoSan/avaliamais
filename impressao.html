@@ -301,6 +301,8 @@ button:hover{
   display: flex;
   align-items: center;
   gap: 12px; /* espaço entre botão e texto */
+  flex: 1;
+  min-width: 0;
 }
 
 /* BOTÃO VOLTAR */
@@ -320,9 +322,7 @@ button:hover{
   font-weight: 600;
   color: #fff;
 
-  white-space: nowrap;      /* 🔥 impede quebra de linha */
-  overflow: hidden;         /* evita estourar layout */
-  text-overflow: ellipsis;  /* 🔥 opcional: coloca "..." */
+  white-space: nowrap;      /* impede quebra de linha */
 }
 
 /* LADO DIREITO */

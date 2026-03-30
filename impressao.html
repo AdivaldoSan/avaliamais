@@ -616,8 +616,7 @@ function criarPaginaCompleta(escola, disciplina, turma, numero, instrucoesHTML){
 function justificarColuna(col){
 
   const itens = Array.from(col.children)
-
-  if(itens.length < 3) return
+  if(itens.length < 2) return
 
   const areaQuestoes = col.closest(".questoes")
   const alturaLimite = areaQuestoes.getBoundingClientRect().height
@@ -631,17 +630,22 @@ function justificarColuna(col){
 
   const espacoLivre = alturaLimite - alturaTotal
 
-  // 🔒 proteção
-  if(espacoLivre <= 10) return
+  // 🔥 se está praticamente cheia → não mexe
+  if(espacoLivre < 15){
+    col.style.display = "block"
+    return
+  }
 
-  const gap = espacoLivre / (itens.length - 1)
+  // 🔥 poucas questões → não exagera
+  if(itens.length <= 3){
+    col.style.display = "block"
+    return
+  }
 
-  // 🔒 limite pra não distorcer
-  if(gap > 35) return
-
+  // 🔥 aplica alinhamento topo-base
   col.style.display = "flex"
   col.style.flexDirection = "column"
-  col.style.gap = gap + "px"
+  col.style.justifyContent = "space-between"
 }
 
 /*==============*/	

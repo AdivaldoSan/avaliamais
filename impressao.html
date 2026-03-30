@@ -278,12 +278,16 @@ button:hover{
 
 /*=========TOPBAR========*/
 .topbar {
-  height: 60px; /* padrão global */
+  position: fixed;
+  height: 60px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 0 20px;
-  background: #fff;
+
+  background: linear-gradient(90deg, #1E3A8A, #3B82F6); /* 🔥 azul gradiente */
+  color: #fff;
+
   box-sizing: border-box;
 }
 
@@ -302,13 +306,14 @@ button:hover{
   cursor: pointer;
   padding: 6px 8px;
   line-height: 1;
+  color: #fff;
 }
 
 /* TEXTO PADRÃO */
 .topbar-title {
   font-size: 16px;
   font-weight: 600;
-  color: #111827;
+  color: #fff;
 }
 
 /* LADO DIREITO */

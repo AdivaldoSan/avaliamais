@@ -25,13 +25,21 @@ body{
 
 /* ================= PAINEL ================= */
 .painel{
-  width:360px;
+  position: fixed;
+  top: 0;
+  left: 0;
+
+  width: 350px;
+  height: 100vh;
+
   background:#f3f4f6;
   padding:15px;
   box-sizing:border-box;
+
   border-right:1px solid #ccc;
-  height:100vh;
   overflow:auto;
+
+  z-index: 10;
 }
 
 .painel h3{
@@ -57,9 +65,11 @@ body{
 
 /* ================= PREVIEW ================= */
 .preview{
-  flex:1;
+  margin-left: 350px; /*  espaço do painel */
+
   display:flex;
   justify-content:center;
+
   overflow:auto;
   padding:20px;
 }

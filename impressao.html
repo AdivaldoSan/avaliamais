@@ -614,14 +614,13 @@ function criarPaginaCompleta(escola, disciplina, turma, numero, instrucoesHTML){
 
   return div
 }
+	
 /*======Justificacao Inteligente======*/
-function justificarColuna(col){
+function justificarColuna(col, alturaLimite){
 
   const itens = Array.from(col.children)
 
-  if(itens.length < 3) return // 🔥 evita distorção
-
-  const alturaColuna = col.clientHeight
+  if(itens.length < 3) return
 
   let alturaTotal = 0
 
@@ -629,13 +628,16 @@ function justificarColuna(col){
     alturaTotal += el.offsetHeight
   })
 
-  const espacoLivre = alturaColuna - alturaTotal
+  const espacoLivre = alturaLimite - alturaTotal
 
-  if(espacoLivre <= 0) return
+  // 🔥 margem de segurança (evita estouro)
+  if(espacoLivre <= 10) return
 
   const gap = espacoLivre / (itens.length - 1)
 
-  col.style.justifyContent = "flex-start"
+  // 🔥 LIMITADOR (CRÍTICO)
+  if(gap > 40) return
+
   col.style.gap = gap + "px"
 }
 	
@@ -949,15 +951,15 @@ async function gerarPreview(){
       larguraColuna
     )
 
-    // 🔥 distribuição
-    distribuirQuestoes(pagina, questoesComAltura, folhas)
-	// 🔥 JUSTIFICAÇÃO SOMENTE NA PRIMEIRA PÁGINA DA PROVA
+    const areaQuestoes = pagina.querySelector(".questoes")
+    const alturaUtil = areaQuestoes.clientHeight
+
     const colEsq = pagina.querySelector(".col-esq")
     const colDir = pagina.querySelector(".col-dir")
 
     setTimeout(() => {
-    justificarColuna(colEsq)
-    justificarColuna(colDir)
+    justificarColuna(colEsq, alturaUtil)
+    justificarColuna(colDir, alturaUtil)
     }, 50)
 
     // ================= PAGINAÇÃO CORRETA =================

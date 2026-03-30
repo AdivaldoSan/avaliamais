@@ -16,6 +16,7 @@ body{
   margin:0;
   font-family: Arial, sans-serif;
   background:#e5e7eb;
+  padding-top: 0;
 }
 
 /* ================= LAYOUT ================= */
@@ -26,11 +27,11 @@ body{
 /* ================= PAINEL ================= */
 .painel{
   position: fixed;
-  top: 0;
+  top: 50px;
   left: 0;
 
   width: 350px;
-  height: 100vh;
+  height: calc(100vh - 50px);
 
   background:#f3f4f6;
   padding:15px;
@@ -66,6 +67,7 @@ body{
 /* ================= PREVIEW ================= */
 .preview{
   margin-left: 350px;
+  margin-top: 50px;
 
   width: calc(100% - 350px); /* 🔥 ESSENCIAL */
 
@@ -255,11 +257,62 @@ button{
   justify-content: space-between;
 }
 
+/*=========TOPBAR========*/
+.topbar{
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+
+  height: 50px;
+
+  background: #111827;
+  color: white;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 0 15px;
+
+  z-index: 1000;
+}
+
+.topbar-left{
+  font-size: 14px;
+}
+
+.topbar-right{
+  display: flex;
+  gap: 10px;
+}
+
+.btn-top{
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
 </style>
 </head>
 
 <body>
+<div class="topbar">
+  <div class="topbar-left">
+    <strong>Avalia+</strong> | Pré-visualização
+  </div>
 
+  <div class="topbar-right">
+    <button onclick="novaProva()" class="btn-top">
+      Nova Prova
+    </button>
+  </div>
+</div>
+
+	
 <div class="layout">
 
   <!-- ===== PAINEL ===== -->

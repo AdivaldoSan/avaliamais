@@ -161,6 +161,8 @@ body{
 
 .coluna{
   flex:1;
+  display:flex;
+  flex-direction:column;
 }
 
 .questao{
@@ -612,7 +614,31 @@ function criarPaginaCompleta(escola, disciplina, turma, numero, instrucoesHTML){
 
   return div
 }
-/*======Medir Questao======*/
+/*======Justificacao Inteligente======*/
+function justificarColuna(col){
+
+  const itens = Array.from(col.children)
+
+  if(itens.length < 3) return // 🔥 evita distorção
+
+  const alturaColuna = col.clientHeight
+
+  let alturaTotal = 0
+
+  itens.forEach(el => {
+    alturaTotal += el.offsetHeight
+  })
+
+  const espacoLivre = alturaColuna - alturaTotal
+
+  if(espacoLivre <= 0) return
+
+  const gap = espacoLivre / (itens.length - 1)
+
+  col.style.justifyContent = "flex-start"
+  col.style.gap = gap + "px"
+}
+	
 
 /*================PREPARAR QUESTOES====================*/
 async function prepararQuestoesParaLayout(questoes, larguraColuna){
@@ -925,6 +951,14 @@ async function gerarPreview(){
 
     // 🔥 distribuição
     distribuirQuestoes(pagina, questoesComAltura, folhas)
+	// 🔥 JUSTIFICAÇÃO SOMENTE NA PRIMEIRA PÁGINA DA PROVA
+    const colEsq = pagina.querySelector(".col-esq")
+    const colDir = pagina.querySelector(".col-dir")
+
+    setTimeout(() => {
+    justificarColuna(colEsq)
+    justificarColuna(colDir)
+    }, 50)
 
     // ================= PAGINAÇÃO CORRETA =================
     const paginasDaFolha = Array.from(folhas.children)

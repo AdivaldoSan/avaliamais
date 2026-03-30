@@ -315,18 +315,34 @@ button:hover{
   border-radius: 4px;
 }
 
+.topbar-right{
+  display:flex;
+  align-items:center;
+  gap:15px;
+}
+
+.logo-top{
+  height:28px;
+}
+
 </style>
 </head>
 
 <body>
 <div class="topbar">
 
-  <div style="font-weight: bold;">
+  <div class="topbar-left">
     Avalia<span style="color:#93c5fd;">+</span>
   </div>
 
-  <div style="display:flex; gap:10px; align-items:center;">
-  
+  <div class="topbar-right">
+
+    <img src="favicon.svg" class="logo-top">
+
+    <button onclick="novaProva()" class="btn-top">
+      Voltar
+    </button>
+
   </div>
 
 </div>

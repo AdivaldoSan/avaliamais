@@ -161,6 +161,9 @@ body{
 
 .coluna{
   flex:1;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
 }
 
 .questao{
@@ -612,8 +615,54 @@ function criarPaginaCompleta(escola, disciplina, turma, numero, instrucoesHTML){
 
   return div
 }
-/*======Medir Questao======*/
+/*======JUTIFICAR COLUNA INTELIGENTE======*/
+function justificarColunaInteligente(col){
 
+  const itens = Array.from(col.children)
+
+  if(itens.length <= 1) return
+
+  const alturaColuna = col.clientHeight
+
+  let alturaTotal = 0
+
+  itens.forEach(el => {
+    alturaTotal += el.offsetHeight
+  })
+
+  const gapBase = 12
+  const gapsMinimos = (itens.length - 1) * gapBase
+
+  const espacoLivre = alturaColuna - alturaTotal - gapsMinimos
+
+  if(espacoLivre <= 0) return
+
+  const extraPorGap = espacoLivre / (itens.length - 1)
+
+  col.style.gap = (gapBase + extraPorGap) + "px"
+}
+/*============JUSTIFICA APENAS SE TIVER CONTEUDO=============*/
+	function justificarColunas(pagina){
+
+  const colEsq = pagina.querySelector(".col-esq")
+  const colDir = pagina.querySelector(".col-dir")
+
+  const qtdEsq = colEsq.children.length
+  const qtdDir = colDir.children.length
+
+  // 🔥 REGRA: só justifica se AS DUAS COLUNAS têm conteúdo
+  if(qtdEsq > 0 && qtdDir > 0){
+
+    justificarColunaInteligente(colEsq)
+    justificarColunaInteligente(colDir)
+
+  }else{
+
+    // 🔥 mantém empilhado padrão
+    colEsq.style.gap = "12px"
+    colDir.style.gap = "12px"
+  }
+}
 /*================PREPARAR QUESTOES====================*/
 async function prepararQuestoesParaLayout(questoes, larguraColuna){
 
@@ -925,6 +974,12 @@ async function gerarPreview(){
 
     // 🔥 distribuição
     distribuirQuestoes(pagina, questoesComAltura, folhas)
+
+	// 🔥 JUSTIFICAÇÃO VERTICAL (APÓS DISTRIBUIÇÃO)
+	const paginasDaFolha = Array.from(folhas.children)
+	  .filter(p => p.dataset.folha == i)
+	
+	paginasJustificar.forEach(p => justificarColunas(p))
 
     // ================= PAGINAÇÃO CORRETA =================
     const paginasDaFolha = Array.from(folhas.children)

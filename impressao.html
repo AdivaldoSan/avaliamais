@@ -88,6 +88,12 @@ body{
   font-size:12px;
 }
 
+.linha-nome{
+  display: inline-block;
+  width: 250px;
+  border-bottom: 1px solid #000;
+}
+
 /* ================= BLOCO ÓTICO ================= */
 .bloco-otico{
   display:flex;
@@ -544,7 +550,8 @@ function criarPaginaCompleta(escola, disciplina, turma, numero, instrucoesHTML){
 
       <div style="text-align:right">
         Nº: ${numero}<br>
-        Nome: ________________________
+        Nome: <span class="linha-nome"></span><br>
+		Data:____/____/_______
       </div>
     </div>
 

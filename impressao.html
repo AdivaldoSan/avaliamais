@@ -934,31 +934,7 @@ async function gerarPreview(){
   document.getElementById("btnPDF").style.display = "block"
 }
 
-  // ================= LOOP DAS PROVAS =================
-  for(let i=1;i<=total;i++){
-	let paginasDaFolha = []
-
-    const versaoAtual = prova.versoes[(i-1) % prova.versoes.length]
-    const questoesVersao = versaoAtual.questoes
-
-    const pagina = criarPaginaCompleta(
-      escola,
-      disciplina,
-      turma,
-      i,
-      instrucoesHTML
-    )
-
-    folhas.appendChild(pagina)
-   
-  }
-
-  localStorage.setItem("provaGerada", JSON.stringify(prova))
-  document.getElementById("btnPDF").style.display = "block"
-}
-
-
-/*=====Criar Questoes no  HTML =====*/
+  /*=====Criar Questoes no  HTML =====*/
 function criarQuestaoHTML(q, i){
 
   const div = document.createElement("div")

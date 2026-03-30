@@ -979,8 +979,6 @@ async function gerarPreview(){
 	const paginasJustificar = Array.from(folhas.children)
 	  .filter(p => p.dataset.folha == i)
 	
-	paginasJustificar.forEach(p => justificarColunas(p))
-	
 	// ================= PAGINAÇÃO CORRETA =================
 	const paginasDaFolha = paginasJustificar
 
@@ -998,9 +996,13 @@ async function gerarPreview(){
       }
     })
   }
-
-  localStorage.setItem("provaGerada", JSON.stringify(prova))
-  document.getElementById("btnPDF").style.display = "block"
+	  // 🔥 JUSTIFICAÇÃO GLOBAL (APÓS TODAS AS PÁGINAS GERADAS)
+		const todasPaginas = Array.from(folhas.children)
+		
+		todasPaginas.forEach(p => justificarColunas(p))
+		
+	  localStorage.setItem("provaGerada", JSON.stringify(prova))
+	  document.getElementById("btnPDF").style.display = "block"
 }
 
   /*=====Criar Questoes no  HTML =====*/

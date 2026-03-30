@@ -65,13 +65,21 @@ body{
 
 /* ================= PREVIEW ================= */
 .preview{
-  margin-left: 350px; /*  espaço do painel */
+  margin-left: 350px;
 
-  display:flex;
-  justify-content:center;
+  width: calc(100% - 350px); /* 🔥 ESSENCIAL */
 
-  overflow:auto;
-  padding:20px;
+  display: flex;
+  justify-content: center; /* centraliza horizontal */
+  
+  overflow: auto;
+  padding: 20px;
+}
+
+#folhas{
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* 🔥 centraliza páginas */
 }
 
 /* ================= PÁGINA A4 (ÚNICA VERDADE) ================= */

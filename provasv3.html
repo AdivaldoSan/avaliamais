@@ -476,6 +476,8 @@ function alterarPeso(id, valor){
 
 // ================= GERAR =================
 function gerarProva(){
+  // limpa qualquer prova anterior antes de criar nova
+  localStorage.removeItem("provaGerada");
 
     const turmas =
         [...document.querySelectorAll(".chkTurma:checked")]

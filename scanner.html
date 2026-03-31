@@ -343,7 +343,41 @@ let qrLido = false
 let pausado = false
   
 let DEBUG = false
-let logBuffer = 
+let logBuffer = []
+
+//=============================
+function resetEstadoScanner(){
+
+  //  dados principais
+  window.PROVA_ATUAL = null
+  gabaritoQR = null
+  respostasLidas = []
+
+  //  controle
+  capturado = false
+  framesOK = 0
+  qrLido = false
+  qrFramesOK = 0
+  modo = "qr"
+  pausado = false
+
+  //  UI
+  document.getElementById("painelResultado").style.display = "none"
+  document.getElementById("acoesResultado").style.display = "none"
+  document.getElementById("botoes").style.display = "flex"
+
+  document.getElementById("percentualBox").innerText = "--"
+  document.getElementById("notaBox").innerText = ""
+  document.getElementById("bolinhasResultado").innerHTML = ""
+
+  document.getElementById("status").innerText = "Aguardando QR..."
+
+  canvas.style.display = "block"
+
+  atualizarUI()
+
+  console.log("Scanner resetado")
+}
 
 // =============================
 // VALIDAÇÃO
@@ -410,6 +444,11 @@ function getTopoBase(qtd){
 }
 //==============================================
 async function iniciarScanner(){
+
+  if(!provaSelecionada){
+    alert("Selecione uma prova")
+    return
+  }
 
   const ok = await carregarProvaSelecionada()
 
@@ -548,11 +587,15 @@ async function carregarListaProvas(){
     select.onchange = () => {
 
       const id = select.value
-
+      if(!id) return
+    
       provaSelecionada = lista.find(p => p.id === id)
-
-      console.log("🎯 PROVA SELECIONADA:", provaSelecionada)
-    }
+    
+      //  RESET TOTAL AO TROCAR PROVA
+      resetEstadoScanner()
+    
+      console.log("PROVA SELECIONADA:", provaSelecionada)
+}
 
   }catch(e){
     console.error("Erro ao carregar provas:", e)

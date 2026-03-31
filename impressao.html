@@ -973,6 +973,7 @@ resizers.forEach(r => r.style.display = "none")
   const turmaSelecionada = document.getElementById("turmaSelect").value;
   const turmaCodigo = prova.mapaTurmas[turmaSelecionada];
   const qtd = parseInt(document.getElementById("qtd").value) || 1;
+  const qtdQuestoes = prova.versoes[0].questoes.length
 
   console.log("TURMA SELECIONADA:", turmaSelecionada);
   console.log("CODIGO TURMA:", turmaCodigo);
@@ -989,7 +990,7 @@ resizers.forEach(r => r.style.display = "none")
 	    id: prova.id,
 	    nome: prova.nome,
 	
-	    qtd: qtd,
+	    qtd: qtdQuestoes,
 	
 	    turmas: [turmaSelecionada],
 	

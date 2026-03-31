@@ -84,6 +84,10 @@
 
 
 <script>
+/*=======VARIÁVEIS=======*/
+let impressaoSalva = false;
+
+/*=========================*/	
 const prova = JSON.parse(localStorage.getItem("provaGerada"))
 // 🔥 controle de travamento do nome
 if(!prova.nomeTravado){
@@ -958,6 +962,39 @@ resizers.forEach(r => r.style.display = "none")
   await new Promise(r => setTimeout(r, 300))
 
   pdf.save("prova.pdf")
+
+  try{
+
+  // 🔒 evita duplicação
+  if(!impressaoSalva){
+
+    await fetchProtegido(API, {
+      method: "POST",
+      body: JSON.stringify({
+        tipo: "impressao",
+        token: localStorage.getItem("TOKEN"),
+
+        id: prova.id,
+        nome: prova.nome,
+
+        turma: turmaSelecionada, // ⚠️ precisa existir
+        qtd: prova.qtd || prova.questoes.length,
+
+        versoes: prova.versoes
+      })
+    });
+
+    impressaoSalva = true;
+    console.log("✔ Impressão salva");
+
+  }else{
+    console.log("⚠️ Impressão já enviada, ignorando duplicação");
+  }
+
+}catch(e){
+  console.error("Erro ao salvar impressão:", e);
+}
+	
 
  // 🔥 trava nome após primeiro PDF
 if(!prova.nomeTravado){

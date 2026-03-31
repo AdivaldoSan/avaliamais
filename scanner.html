@@ -67,7 +67,7 @@ TELA INICIAL (SELEÇÃO DE PROVA)
     </div>
   </div>
 
-  <!-- 🔥 BLOCO SELECT -->
+  <!--  BLOCO SELECT -->
   <div style="
     background:#111;
     padding:15px;
@@ -89,8 +89,23 @@ TELA INICIAL (SELEÇÃO DE PROVA)
 
   </div>
 
+      <div id="infoProva" style="
+      display:none;
+      background:#111;
+      padding:15px;
+      border-radius:12px;
+      font-size:14px;
+      line-height:1.5;
+      border:1px solid #00ffcc33;
+    ">
+      <div><b>Prova:</b> <span id="infoNome"></span></div>
+      <div><b>Questões:</b> <span id="infoQuestoes"></span></div>
+      <div><b>Versões:</b> <span id="infoVersoes"></span></div>
+      <div style="color:#00ffcc;"><b>Status:</b> carregada</div>
+    </div>
+
   <!--  BOTÃO COM PESO -->
-  <button class="btn confirmar" style="
+  <button id="btnIniciar" class="btn confirmar" disable style="
     width:100%;
     padding:18px;
     font-size:18px;
@@ -371,6 +386,8 @@ function resetEstadoScanner(){
   document.getElementById("bolinhasResultado").innerHTML = ""
 
   document.getElementById("status").innerText = "Aguardando QR..."
+  document.getElementById("infoProva").style.display = "none"
+  document.getElementById("btnIniciar").disabled = true
 
   canvas.style.display = "block"
 
@@ -449,6 +466,11 @@ async function iniciarScanner(){
     alert("Selecione uma prova")
     return
   }
+  //  TRAVA BOTAO INICIAL PRINCIPAL
+  if(!window.PROVA_ATUAL){
+    alert("Aguarde o carregamento da prova")
+    return
+  }
 
   const ok = await carregarProvaSelecionada()
 
@@ -489,6 +511,8 @@ async function carregarProvaSelecionada(){
 
     // GUARDA GLOBAL
     window.PROVA_ATUAL = params
+    document.getElementById("btnIniciar").disabled = false
+    atualizarInfoProva()
 
     console.log("✅ PROVA CARREGADA:", window.PROVA_ATUAL)
 
@@ -499,6 +523,29 @@ async function carregarProvaSelecionada(){
     alert("Erro ao carregar prova")
     return false
   }
+}
+//============================================
+function atualizarInfoProva(){
+
+  const box = document.getElementById("infoProva")
+
+  if(!window.PROVA_ATUAL){
+    box.style.display = "none"
+    return
+  }
+
+  const versoes = window.PROVA_ATUAL.versoes || []
+
+  document.getElementById("infoNome").innerText =
+    provaSelecionada?.nome || "-"
+
+  document.getElementById("infoQuestoes").innerText =
+    versoes[0]?.questoes?.length || "-"
+
+  document.getElementById("infoVersoes").innerText =
+    versoes.length
+
+  box.style.display = "block"
 }
     
 //============================================= 

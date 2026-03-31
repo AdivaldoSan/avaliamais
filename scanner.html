@@ -504,6 +504,56 @@ function iniciar(){
     log("ERRO câmera: " + err.message)
   })
 }
+//==============================
+async function carregarListaProvas(){
+
+  try{
+
+    const resp = await fetchProtegido(API, {
+      method:"POST",
+      body: JSON.stringify({
+        tipo:"listar_aplicacoes",
+        token: localStorage.getItem("TOKEN")
+      })
+    })
+
+    const lista = await resp.json()
+
+    console.log("📚 PROVAS DO BD:", lista)
+
+    const select = document.getElementById("selectProvas")
+
+    // limpa
+    select.innerHTML = `<option value="">Selecione uma prova</option>`
+
+    lista.forEach(p => {
+
+      //  FILTRA SÓ PROVAS IMPRESSAS
+      if(!p.id.startsWith("PRV_")) return
+
+      const option = document.createElement("option")
+      option.value = p.id
+      option.textContent = p.id + " | " + p.nome
+
+      select.appendChild(option)
+
+    })
+
+    // seleção
+    select.onchange = () => {
+
+      const id = select.value
+
+      provaSelecionada = lista.find(p => p.id === id)
+
+      console.log("🎯 PROVA SELECIONADA:", provaSelecionada)
+    }
+
+  }catch(e){
+    console.error("Erro ao carregar provas:", e)
+    alert("Erro ao carregar lista de provas")
+  }
+}
 
 // ==============================
 // 🔥 LEITOR QR (ANTES DE TUDO)
@@ -959,43 +1009,16 @@ function refazerLeitura(){
   atualizarUI()
 }
 
-document.addEventListener("DOMContentLoaded", atualizarUI)  
-
-
-
-//====Lista FAKE=============
 document.addEventListener("DOMContentLoaded", () => {
 
   atualizarUI()
 
-  const select = document.getElementById("selectProvas")
-
-  const provasFake = [
-    {id:"PRV_001", nome:"Prova Matemática"},
-    {id:"PRV_002", nome:"Prova SAERO"},
-    {id:"PRV_003", nome:"Simulado 1"}
-  ]
-
-  provasFake.forEach(p => {
-
-    const option = document.createElement("option")
-    option.value = p.id
-    option.textContent = p.id + " | " + p.nome
-
-    select.appendChild(option)
-
-  })
-
-  select.onchange = () => {
-
-    const id = select.value
-
-    provaSelecionada = provasFake.find(p => p.id === id)
-
-    console.log("Selecionado:", provaSelecionada)
-  }
+  carregarListaProvas()
 
 })
+
+
+
 
     
 </script>

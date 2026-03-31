@@ -53,8 +53,8 @@ function criarLayout(){
        Corrigir Prova
     </a>
 
-    <a href="provasv3.html"
-       class="${paginaAtual==='provasv3.html'?'active':''}">
+    <a href="provas.html"
+       class="${paginaAtual==='provas.html'?'active':''}">
        Gerar Prova Impressa
     </a>
    

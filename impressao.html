@@ -969,6 +969,10 @@ resizers.forEach(r => r.style.display = "none")
   const turmaCodigo = prova.mapaTurmas[turmaSelecionada];
   const qtd = parseInt(document.getElementById("qtd").value) || 1;
 
+  console.log("TURMA SELECIONADA:", turmaSelecionada);
+  console.log("CODIGO TURMA:", turmaCodigo);
+  console.log("ID PROVA:", prova.id);	  
+
   await fetchProtegido(API, {
     method: "POST",
     body: JSON.stringify({

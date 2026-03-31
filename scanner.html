@@ -105,7 +105,7 @@ TELA INICIAL (SELEÇÃO DE PROVA)
     </div>
 
   <!--  BOTÃO COM PESO -->
-  <button id="btnIniciar" class="btn confirmar" disable style="
+  <button id="btnIniciar" class="btn confirmar" disabled style="
     width:100%;
     padding:18px;
     font-size:18px;
@@ -631,17 +631,21 @@ async function carregarListaProvas(){
     })
 
     // seleção
-    select.onchange = () => {
+ select.onchange = async () => {
 
-      const id = select.value
-      if(!id) return
-    
-      provaSelecionada = lista.find(p => p.id === id)
-    
-      //  RESET TOTAL AO TROCAR PROVA
-      resetEstadoScanner()
-    
-      console.log("PROVA SELECIONADA:", provaSelecionada)
+  const id = select.value
+  if(!id) return
+
+  provaSelecionada = lista.find(p => p.id === id)
+
+  console.log("PROVA SELECIONADA:", provaSelecionada)
+
+  // RESETA PRIMEIRO
+  resetEstadoScanner()
+
+  // CARREGA IMEDIATAMENTE
+  await carregarProvaSelecionada()
+
 }
 
   }catch(e){

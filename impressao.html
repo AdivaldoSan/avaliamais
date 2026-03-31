@@ -980,23 +980,23 @@ resizers.forEach(r => r.style.display = "none")
 
   console.log("enviarVersoes:", !prova.versoesSalvas);
 
-  await fetchProtegido(API, {
-    method: "POST",
-    body: JSON.stringify({
-      tipo: "impressao",
-      token: localStorage.getItem("TOKEN"),
-
-      id: prova.id,
-      nome: prova.nome,
-
-      turma: turmaSelecionada,
-      turmaCodigo: turmaCodigo,
-      qtd: qtd,
-		
-      enviarVersoes: !prova.versoesSalvas,
-      versoes: prova.versoes
-    })
-  });
+	await fetchProtegido(API, {
+	  method: "POST",
+	  body: JSON.stringify({
+	    tipo: "aplicacao",
+	    token: localStorage.getItem("TOKEN"),
+	
+	    id: prova.id,
+	    nome: prova.nome,
+	
+	    qtd: qtd,
+	
+	    turmas: [turmaSelecionada],
+	
+	    //  AQUI ESTÁ A CHAVE
+	    questoes: prova.versoes
+	  })
+	});
 
   console.log("✔ Impressão enviada:", turmaSelecionada);
 	  

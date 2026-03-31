@@ -398,17 +398,59 @@ function getTopoBase(qtd){
   return pontos[pontos.length-1]
 }
 //==============================================
-function iniciarScanner(){
+async function iniciarScanner(){
 
-  if(!provaSelecionada){
-    alert("Selecione uma prova")
-    return
-  }
+  const ok = await carregarProvaSelecionada()
+
+  if(!ok) return
 
   document.getElementById("telaSelecao").style.display = "none"
   document.getElementById("telaScanner").style.display = "block"
 
   iniciar()
+}
+//============================================
+async function carregarProvaSelecionada(){
+
+  if(!provaSelecionada){
+    alert("Selecione uma prova")
+    return false
+  }
+
+  try{
+
+    const resp = await fetchProtegido(API, {
+      method: "POST",
+      body: JSON.stringify({
+        tipo: "buscar_aplicacao",
+        token: localStorage.getItem("TOKEN"),
+        id: provaSelecionada.id
+      })
+    })
+
+    const dados = await resp.json()
+
+    console.log("📦 PROVA BD:", dados)
+
+    if(!dados || !dados.PARAMETROS){
+      alert("Erro ao carregar prova")
+      return false
+    }
+
+    const params = JSON.parse(dados.PARAMETROS)
+
+    // GUARDA GLOBAL
+    window.PROVA_ATUAL = params
+
+    console.log("✅ PROVA CARREGADA:", window.PROVA_ATUAL)
+
+    return true
+
+  }catch(e){
+    console.error("Erro ao carregar prova:", e)
+    alert("Erro ao carregar prova")
+    return false
+  }
 }
     
 //============================================= 

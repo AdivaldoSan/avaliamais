@@ -28,7 +28,16 @@ TELA INICIAL (SELEÇÃO DE PROVA)
 ============================== -->
 <div id="telaSelecao" style="
   width:90vw;
+  height: calc(100vh - 120px);
   margin:15px auto;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+">
+
+  <div style="
+  width:100%;
+  max-width:500px;
   background:#1a1a1a;
   border-radius:16px;
   padding:25px 20px;
@@ -36,26 +45,24 @@ TELA INICIAL (SELEÇÃO DE PROVA)
   box-shadow:0 8px 25px rgba(0,0,0,0.6);
 ">
 
-  <div style="
-  display:flex;
-  flex-direction:column;
-  gap:20px;
-">
-
     <div>
       <div style="font-size:20px; margin-bottom:15px;">
         Selecionar prova
       </div>
 
-      <div id="listaProvas" style="
-        display:flex;
-        flex-direction:column;
-        gap:10px;
-        max-height:300px;
-        overflow:auto;
-      ">
+     <select id="selectProvas" style="
+      width:100%;
+      padding:12px;
+      border-radius:8px;
+      background:#2a2a2a;
+      color:white;
+      border:none;
+      margin-bottom:20px;
+    ">
+      <option value="">Selecione uma prova</option>
+    </select>
         <!-- será preenchido depois -->
-      </div>
+      
     </div>
 
     <button class="btn confirmar" style="width:100%;" onclick="iniciarScanner()">
@@ -881,12 +888,11 @@ document.addEventListener("DOMContentLoaded", atualizarUI)
 
 
 //====Lista FAKE=============
-
 document.addEventListener("DOMContentLoaded", () => {
 
   atualizarUI()
 
-  const lista = document.getElementById("listaProvas")
+  const select = document.getElementById("selectProvas")
 
   const provasFake = [
     {id:"PRV_001", nome:"Prova Matemática"},
@@ -896,34 +902,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
   provasFake.forEach(p => {
 
-    const item = document.createElement("div")
+    const option = document.createElement("option")
+    option.value = p.id
+    option.textContent = p.id + " | " + p.nome
 
-    item.innerText = p.id + " | " + p.nome
-
-    item.style.padding = "12px"
-    item.style.background = "#2a2a2a"
-    item.style.borderRadius = "8px"
-    item.style.cursor = "pointer"
-
-    item.onclick = () => {
-
-      // remove seleção anterior
-      document.querySelectorAll("#listaProvas div").forEach(el=>{
-        el.style.background = "#2a2a2a"
-      })
-
-      item.style.background = "#00aaff"
-
-      provaSelecionada = p
-
-      console.log("Selecionado:", p)
-    }
-
-    lista.appendChild(item)
+    select.appendChild(option)
 
   })
 
+  select.onchange = () => {
+
+    const id = select.value
+
+    provaSelecionada = provasFake.find(p => p.id === id)
+
+    console.log("Selecionado:", provaSelecionada)
+  }
+
 })
+
     
 </script>
 </div>

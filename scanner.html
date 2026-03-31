@@ -37,11 +37,10 @@ TELA INICIAL (SELEÇÃO DE PROVA)
 ">
 
   <div style="
-    display:flex;
-    flex-direction:column;
-    justify-content:space-between;
-    min-height:500px;
-  ">
+  display:flex;
+  flex-direction:column;
+  gap:20px;
+">
 
     <div>
       <div style="font-size:20px; margin-bottom:15px;">
@@ -879,6 +878,53 @@ function refazerLeitura(){
 
 document.addEventListener("DOMContentLoaded", atualizarUI)  
 </div>
+
+
+//====Lista FAKE=============
+
+document.addEventListener("DOMContentLoaded", () => {
+
+  atualizarUI()
+
+  const lista = document.getElementById("listaProvas")
+
+  const provasFake = [
+    {id:"PRV_001", nome:"Prova Matemática"},
+    {id:"PRV_002", nome:"Prova SAERO"},
+    {id:"PRV_003", nome:"Simulado 1"}
+  ]
+
+  provasFake.forEach(p => {
+
+    const item = document.createElement("div")
+
+    item.innerText = p.id + " | " + p.nome
+
+    item.style.padding = "12px"
+    item.style.background = "#2a2a2a"
+    item.style.borderRadius = "8px"
+    item.style.cursor = "pointer"
+
+    item.onclick = () => {
+
+      // remove seleção anterior
+      document.querySelectorAll("#listaProvas div").forEach(el=>{
+        el.style.background = "#2a2a2a"
+      })
+
+      item.style.background = "#00aaff"
+
+      provaSelecionada = p
+
+      console.log("Selecionado:", p)
+    }
+
+    lista.appendChild(item)
+
+  })
+
+})
+    
 </script>
 
  

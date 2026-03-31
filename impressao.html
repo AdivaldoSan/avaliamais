@@ -994,7 +994,9 @@ resizers.forEach(r => r.style.display = "none")
 	    turmas: [turmaSelecionada],
 	
 	    //  AQUI ESTÁ A CHAVE
-	    questoes: prova.versoes
+		questoes: !prova.versoesSalvas ? {
+		  versoes: prova.versoes
+		} : undefined
 	  })
 	});
 

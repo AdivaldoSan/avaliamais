@@ -22,7 +22,56 @@
 
     <img src="favicon.svg" class="quiz-logo-direita" alt="Avalia+">
 </div>
+    
+<!-- ==============================
+TELA INICIAL (SELEÇÃO DE PROVA)
+============================== -->
+<div id="telaSelecao" style="
+  width:90vw;
+  margin:15px auto;
+  background:#1a1a1a;
+  border-radius:16px;
+  padding:25px 20px;
+  text-align:center;
+  box-shadow:0 8px 25px rgba(0,0,0,0.6);
+">
 
+  <div style="
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    min-height:500px;
+  ">
+
+    <div>
+      <div style="font-size:20px; margin-bottom:15px;">
+        Selecionar prova
+      </div>
+
+      <div id="listaProvas" style="
+        display:flex;
+        flex-direction:column;
+        gap:10px;
+        max-height:300px;
+        overflow:auto;
+      ">
+        <!-- será preenchido depois -->
+      </div>
+    </div>
+
+    <button class="btn confirmar" style="width:100%;" onclick="iniciarScanner()">
+      Iniciar correção
+    </button>
+
+  </div>
+
+</div>
+    
+<!-- ==============================
+TELA DO SCANNER
+============================== -->
+<div id="telaScanner" style="display:none;">
+    
 <div id="qtdBox" style="display:none;">
   <span id="qtdLabel">--</span>
 </div>
@@ -226,6 +275,7 @@
 // ==============================
 // VARIÁVEIS GLOBAIS
 // ==============================
+let provaSelecionada = null
 let video = document.getElementById("video")
 let canvas = document.getElementById("canvas")
 let ctx = canvas.getContext("2d")
@@ -233,7 +283,7 @@ let ctx = canvas.getContext("2d")
 let pronto=false
 cv.onRuntimeInitialized = () => {
   pronto = true
-  iniciar()
+  //iniciar()
 }
 
   
@@ -309,7 +359,21 @@ function getTopoBase(qtd){
 
   return pontos[pontos.length-1]
 }
-  
+//==============================================
+function iniciarScanner(){
+
+  if(!provaSelecionada){
+    alert("Selecione uma prova")
+    return
+  }
+
+  document.getElementById("telaSelecao").style.display = "none"
+  document.getElementById("telaScanner").style.display = "block"
+
+  iniciar()
+}
+    
+//============================================= 
 function atualizarUI(){
 
   const ui = document.getElementById("uiLeitura")
@@ -814,7 +878,7 @@ function refazerLeitura(){
 }
 
 document.addEventListener("DOMContentLoaded", atualizarUI)  
-
+</div>
 </script>
 
  

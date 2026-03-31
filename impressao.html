@@ -314,11 +314,22 @@ function gerarVersoes(questoes, qtdVersoes = 4){
       .map(q => q.resposta)
       .join("");
 
+	const ordemQuestoes = questoesProcessadas.map(q => q.ID);
+	const respostas = questoesProcessadas.map(q => q.resposta);
+	const pesos = questoesProcessadas.map(q => Number(q.PESO || 1));
+
     versoes.push({
-      v,
-      questoes: questoesProcessadas,
-      gabarito
-    });
+	  v,
+	
+	  // visual
+	  questoes: questoesProcessadas,
+	
+	  // estrutura de correção
+	  ordemQuestoes,
+	  respostas,
+	  pesos,
+	  gabarito
+	});
   }
 
   return versoes;

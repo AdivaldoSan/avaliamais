@@ -421,7 +421,7 @@ async function carregarProvaSelecionada(){
 
   try{
 
-    const resp = await fetchProtegido(API, {
+    const dados = await fetchProtegido(API, {
       method: "POST",
       body: JSON.stringify({
         tipo: "buscar_aplicacao",
@@ -429,8 +429,6 @@ async function carregarProvaSelecionada(){
         id: provaSelecionada.id
       })
     })
-
-    const dados = await resp.json()
 
     console.log("📦 PROVA BD:", dados)
 
@@ -509,15 +507,13 @@ async function carregarListaProvas(){
 
   try{
 
-    const resp = await fetchProtegido(API, {
+   const lista = await fetchProtegido(API, {
       method:"POST",
       body: JSON.stringify({
         tipo:"listar_aplicacoes",
         token: localStorage.getItem("TOKEN")
       })
     })
-
-    const lista = await resp.json()
 
     console.log("📚 PROVAS DO BD:", lista)
 

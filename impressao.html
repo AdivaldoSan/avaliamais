@@ -976,7 +976,9 @@ resizers.forEach(r => r.style.display = "none")
 
   console.log("TURMA SELECIONADA:", turmaSelecionada);
   console.log("CODIGO TURMA:", turmaCodigo);
-  console.log("ID PROVA:", prova.id);	  
+  console.log("ID PROVA:", prova.id);	
+
+  console.log("enviarVersoes:", !prova.versoesSalvas);
 
   await fetchProtegido(API, {
     method: "POST",
@@ -990,12 +992,19 @@ resizers.forEach(r => r.style.display = "none")
       turma: turmaSelecionada,
       turmaCodigo: turmaCodigo,
       qtd: qtd,
-
+		
+      enviarVersoes: !prova.versoesSalvas,
       versoes: prova.versoes
     })
   });
 
   console.log("✔ Impressão enviada:", turmaSelecionada);
+	  
+  // marca versões como já enviadas
+	if(!prova.versoesSalvas){
+	  prova.versoesSalvas = true;
+	  localStorage.setItem("provaGerada", JSON.stringify(prova));
+	}
 
 }catch(e){
   console.error("Erro ao salvar impressão:", e);

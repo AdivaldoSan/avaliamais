@@ -48,8 +48,8 @@ function criarLayout(){
        Dashboard
     </a>
 
-    <a href="scannerimplante.html"
-       class="${paginaAtual==='scannerimplante.html'?'active':''}">
+    <a href="scanner.html"
+       class="${paginaAtual==='scanner.html'?'active':''}">
        Corrigir Prova
     </a>
 

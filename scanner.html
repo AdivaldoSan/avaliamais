@@ -31,48 +31,48 @@ TELA INICIAL (SELEÇÃO DE PROVA)
   height: calc(100vh - 80px);
   margin:15px auto;
   display:flex;
-  align-items:stretch;
+  align-items:center;
   justify-content:center;
 ">
 
   <div style="
   width:100%;
   max-width:600px;
-  height:100%;
   background:#1a1a1a;
   border-radius:16px;
-  padding:25px 20px;
+  padding:30px 20px;
   display:flex;
   flex-direction:column;
-  justify-content:space-between;
+  gap:25px;
   box-shadow:0 8px 25px rgba(0,0,0,0.6);
 ">
 
   <div>
-    <div style="font-size:22px; margin-bottom:20px;">
-      Selecionar prova
-    </div>
-
-    <select id="selectProvas" style="
-      width:100%;
-      padding:14px;
-      border-radius:10px;
-      background:#2a2a2a;
-      color:white;
-      border:none;
-      font-size:16px;
-    ">
-      <option value="">Selecione uma prova</option>
-    </select>
+  <div style="font-size:22px; margin-bottom:15px;">
+    Selecionar prova
   </div>
 
-  <button class="btn confirmar" style="
+  <select id="selectProvas" style="
     width:100%;
-    padding:18px;
-    font-size:18px;
-  " onclick="iniciarScanner()">
-    Iniciar correção
-  </button>
+    padding:16px;
+    border-radius:12px;
+    background:#2a2a2a;
+    color:white;
+    border:none;
+    font-size:16px;
+  ">
+    <option value="">Selecione uma prova</option>
+  </select>
+</div>
+
+ <button class="btn confirmar" style="
+  width:100%;
+  padding:16px;
+  font-size:18px;
+  border-radius:12px;
+" onclick="iniciarScanner()">
+  Iniciar correção
+</button>
 
 </div>
 

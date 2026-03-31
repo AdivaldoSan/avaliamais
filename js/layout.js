@@ -52,6 +52,11 @@ function criarLayout(){
        class="${paginaAtual==='scannerimplante.html'?'active':''}">
        Corrigir Prova
     </a>
+
+    <a href="provasv3.html"
+       class="${paginaAtual==='provasv3.html'?'active':''}">
+       Gerar Prova Impressa
+    </a>
    
     ${perfil === "ADMIN" ? `
       <a href="admin.html"

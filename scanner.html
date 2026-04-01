@@ -733,11 +733,15 @@ select.onchange = async () => {
 
   let texto = code.data
 
-  if(!texto.includes("AVALIA+")){
-    log("QR inválido")
-    qrFramesOK = 0
-    return
-  }
+      if(
+      !texto.includes("ID=") ||
+      !texto.includes("V=") ||
+      !texto.includes("T=")
+    ){
+      log("QR inválido")
+      qrFramesOK = 0
+      return
+    }
 
   qrFramesOK++
 

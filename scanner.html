@@ -765,7 +765,17 @@ select.onchange = async () => {
 
   provaSelecionada = lista.find(p => p.id === id)
 
-  console.log("PROVA SELECIONADA:", provaSelecionada)
+console.log("PROVA SELECIONADA:", provaSelecionada)
+
+// 🔥 CONVERSÃO SEGURA DAS TURMAS
+try{
+  window.TURMAS_PERMITIDAS = JSON.parse(provaSelecionada.turmas || "[]")
+}catch(e){
+  console.error("Erro ao converter TURMAS:", provaSelecionada.turmas)
+  window.TURMAS_PERMITIDAS = []
+}
+
+console.log("TURMAS PERMITIDAS:", window.TURMAS_PERMITIDAS)
 
   resetEstadoScanner()
 
@@ -879,8 +889,22 @@ versaoQR = parseInt(
 )
 
 turmaQR = partes.find(p => p.startsWith("T=")).split("=")[1]
-
 folhaQR = partes.find(p => p.startsWith("F=")).split("=")[1]
+// CONVERTE ÍNDICE → TURMA REAL
+const idxTurma = parseInt(turmaQR) - 1
+
+const turmaConvertida =
+  window.TURMAS_PERMITIDAS?.[idxTurma] || null
+
+//  VALIDA
+if(!turmaConvertida){
+  mostrarErroQR(
+    `Turma inválida no QR\n\n` +
+    `Índice: ${turmaQR}\n\n` +
+    `Disponíveis: ${window.TURMAS_PERMITIDAS.join(", ")}`
+  )
+  return
+}
 
 // 🔹 agora busca versão correta
 const versao = window.PROVA_ATUAL.versoes.find(v => v.v == versaoQR)
@@ -1229,7 +1253,10 @@ async function enviarResultado(acertos, total, percentual){
     return
   }
 
-  const turmaConvertida = mapearTurma(turmaQR)
+  const idxTurma = parseInt(turmaQR) - 1
+
+const turmaConvertida =
+  window.TURMAS_PERMITIDAS?.[idxTurma] || "N/D"
 
   const payload = {
     tipo: "respostas",

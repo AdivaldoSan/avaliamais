@@ -799,6 +799,15 @@ select.onchange = async () => {
               
               let texto = code.data
 
+      
+            
+              
+  let partes = texto.split("|")
+
+  // 🔒 VALIDA ID
+  let idQR = partes.find(p => p.startsWith("ID=")).split("=")[1]
+
+  
         alert(
           "🔎 DEBUG QR vs PROVA\n\n" +
         
@@ -810,14 +819,7 @@ select.onchange = async () => {
         
           "Comparação direta: " + (idQR === provaSelecionada.id) + "\n" +
           "Comparação trim: " + (idQR.trim() === String(provaSelecionada.id).trim())
-        )
-      
-            
-              
-  let partes = texto.split("|")
-
-  // 🔒 VALIDA ID
-  let idQR = partes.find(p => p.startsWith("ID=")).split("=")[1]
+        )    
 
   if(idQR !== provaSelecionada.id){
     mostrarErroQR(

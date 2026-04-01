@@ -451,15 +451,15 @@ function salvarFilaLocal(registro){
   })
 
   localStorage.setItem("FILA_ENVIO", JSON.stringify(fila))
-
-  console.log("📦 FILA LOCAL:", fila)
+  console.log("FILA LOCAL:", fila)
+  processarFila()
 }
 //=============================
 let processandoFila = false    
 async function processarFila(){
 
   if(processandoFila){
-    console.log("⏳ Já está processando, ignorado")
+    console.log("Já está processando, ignorado")
     return
   }
 
@@ -1457,12 +1457,17 @@ function refazerLeitura(){
   atualizarUI()
 }
 
+    
+window.addEventListener("online", () => {
+  console.log("Internet voltou — sincronizando")
+  processarFila()
+})
+    
 document.addEventListener("DOMContentLoaded", () => {
 atualizarUI()
 carregarListaProvas()
 // inicia sincronização automática
 processarFila()
-setInterval(processarFila, 5000)
 
 })
 

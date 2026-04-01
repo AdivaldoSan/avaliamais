@@ -22,7 +22,7 @@
         </div>
     </div>
 
-    <img src="favicon.svg" class="quiz-logo-direita" alt="Avalia+">
+    <img src="favicon.svg" class="quiz-o-direita" alt="Avalia+">
 </div>
     
 <!-- ==============================
@@ -377,7 +377,7 @@ let qrLido = false
 let pausado = false
   
 let DEBUG = false
-let logBuffer = []
+let Buffer = []
 
 //=============================
 function resetEstadoScanner(){
@@ -420,7 +420,7 @@ function resetEstadoScanner(){
 
   atualizarUI()
 
-  console.log("Scanner resetado")
+  console.("Scanner resetado")
 }
 
 // =============================
@@ -448,6 +448,23 @@ function log(msg){
   }
 
   document.getElementById("status").innerText = logBuffer.join("\n")
+}
+//===============================
+function mostrarErroQR(msg){
+
+  const box = document.getElementById("msgGabarito")
+
+  box.innerText = msg
+  box.style.display = "block"
+  box.style.color = "#ff4d4d"
+  box.style.boxShadow = "0 0 20px #ff4d4d"
+
+  // reseta leitura do QR
+  qrFramesOK = 0
+  qrLido = false
+  modo = "qr"
+
+  atualizarUI()
 }
 
 // ==============================
@@ -746,12 +763,22 @@ select.onchange = async () => {
   qrFramesOK++
 
   if(qrFramesOK > 2 && !qrLido){
-    tocarSomQR()
 
-    qrLido = true
-    
+  let partes = texto.split("|")
 
-   let partes = texto.split("|")
+  // 🔒 VALIDA ID
+  let idQR = partes.find(p => p.startsWith("ID=")).split("=")[1]
+
+  if(idQR !== provaSelecionada.id){
+    mostrarErroQR(
+      "QR não pertence à prova selecionada\n\nUse a prova correta"
+    )
+    return
+  }
+
+  // 🔥 só depois valida como lido
+  qrLido = true
+  tocarSomQR()
 
 // 🔹 QTD vem do BD
 TEMPLATE.questoes = window.QTD_PROVA
@@ -772,13 +799,7 @@ if(!versao){
 
 // 🔹 define gabarito correto
 gabaritoQR = versao.gabarito
-      
-
-alert(
-  "Versão: " + versaoQR + "\n" +
-  "Gabarito: " + gabaritoQR
-)
-
+     
 
 modo = "espera"
 atualizarUI()

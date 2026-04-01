@@ -460,12 +460,16 @@ function mostrarErroQR(msg){
   box.style.color = "#ff4d4d"
   box.style.boxShadow = "0 0 20px #ff4d4d"
 
-  // reseta leitura do QR
   qrFramesOK = 0
   qrLido = false
   modo = "qr"
 
   atualizarUI()
+
+  // FECHA AUTOMÁTICO
+  setTimeout(() => {
+    box.style.display = "none"
+  }, 3000)
 }
 
 // ==============================
@@ -814,7 +818,7 @@ gabaritoQR = versao.gabarito
 modo = "espera"
 atualizarUI()
 
-document.getElementById("msgGabarito").style.display = "block"
+document.getElementById("msgGabarito").style.display = "none"
 
 log("QR OK → indo pra leitura")
   }

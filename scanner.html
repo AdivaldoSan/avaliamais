@@ -765,6 +765,15 @@ select.onchange = async () => {
 
   if(qrFramesOK > 2 && !qrLido){
 
+              qrLido = true // 🔥 trava pra não repetir alert
+
+              let texto = code.data
+            
+              alert(
+                      "QR:\n" + texto +
+                      "\n\nSelecionada:\n" + provaSelecionada.id
+                    )
+
   let partes = texto.split("|")
 
   // 🔒 VALIDA ID

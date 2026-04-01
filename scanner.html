@@ -414,6 +414,7 @@ function resetEstadoScanner(){
     // 🔥 reforço visual do botão
   const btn = document.getElementById("btnIniciar")
   btn.style.display = "none"
+  btn.disabled = true
 
   canvas.style.display = "block"
 
@@ -549,6 +550,7 @@ async function carregarProvaSelecionada(){
     // 🔥 LIBERA BOTÃO
    const btn = document.getElementById("btnIniciar")
    btn.style.display = "block"
+   btn.disabled = false
     
 
     console.log("✅ PROVA CARREGADA:", window.PROVA_ATUAL)

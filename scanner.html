@@ -690,6 +690,13 @@ async function carregarProvaSelecionada(){
     // GUARDA GLOBAL
     window.PROVA_ATUAL = params
     window.QTD_PROVA = dados.QTD
+      localStorage.setItem("PROVA_CACHE", JSON.stringify({
+      id: provaSelecionada.id,
+      params: params,
+      qtd: dados.QTD
+    }))
+
+console.log("💾 Prova salva em cache")
     
     // 🔥 FINALIZA LOADING
     document.getElementById("loadingProva").style.display = "none"

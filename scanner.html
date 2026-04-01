@@ -124,7 +124,8 @@ TELA INICIAL (SELEÇÃO DE PROVA)
 </div>
 
   <!--  BOTÃO COM PESO -->
-  <button id="btnIniciar" class="btn confirmar" disabled style="
+ <button id="btnIniciar" class="btn confirmar" style="
+  display:none;
   width:100%;
   padding:18px;
   font-size:18px;
@@ -132,7 +133,6 @@ TELA INICIAL (SELEÇÃO DE PROVA)
   background:linear-gradient(90deg,#00ffcc,#00aaff);
   color:black;
   font-weight:bold;
-  opacity:0.5;
 " onclick="iniciarScanner()">
   Iniciar correção
 </button>
@@ -413,8 +413,7 @@ function resetEstadoScanner(){
     
     // 🔥 reforço visual do botão
   const btn = document.getElementById("btnIniciar")
-  btn.disabled = true
-  btn.style.opacity = "0.5"
+  btn.style.display = "none"
 
   canvas.style.display = "block"
 
@@ -548,9 +547,8 @@ async function carregarProvaSelecionada(){
       window.QTD_PROVA || "-"
     
     // 🔥 LIBERA BOTÃO
-    const btn = document.getElementById("btnIniciar")
-    btn.disabled = false
-    btn.style.opacity = "1"
+   const btn = document.getElementById("btnIniciar")
+   btn.style.display = "block"
     
 
     console.log("✅ PROVA CARREGADA:", window.PROVA_ATUAL)

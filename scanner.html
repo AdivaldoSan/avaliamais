@@ -798,6 +798,20 @@ select.onchange = async () => {
 
               
               let texto = code.data
+
+        alert(
+          "🔎 DEBUG QR vs PROVA\n\n" +
+        
+          "ID QR: [" + idQR + "]\n" +
+          "ID QR (trim): [" + idQR.trim() + "]\n\n" +
+        
+          "ID Selecionado: [" + provaSelecionada.id + "]\n" +
+          "ID Selecionado (trim): [" + String(provaSelecionada.id).trim() + "]\n\n" +
+        
+          "Comparação direta: " + (idQR === provaSelecionada.id) + "\n" +
+          "Comparação trim: " + (idQR.trim() === String(provaSelecionada.id).trim())
+        )
+      
             
               
   let partes = texto.split("|")

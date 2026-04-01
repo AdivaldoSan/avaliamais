@@ -455,6 +455,46 @@ function salvarFilaLocal(registro){
   console.log("📦 FILA LOCAL:", fila)
 }
 //=============================
+async function processarFila(){
+
+  let fila = JSON.parse(localStorage.getItem("FILA_ENVIO") || "[]")
+
+  if(fila.length === 0) return
+
+  console.log("🔄 Processando fila:", fila.length)
+
+  let novaFila = []
+
+  for(let item of fila){
+
+    try{
+
+      const resp = await fetchProtegido(API,{
+        method:"POST",
+        body: JSON.stringify({
+          tipo:"respostas",
+          payload:item
+        })
+      })
+
+      if(resp.ok){
+        console.log("✔ Enviado:", item.numero)
+      }else{
+        console.warn("⚠️ Falhou:", item.numero)
+        novaFila.push(item)
+      }
+
+    }catch(e){
+      console.error("❌ Erro rede:", item.numero)
+      novaFila.push(item)
+    }
+  }
+
+  localStorage.setItem("FILA_ENVIO", JSON.stringify(novaFila))
+
+  console.log("📦 Restantes na fila:", novaFila.length)
+}
+//=============================
 function resetEstadoScanner(){
 
   //  dados principais
@@ -1265,7 +1305,8 @@ document.getElementById("notaBox").innerText =
   acertos + " de " + total + " • Nota: " + nota10
 
   document.getElementById("bolinhasResultado").innerHTML = bolinhasHTML
- enviarResultado(acertos, total, percentual)   
+ enviarResultado(acertos, total, percentual) 
+ processarFila()
 }
 //==============================
 async function enviarResultado(acertos, total, percentual){
@@ -1399,10 +1440,11 @@ function refazerLeitura(){
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-
-  atualizarUI()
-
-  carregarListaProvas()
+atualizarUI()
+carregarListaProvas()
+// inicia sincronização automática
+processarFila()
+setInterval(processarFila, 5000)
 
 })
 

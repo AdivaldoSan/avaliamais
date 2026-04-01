@@ -747,20 +747,37 @@ select.onchange = async () => {
     qrLido = true
     
 
-    let partes = texto.split("|")
+   let partes = texto.split("|")
 
-    qtdQR = parseInt(partes[1].split("=")[1])
-    gabaritoQR = partes[2].split("=")[1]
+// 🔹 QTD vem do BD
+TEMPLATE.questoes = window.QTD_PROVA
+document.getElementById("qtdLabel").innerText = window.QTD_PROVA
 
-    TEMPLATE.questoes = qtdQR
-    document.getElementById("qtdLabel").innerText = qtdQR
+// 🔹 extrai versão do QR
+let versaoQR = parseInt(
+  partes.find(p => p.startsWith("V=")).split("=")[1]
+)
 
-    modo = "espera"
-    atualizarUI()
-    
-    document.getElementById("msgGabarito").style.display = "block"
+// 🔹 busca versão no BD
+const versao = window.PROVA_ATUAL.versoes.find(v => v.v == versaoQR)
 
-    log("QR OK → indo pra leitura")
+if(!versao){
+  console.error("❌ Versão não encontrada:", versaoQR)
+  return
+}
+
+// 🔹 define gabarito correto
+gabaritoQR = versao.gabarito
+
+console.log("📌 Versão:", versaoQR)
+console.log("📌 Gabarito:", gabaritoQR)
+
+modo = "espera"
+atualizarUI()
+
+document.getElementById("msgGabarito").style.display = "block"
+
+log("QR OK → indo pra leitura")
   }
   }
 

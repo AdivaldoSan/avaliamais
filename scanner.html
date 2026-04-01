@@ -489,7 +489,7 @@ function mostrarErroQR(msg){
 
   // FECHA AUTOMÁTICO
   setTimeout(() => {
-    box.style.display = "none"
+    limparMensagemQR()
   }, 3000)
 }
 
@@ -808,7 +808,7 @@ select.onchange = async () => {
   let idQR = partes.find(p => p.startsWith("ID=")).split("=")[1]
 
   
-        alert(
+        /*alert(
           "🔎 DEBUG QR vs PROVA\n\n" +
         
           "ID QR: [" + idQR + "]\n" +
@@ -819,7 +819,7 @@ select.onchange = async () => {
         
           "Comparação direta: " + (idQR === provaSelecionada.id) + "\n" +
           "Comparação trim: " + (idQR.trim() === String(provaSelecionada.id).trim())
-        )    
+        )    */
 
   if(idQR !== provaSelecionada.id){
     mostrarErroQR(
@@ -828,9 +828,10 @@ select.onchange = async () => {
     return
   }
 
-  // 🔥 só depois valida como lido
+  // só depois valida como lido
   qrLido = true
   tocarSomQR()
+  limparMensagemQR() // LIMPA ERRO ANTIGO
 
 // 🔹 QTD vem do BD
 TEMPLATE.questoes = window.QTD_PROVA
@@ -861,6 +862,17 @@ document.getElementById("msgGabarito").style.display = "block"
 log("QR OK → indo pra leitura")
   }
   }
+//===============================
+function limparMensagemQR(){
+
+  const box = document.getElementById("msgGabarito")
+
+  box.style.display = "none"
+  box.innerText = "Aponte para o gabarito"
+
+  box.style.color = "#00ffcc"
+  box.style.boxShadow = "0 0 20px #00ffcc"
+}
 
 // ==============================
 function loop(){
@@ -969,8 +981,7 @@ function capturarFrame(quadrados){
   capturado=true
   atualizarUI()
   
-  document.getElementById("msgGabarito").style.display = "none"
-
+  limparMensagemQR()
   let frame = ctx.getImageData(0,0,canvas.width,canvas.height)
   let src = cv.matFromImageData(frame)
 

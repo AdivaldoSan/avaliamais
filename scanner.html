@@ -855,7 +855,7 @@ select.onchange = async () => {
           "Comparação trim: " + (idQR.trim() === String(provaSelecionada.id).trim())
         )    */
 
-  if(idQR !== provaSelecionada.id){
+if(idQR.trim() !== String(provaSelecionada.id).trim())
     mostrarErroQR(
       "QR não pertence à prova selecionada\n\nUse a prova correta"
     )
@@ -873,20 +873,23 @@ document.getElementById("qtdLabel").innerText = window.QTD_PROVA
 
 
 
-// 🔹 busca versão no BD
+// 🔹 extrai dados do QR PRIMEIRO
+versaoQR = parseInt(
+  partes.find(p => p.startsWith("V=")).split("=")[1]
+)
+
+turmaQR = partes.find(p => p.startsWith("T=")).split("=")[1]
+
+folhaQR = partes.find(p => p.startsWith("F=")).split("=")[1]
+
+// 🔹 agora busca versão correta
 const versao = window.PROVA_ATUAL.versoes.find(v => v.v == versaoQR)
 
 if(!versao){
   console.error("❌ Versão não encontrada:", versaoQR)
+  mostrarErroQR("Versão inválida no QR")
   return
-}
-      
-// 🔹 extrai versão do QR
-versaoQR = parseInt(
-  partes.find(p => p.startsWith("V=")).split("=")[1]
-)      
-turmaQR = partes.find(p => p.startsWith("T=")).split("=")[1]
-lfolhaQR = partes.find(p => p.startsWith("F=")).split("=")[1]      
+}    
 
 // 🔹 define gabarito correto
 gabaritoQR = versao.gabarito

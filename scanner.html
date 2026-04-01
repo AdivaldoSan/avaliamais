@@ -22,7 +22,7 @@
         </div>
     </div>
 
-    <img src="favicon.svg" class="quiz-logo-direita" alt="Avalia+">
+    <img src="favicon.svg" class="quiz-o-direita" alt="Avalia+">
 </div>
     
 <!-- ==============================
@@ -396,7 +396,7 @@ let qrLido = false
 let pausado = false
   
 let DEBUG = false
-let logBuffer = []
+let Buffer = []
 //============================
 function mapearTurma(numero){
 
@@ -605,7 +605,7 @@ async function carregarProvaSelecionada(){
       })
     })
 
-    console.log("📦 PROVA BD:", dados)
+    //console.log("📦 PROVA BD:", dados)
 
     if(!dados || !dados.PARAMETROS){
       alert("Erro ao carregar prova")
@@ -635,7 +635,7 @@ async function carregarProvaSelecionada(){
    btn.disabled = false
     
 
-    console.log("✅ PROVA CARREGADA:", window.PROVA_ATUAL)
+    //console.log("✅ PROVA CARREGADA:", window.PROVA_ATUAL)
 
     return true
 
@@ -737,7 +737,7 @@ async function carregarListaProvas(){
       })
     })
 
-    console.log("📚 PROVAS DO BD:", lista)
+    //console.log("📚 PROVAS DO BD:", lista)
 
     const select = document.getElementById("selectProvas")
 
@@ -765,7 +765,7 @@ select.onchange = async () => {
 
   provaSelecionada = lista.find(p => p.id === id)
 
-  console.log("PROVA SELECIONADA:", provaSelecionada)
+  //console.log("PROVA SELECIONADA:", provaSelecionada)
 
   resetEstadoScanner()
 

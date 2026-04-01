@@ -242,9 +242,23 @@ TELA DO SCANNER
   Aponte para o gabarito
   </div>
 </div>
-    
+
+ <div id="infoProvaScanner" style="
+  width:90vw;
+  margin:10px auto;
+  padding:12px;
+  background:#1a1a1a;
+  border-radius:10px;
+  font-size:14px;
+  opacity:0.8;
+  display:none;
+">
+  Prova: -
+</div>   
 
 <div id="status">Aguardando QR...</div>
+
+    
   
 <div id="uiLeitura" style="display:none;">
 <div id="respostas" style="margin-top:10px;"></div>
@@ -432,13 +446,13 @@ const token = localStorage.getItem("TOKEN");
 if(!token){
   window.location.href = "index.html";
 }
-
+//=============================
 function tocarSomQR(){
   const audio = document.getElementById("somQR")
   audio.currentTime = 0
   audio.play().catch(()=>{})
 }  
-  
+//==============================  
 function log(msg){
   if(!DEBUG) return
 
@@ -450,6 +464,13 @@ function log(msg){
 
   document.getElementById("status").innerText = logBuffer.join("\n")
 }
+//===============================
+function montarTextoProva(){
+  if(!provaSelecionada) return "Prova: -"
+
+  return "Prova: " + provaSelecionada.id + " | " + provaSelecionada.nome
+}
+    
 //===============================
 function mostrarErroQR(msg){
 
@@ -615,13 +636,19 @@ function atualizarUI(){
   const ui = document.getElementById("uiLeitura")
   const qrBox = document.getElementById("qrBox")
   const acoes = document.getElementById("acoesResultado")
+  const info = document.getElementById("infoProvaScanner")
 
-  // 🔥 ESCONDE SEMPRE POR PADRÃO
+  // 🔥 ESCONDE POR PADRÃO
   acoes.style.display = "none"
+  info.style.display = "none"
 
   if(modo === "qr"){
     ui.style.display = "none"
     qrBox.style.display = "block"
+
+    // ✅ MOSTRA SÓ NA LEITURA DO QR
+    info.style.display = "block"
+    info.innerText = montarTextoProva()
   }
   else if(modo === "espera"){
     ui.style.display = "none"

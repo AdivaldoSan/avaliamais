@@ -89,34 +89,53 @@ TELA INICIAL (SELEÇÃO DE PROVA)
 
   </div>
 
-      <div id="infoProva" style="
-      display:none;
-      background:#111;
-      padding:15px;
-      border-radius:12px;
-      font-size:14px;
-      line-height:1.5;
-      border:1px solid #00ffcc33;
-    ">
-      <div><b>Prova:</b> <span id="infoNome"></span></div>
-      <div><b>Questões:</b> <span id="infoQuestoes"></span></div>
-      <div><b>Versões:</b> <span id="infoVersoes"></span></div>
-      <div style="color:#00ffcc;"><b>Status:</b> carregada</div>
+<div id="infoProva" style="
+  display:none;
+  background:#111;
+  padding:20px;
+  border-radius:14px;
+  border:1px solid #00ffcc33;
+  text-align:center;
+">
+
+  <!-- LOADING -->
+  <div id="loadingProva" style="display:none;">
+    <div class="spinner"></div>
+    <div style="margin-top:10px; opacity:0.7;">
+      Carregando prova...
     </div>
+  </div>
+
+  <!-- DADOS -->
+  <div id="dadosProva" style="display:none;">
+    <div style="font-size:16px; margin-bottom:8px;">
+      <b id="infoNome"></b>
+    </div>
+
+    <div style="font-size:14px; opacity:0.7;">
+      <span id="infoQuestoes"></span> questões
+    </div>
+
+    <div style="margin-top:10px; color:#00ffcc;">
+      ✔ Pronto para iniciar
+    </div>
+  </div>
+
+</div>
 
   <!--  BOTÃO COM PESO -->
   <button id="btnIniciar" class="btn confirmar" disabled style="
-    width:100%;
-    padding:18px;
-    font-size:18px;
-    border-radius:14px;
-    background:linear-gradient(90deg,#00ffcc,#00aaff);
-    color:black;
-    font-weight:bold;
-    box-shadow:0 4px 15px rgba(0,255,204,0.3);
-  " onclick="iniciarScanner()">
-    Iniciar correção
-  </button>
+  width:100%;
+  padding:18px;
+  font-size:18px;
+  border-radius:14px;
+  background:linear-gradient(90deg,#00ffcc,#00aaff);
+  color:black;
+  font-weight:bold;
+  opacity:0.5;
+" onclick="iniciarScanner()">
+  Iniciar correção
+</button>
 
 </div>
 
@@ -388,6 +407,14 @@ function resetEstadoScanner(){
   document.getElementById("status").innerText = "Aguardando QR..."
   document.getElementById("infoProva").style.display = "none"
   document.getElementById("btnIniciar").disabled = true
+  // 🔥 NOVO — limpa estados da tela inicial
+  document.getElementById("loadingProva").style.display = "none"
+  document.getElementById("dadosProva").style.display = "none"
+    
+    // 🔥 reforço visual do botão
+  const btn = document.getElementById("btnIniciar")
+  btn.disabled = true
+  btn.style.opacity = "0.5"
 
   canvas.style.display = "block"
 
@@ -466,15 +493,11 @@ async function iniciarScanner(){
     alert("Selecione uma prova")
     return
   }
-  //  TRAVA BOTAO INICIAL PRINCIPAL
+
   if(!window.PROVA_ATUAL){
     alert("Aguarde o carregamento da prova")
     return
   }
-
-  const ok = await carregarProvaSelecionada()
-
-  if(!ok) return
 
   document.getElementById("telaSelecao").style.display = "none"
   document.getElementById("telaScanner").style.display = "block"
@@ -508,11 +531,27 @@ async function carregarProvaSelecionada(){
     }
 
     const params = JSON.parse(dados.PARAMETROS)
-
+    
     // GUARDA GLOBAL
     window.PROVA_ATUAL = params
-    document.getElementById("btnIniciar").disabled = false
-    atualizarInfoProva()
+    window.QTD_PROVA = dados.QTD
+    
+    // 🔥 FINALIZA LOADING
+    document.getElementById("loadingProva").style.display = "none"
+    document.getElementById("dadosProva").style.display = "block"
+    
+    // 🔥 PREENCHE INFO
+    document.getElementById("infoNome").innerText =
+      provaSelecionada.nome
+    
+    document.getElementById("infoQuestoes").innerText =
+      window.QTD_PROVA || "-"
+    
+    // 🔥 LIBERA BOTÃO
+    const btn = document.getElementById("btnIniciar")
+    btn.disabled = false
+    btn.style.opacity = "1"
+    
 
     console.log("✅ PROVA CARREGADA:", window.PROVA_ATUAL)
 
@@ -631,7 +670,7 @@ async function carregarListaProvas(){
     })
 
     // seleção
- select.onchange = async () => {
+select.onchange = async () => {
 
   const id = select.value
   if(!id) return
@@ -640,12 +679,14 @@ async function carregarListaProvas(){
 
   console.log("PROVA SELECIONADA:", provaSelecionada)
 
-  // RESETA PRIMEIRO
   resetEstadoScanner()
 
-  // CARREGA IMEDIATAMENTE
-  await carregarProvaSelecionada()
+  // 🔥 MOSTRA CAIXA + LOADING
+  document.getElementById("infoProva").style.display = "block"
+  document.getElementById("loadingProva").style.display = "block"
+  document.getElementById("dadosProva").style.display = "none"
 
+  await carregarProvaSelecionada()
 }
 
   }catch(e){

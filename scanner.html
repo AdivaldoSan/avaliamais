@@ -455,11 +455,22 @@ function salvarFilaLocal(registro){
   console.log("📦 FILA LOCAL:", fila)
 }
 //=============================
+let processandoFila = false    
 async function processarFila(){
+
+  if(processandoFila){
+    console.log("⏳ Já está processando, ignorado")
+    return
+  }
+
+  processandoFila = true
 
   let fila = JSON.parse(localStorage.getItem("FILA_ENVIO") || "[]")
 
-  if(fila.length === 0) return
+  if(fila.length === 0){
+    processandoFila = false
+    return
+  }
 
   console.log("🔄 Processando fila:", fila.length)
 
@@ -480,19 +491,19 @@ async function processarFila(){
       if(resp.ok){
         console.log("✔ Enviado:", item.numero)
       }else{
-        console.warn("⚠️ Falhou:", item.numero)
         novaFila.push(item)
       }
 
     }catch(e){
-      console.error("❌ Erro rede:", item.numero)
       novaFila.push(item)
     }
   }
 
   localStorage.setItem("FILA_ENVIO", JSON.stringify(novaFila))
 
-  console.log("📦 Restantes na fila:", novaFila.length)
+  console.log("📦 Restantes:", novaFila.length)
+
+  processandoFila = false
 }
 //=============================
 function resetEstadoScanner(){
@@ -1306,7 +1317,7 @@ document.getElementById("notaBox").innerText =
 
   document.getElementById("bolinhasResultado").innerHTML = bolinhasHTML
  enviarResultado(acertos, total, percentual) 
- processarFila()
+ 
 }
 //==============================
 async function enviarResultado(acertos, total, percentual){

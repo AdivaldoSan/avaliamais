@@ -431,7 +431,29 @@ function montarRespostasAPI(){
   }
 
   return lista
-}    
+}  
+//=============================
+function salvarFilaLocal(registro){
+
+  let fila = JSON.parse(localStorage.getItem("FILA_ENVIO") || "[]")
+
+  const chave = registro.aplicacao + "_" + registro.numero
+
+  // REMOVE DUPLICADO
+  fila = fila.filter(item =>
+    (item.aplicacao + "_" + item.numero) !== chave
+  )
+
+  // DICIONA NOVO
+  fila.push({
+    ...registro,
+    ts: Date.now()
+  })
+
+  localStorage.setItem("FILA_ENVIO", JSON.stringify(fila))
+
+  console.log("📦 FILA LOCAL:", fila)
+}
 //=============================
 function resetEstadoScanner(){
 
@@ -1268,6 +1290,10 @@ const turmaConvertida =
       respostas: montarRespostasAPI()
     }
   }
+   const registro = payload.payload
+
+    // SALVA LOCAL ANTES DE QUALQUER COISA
+    salvarFilaLocal(registro) 
 
   try{
 

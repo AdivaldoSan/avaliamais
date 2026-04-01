@@ -192,3 +192,17 @@ button{
   width:90vw;
   margin:0 auto;
 }  
+
+.spinner {
+  width: 45px;
+  height: 45px;
+  border: 4px solid #ffffff22;
+  border-top: 4px solid #00ffcc;
+  border-radius: 50%;
+  animation: girar 1s linear infinite;
+  margin: 0 auto;
+}
+
+@keyframes girar {
+  100% { transform: rotate(360deg); }
+}

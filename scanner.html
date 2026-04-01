@@ -377,13 +377,14 @@ let qrLido = false
 let pausado = false
   
 let DEBUG = false
-let Buffer = []
+let logBuffer = []
 
 //=============================
 function resetEstadoScanner(){
 
   //  dados principais
-  window.PROVA_ATUAL = null
+  // NÃO LIMPA A PROVA AQUI
+  // window.PROVA_ATUAL = null
   gabaritoQR = null
   respostasLidas = []
 
@@ -420,7 +421,7 @@ function resetEstadoScanner(){
 
   atualizarUI()
 
-  console.("Scanner resetado")
+  console.log("Scanner resetado")
 }
 
 // =============================

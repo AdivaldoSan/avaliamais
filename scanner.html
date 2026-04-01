@@ -836,11 +836,6 @@ select.onchange = async () => {
   if(qrFramesOK > 2 && !qrLido){
 
               
-              let texto = code.data
-
-      
-            
-              
   let partes = texto.split("|")
 
   // 🔒 VALIDA ID
@@ -876,10 +871,7 @@ select.onchange = async () => {
 TEMPLATE.questoes = window.QTD_PROVA
 document.getElementById("qtdLabel").innerText = window.QTD_PROVA
 
-// 🔹 extrai versão do QR
-let versaoQR = parseInt(
-  partes.find(p => p.startsWith("V=")).split("=")[1]
-)
+
 
 // 🔹 busca versão no BD
 const versao = window.PROVA_ATUAL.versoes.find(v => v.v == versaoQR)
@@ -889,8 +881,12 @@ if(!versao){
   return
 }
       
-let turmaQR = partes.find(p => p.startsWith("T=")).split("=")[1]
-let folhaQR = partes.find(p => p.startsWith("F=")).split("=")[1]      
+// 🔹 extrai versão do QR
+versaoQR = parseInt(
+  partes.find(p => p.startsWith("V=")).split("=")[1]
+)      
+turmaQR = partes.find(p => p.startsWith("T=")).split("=")[1]
+lfolhaQR = partes.find(p => p.startsWith("F=")).split("=")[1]      
 
 // 🔹 define gabarito correto
 gabaritoQR = versao.gabarito

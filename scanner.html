@@ -252,7 +252,7 @@ TELA DO SCANNER
 ">
 
   <button class="btn refazer" style="flex:1;" onclick="voltarSelecao()">
-    ← Voltar
+    Voltar
   </button>
 
 </div>
@@ -626,9 +626,9 @@ function log(msg){
 }
 //===============================
 function montarTextoProva(){
-  if(!provaSelecionada) return "Prova: -"
+  if(!provaSelecionada) return "Nenhuma Prova Selecionada!"
 
-  return "" + provaSelecionada.id + " | " + provaSelecionada.nome
+  return "Corrigindo: " + provaSelecionada.id + " | " + provaSelecionada.nome
 }
     
 //===============================

@@ -813,18 +813,28 @@ function atualizarUI(){
     ui.style.display = "none"
     qrBox.style.display = "block"
 
-    // ✅ MOSTRA SÓ NA LEITURA DO QR
     info.style.display = "block"
     info.innerText = montarTextoProva()
   }
+
   else if(modo === "espera"){
     ui.style.display = "none"
     qrBox.style.display = "none"
+
+    // MOSTRA TAMBÉM NA ESPERA
+    info.style.display = "block"
+    info.innerText = montarTextoProva()
   }
+
   else if(modo === "leitura" && capturado){
     ui.style.display = "block"
     qrBox.style.display = "none"
+
+    // AQUI É O QUE VOCÊ QUER
+    info.style.display = "block"
+    info.innerText = montarTextoProva()
   }
+
   else{
     ui.style.display = "none"
   }

@@ -355,3 +355,26 @@ button{
   outline:none;
   box-shadow:0 0 0 2px #00ffcc;
 }
+
+/* ============================= */
+/* LOADING INICIAL SCANNER */
+/* ============================= */
+
+body.loading::before{
+  content:"Carregando provas...";
+  
+  position:fixed;
+  inset:0;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  background:#111;
+  color:#00ffcc;
+
+  font-size:22px;
+  font-weight:bold;
+
+  z-index:9999;
+}

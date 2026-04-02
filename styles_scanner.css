@@ -206,3 +206,72 @@ button{
 @keyframes girar {
   100% { transform: rotate(360deg); }
 }
+/* ============================= */
+/* MOBILE REAL (SCANNER) */
+/* ============================= */
+@media (max-width: 600px){
+
+  body{
+    font-size: 18px;
+  }
+
+  #titulo{
+    font-size: 32px;
+  }
+
+  #qtdBox{
+    font-size: 26px;
+  }
+
+  #resultado{
+    font-size: 20px;
+    line-height: 1.6;
+  }
+
+  .resultadoBox{
+    padding: 20px;
+    border-radius: 16px;
+  }
+
+  .acertos{
+    font-size: 22px;
+  }
+
+  /* BOTÕES MAIS USÁVEIS */
+  .btn{
+    font-size: 26px;
+    padding: 22px 14px;
+    border-radius: 14px;
+  }
+
+  #botoes{
+    gap: 12px;
+  }
+
+  /* BOLINHAS MAIS VISÍVEIS */
+  .bolinha{
+    width: 60px;
+    height: 60px;
+    font-size: 30px;
+  }
+
+  /* HEADER */
+  .quiz-titulo{
+    font-size: 24px;
+  }
+
+  .quiz-info{
+    font-size: 16px;
+  }
+
+  .quiz-logo-direita{
+    height: 50px;
+  }
+
+  /* RESULTADO CENTRAL */
+  #telaResultado{
+    padding: 10px;
+  }
+
+}
+                 

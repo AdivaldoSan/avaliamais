@@ -56,7 +56,7 @@ TELA INICIAL (SELEÇÃO DE PROVA)
       font-weight:700;
       margin-bottom:8px;
     ">
-      Iniciar Correção
+      Iniciar Correção...
     </div>
 
     <div style="
@@ -1397,7 +1397,10 @@ function confirmar(){
 
   document.getElementById("notaBox").innerText =
     somaAcertos + " de " + somaPesos +
-    " • Nota: " + nota10.toLocaleString("pt-BR", { minimumFractionDigits: 1 })
+    " • Nota: " + nota10.toLocaleString("pt-BR", { 
+  minimumFractionDigits: 1,
+  maximumFractionDigits: 1
+})
 
   document.getElementById("bolinhasResultado").innerHTML = bolinhasHTML
 

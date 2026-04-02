@@ -56,7 +56,7 @@ TELA INICIAL (SELEÇÃO DE PROVA)
       font-weight:700;
       margin-bottom:8px;
     ">
-      Iniciar Correção...
+      Iniciar Correção
     </div>
 
     <div style="
@@ -334,6 +334,9 @@ TELA DO SCANNER
   <button class="btn confirmar" style="flex:1;" onclick="proximo()">
     Próximo
   </button>
+  <button class="btn refazer" style="flex:1;" onclick="abrirResumoFinal()">
+    Finalizar
+  </button>
 </div>
 
   
@@ -370,6 +373,46 @@ TELA DO SCANNER
 
   </div>
  </div> 
+
+ <div id="modalResumo" style="
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.85);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:1000;
+">
+
+  <div style="
+    background:#1a1a1a;
+    padding:25px;
+    border-radius:12px;
+    width:90%;
+    max-width:700px;
+    max-height:80vh;
+    overflow:auto;
+    text-align:left;
+  ">
+
+    <div style="font-size:22px; margin-bottom:15px;">
+      Resumo da Correção
+    </div>
+
+    <div id="conteudoResumo"></div>
+
+    <div style="margin-top:20px; display:flex; gap:10px;">
+      <button class="btn confirmar" onclick="irRelatorio()">
+        Ver relatório
+      </button>
+
+      <button class="btn refazer" onclick="fecharResumo()">
+        Encerrar
+      </button>
+    </div>
+
+  </div>
+</div>   
   
 
 <script src="https://docs.opencv.org/4.x/opencv.js"></script>
@@ -1561,7 +1604,76 @@ function refazerLeitura(){
   modo = "leitura"
   atualizarUI()
 }
+//========================================
+function abrirResumoFinal(){
 
+  const dados = JSON.parse(localStorage.getItem("FILA_ENVIO") || "[]")
+
+  if(dados.length === 0){
+    alert("Nenhuma correção encontrada")
+    return
+  }
+
+  // AGRUPAR POR TURMA
+  const turmas = {}
+
+  dados.forEach(item => {
+
+    const t = item.turma || "N/D"
+
+    if(!turmas[t]){
+      turmas[t] = []
+    }
+
+    turmas[t].push(item.numero)
+  })
+
+  let html = ""
+
+  for(let turma in turmas){
+
+    const lista = turmas[turma]
+
+    const numeros = lista
+      .map(n => parseInt(n))
+      .filter(n => !isNaN(n))
+
+    const max = numeros.length > 0 ? Math.max(...numeros) : 0
+
+    let faltantes = []
+
+    for(let i=1;i<=max;i++){
+      if(!numeros.includes(i)){
+        faltantes.push(i)
+      }
+    }
+
+    html += `
+      <div style="
+        margin-bottom:15px;
+        padding:10px;
+        border:1px solid #00ffcc33;
+        border-radius:8px;
+      ">
+        <b>Turma ${turma}</b><br>
+        Total estimado: ${max}<br>
+        Corrigidas: ${numeros.length}<br>
+        Faltantes: ${faltantes.length > 0 ? faltantes.join(", ") : "Nenhuma"}
+      </div>
+    `
+  }
+
+  document.getElementById("conteudoResumo").innerHTML = html
+  document.getElementById("modalResumo").style.display = "flex"
+}
+//=======================================    
+function fecharResumo(){
+  document.getElementById("modalResumo").style.display = "none"
+}
+//========================================
+function irRelatorio(){
+  window.location.href = "painel.html"
+}
     
 window.addEventListener("online", () => {
   console.log("Internet voltou — sincronizando")

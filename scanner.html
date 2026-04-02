@@ -56,7 +56,7 @@ TELA INICIAL (SELEÇÃO DE PROVA)
       font-weight:700;
       margin-bottom:8px;
     ">
-      Iniciar Correção
+      Iniciar Correção...
     </div>
 
     <div style="
@@ -544,6 +544,28 @@ function salvarFilaLocal(registro){
   console.log("📦 FILA LOCAL:", fila)
 
   processarFila()
+// =============================
+// HISTÓRICO LOCAL (PERMANENTE)
+// =============================
+
+let hist = JSON.parse(localStorage.getItem("HISTORICO_CORRECOES") || "[]")
+
+const chaveHist = registro.aplicacao + "_" + turma + "_" + numero
+
+const indexHist = hist.findIndex(item =>
+  (item.aplicacao + "_" + item.turma + "_" + item.numero) === chaveHist
+)
+
+if(indexHist !== -1){
+  hist[indexHist] = registro
+}else{
+  hist.push(registro)
+}
+
+localStorage.setItem("HISTORICO_CORRECOES", JSON.stringify(hist))
+
+console.log("📊 HISTÓRICO:", hist)
+
 }
 //=============================
 let processandoFila = false    
@@ -1607,7 +1629,11 @@ function refazerLeitura(){
 //========================================
 function abrirResumoFinal(){
 
-  const dados = JSON.parse(localStorage.getItem("FILA_ENVIO") || "[]")
+  const todos = JSON.parse(localStorage.getItem("HISTORICO_CORRECOES") || "[]")
+
+    const dados = todos.filter(item =>
+      String(item.aplicacao).trim() === String(provaSelecionada.id).trim()
+    )
 
   if(dados.length === 0){
     alert("Nenhuma correção encontrada")

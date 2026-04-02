@@ -114,7 +114,14 @@ button{
   justify-content:center;
   align-items:center;
 } 
+#notaBox{
+  font-size:28px !important;
+  font-weight:600;
 
+  opacity:0.9;
+
+  letter-spacing:0.5px;
+}
 .bolinhas{
   display:flex;
   flex-wrap:wrap;

@@ -826,24 +826,21 @@ function atualizarUI(){
     info.innerText = montarTextoProva()
   }
 
-  /*else if(modo === "leitura" && capturado){
-    ui.style.display = "block"
-    qrBox.style.display = "none"
-
-    // AQUI É O QUE VOCÊ QUER
-    info.style.display = "block"
-    info.innerText = montarTextoProva()
-  }*/
-
+ 
 else if(modo === "leitura"){
 
   qrBox.style.display = "none"
 
-  // 🔥 MOSTRA SEMPRE NA LEITURA
-  info.style.display = "block"
-  info.innerText = montarTextoProva()
+  // ONTROLE: NÃO MOSTRAR NO RESULTADO
+  const painel = document.getElementById("painelResultado")
 
-  // 👇 só controla UI de respostas
+  if(painel.style.display === "block"){
+    info.style.display = "none"
+  }else{
+    info.style.display = "block"
+    info.innerText = montarTextoProva()
+  }
+
   if(capturado){
     ui.style.display = "block"
   }else{

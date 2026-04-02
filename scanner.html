@@ -437,21 +437,45 @@ function salvarFilaLocal(registro){
 
   let fila = JSON.parse(localStorage.getItem("FILA_ENVIO") || "[]")
 
-  const chave = registro.aplicacao + "_" + registro.numero
+  // GARANTE PADRÃO
+  const turma = String(registro.turma).trim()
+  const numero = String(parseInt(registro.numero))
 
-  // REMOVE DUPLICADO
-  fila = fila.filter(item =>
-    (item.aplicacao + "_" + item.numero) !== chave
+  // CHAVE CORRETA (AGORA COM TURMA)
+  const chave = registro.aplicacao + "_" + turma + "_" + numero
+
+  // PROCURA SE JÁ EXISTE
+  const index = fila.findIndex(item =>
+    (item.aplicacao + "_" + String(item.turma).trim() + "_" + String(parseInt(item.numero))) === chave
   )
 
-  // DICIONA NOVO
-  fila.push({
-    ...registro,
-    ts: Date.now()
-  })
+  if(index !== -1){
+
+    console.log(" Atualizando:", chave)
+
+    fila[index] = {
+      ...registro,
+      turma,
+      numero,
+      ts: Date.now()
+    }
+
+  } else {
+
+    console.log("➕ Novo:", chave)
+
+    fila.push({
+      ...registro,
+      turma,
+      numero,
+      ts: Date.now()
+    })
+  }
 
   localStorage.setItem("FILA_ENVIO", JSON.stringify(fila))
-  console.log("FILA LOCAL:", fila)
+
+  console.log("📦 FILA LOCAL:", fila)
+
   processarFila()
 }
 //=============================

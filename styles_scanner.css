@@ -368,7 +368,7 @@ body.loading::before{
   background:#111;
   color:#00ffcc;
 
-  font-size:40px;
+  font-size:60px;
   font-weight:bold;
 
   z-index:9999;

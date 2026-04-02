@@ -287,8 +287,20 @@ button{
   gap:35px !important;
 }
 #telaSelecao{
-  align-items:flex-start !important;
   padding-top:60px;
+  
+}
+#telaSelecao{
+  height:auto !important;
+  min-height:100vh;
+
+  align-items:flex-start !important;
+  justify-content:flex-start !important;
+
+  padding-top:40px;
+}
+#telaSelecao select{
+  width:100%;
 }
 
 /* TÍTULO */

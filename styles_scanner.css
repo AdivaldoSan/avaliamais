@@ -207,77 +207,83 @@ button{
   100% { transform: rotate(360deg); }
 }
 
+
 /* ============================= */
-/* MODAIS SCANNER - AJUSTE MOBILE */
+/* MODAL RESUMO - PADRÃO APP */
 /* ============================= */
 
-/* FUNDO (AMBOS MODAIS) */
-#modalConfirmacao,
-#modalResumo{
-  padding:20px;
-}
-
-/* CAIXA INTERNA */
-#modalConfirmacao > div,
 #modalResumo > div{
 
   width:95% !important;
   max-width:none !important;
 
-  padding:30px 20px !important;
-  border-radius:16px !important;
+  padding:35px 22px !important;
+  border-radius:18px !important;
 
-  box-sizing:border-box;
+  background:#1a1a1a;
 }
-/* 🔥 REFORÇO MODAL RESUMO */
 
+/* TÍTULO */
 #modalResumo > div > div:first-child{
-  font-size:26px !important;
+
+  font-size:30px !important;
+  font-weight:800;
+
   text-align:center;
-  margin-bottom:20px;
+
+  margin-bottom:25px;
+
+  background:linear-gradient(90deg,#00ffcc,#00aaff);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
 }
 
+/* CONTAINER GERAL */
 #conteudoResumo{
-  font-size:20px !important;
-  line-height:1.6;
-  margin-bottom:20px;
+
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+
+  margin-bottom:25px;
 }
 
+/* CADA TURMA (CARD) */
 #conteudoResumo > div{
-  font-size:20px !important;
-  padding:15px;
-  margin-bottom:10px;
-}
 
-#modalResumo .btn{
-  font-size:20px !important;
-  padding:18px !important;
-}
-
-/* TEXTO */
-#modalTexto{
-  font-size:20px !important;
-  line-height:1.5;
-}
-
-/* TÍTULO DO RESUMO */
-#modalResumo > div > div:first-child{
   font-size:22px !important;
-  font-weight:bold;
+  line-height:1.6;
+
+  padding:20px;
+
+  background:#111;
+  border-radius:14px;
+
+  border:1px solid #00ffcc33;
+
+  box-shadow:0 5px 15px rgba(0,0,0,0.6);
 }
 
-/* CONTEÚDO DO RESUMO */
-#conteudoResumo{
-  font-size:18px;
-  line-height:1.5;
+/* TEXTO INTERNO (REFORÇO) */
+#conteudoResumo b{
+  font-size:24px;
+  color:#00ffcc;
 }
 
-/* BOTÕES DENTRO DO MODAL */
-#modalConfirmacao .btn,
+/* BOTÕES */
 #modalResumo .btn{
-  font-size:18px;
-  padding:16px;
-    }
+
+  font-size:22px !important;
+  padding:20px !important;
+
+  border-radius:14px;
+}
+
+/* CONTAINER BOTÕES */
+#modalResumo > div > div:last-child{
+  display:flex;
+  gap:12px;
+}
 
 @media (max-width:600px){
 

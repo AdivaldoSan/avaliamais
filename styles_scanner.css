@@ -285,12 +285,12 @@ button{
 
 /* TÍTULO */
 #telaSelecao div[style*="font-size:26px"]{
-  font-size:28px !important;
+  font-size:32px !important;
 }
 
 /* SUBTEXTO */
 #telaSelecao div[style*="font-size:14px"]{
-  font-size:16px !important;
+  font-size:20px !important;
 }
 
 /* SELECT */
@@ -313,17 +313,21 @@ button{
 /* SELECT - MOBILE REAL */
 /* ============================= */
 
-#selectProvas{
-  font-size:20px !important;
-  padding:20px !important;
-  height:60px;
+/* ============================= */
+/* SELECT FORTE (MOBILE REAL) */
+/* ============================= */
 
-  border-radius:12px;
+#selectProvas{
+  font-size:24px !important;
+  padding:22px !important;
+  height:70px;
+
+  border-radius:14px;
 }
 
 /* TEXTO DAS OPÇÕES */
 #selectProvas option{
-  font-size:18px;
+  font-size:20px;
 }
 
 /* MELHORA VISUAL AO TOCAR */

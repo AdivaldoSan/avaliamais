@@ -804,14 +804,19 @@ function atualizarUI(){
   const qrBox = document.getElementById("qrBox")
   const acoes = document.getElementById("acoesResultado")
   const info = document.getElementById("infoProvaScanner")
+  const acoesScanner = document.getElementById("acoesScanner")
 
-  // 🔥 ESCONDE POR PADRÃO
+  // ESCONDE POR PADRÃO
   acoes.style.display = "none"
   info.style.display = "none"
+  acoesScanner.style.display = "none"
 
   if(modo === "qr"){
     ui.style.display = "none"
     qrBox.style.display = "block"
+
+    // MOSTRA BOTÃO VOLTAR SÓ AQUI
+    acoesScanner.style.display = "flex"
 
     info.style.display = "block"
     info.innerText = montarTextoProva()
@@ -821,32 +826,29 @@ function atualizarUI(){
     ui.style.display = "none"
     qrBox.style.display = "none"
 
-    // MOSTRA TAMBÉM NA ESPERA
     info.style.display = "block"
     info.innerText = montarTextoProva()
   }
 
- 
-else if(modo === "leitura"){
+  else if(modo === "leitura"){
 
-  qrBox.style.display = "none"
+    qrBox.style.display = "none"
 
-  // ONTROLE: NÃO MOSTRAR NO RESULTADO
-  const painel = document.getElementById("painelResultado")
+    const painel = document.getElementById("painelResultado")
 
-  if(painel.style.display === "block"){
-    info.style.display = "none"
-  }else{
-    info.style.display = "block"
-    info.innerText = montarTextoProva()
+    if(painel.style.display === "block"){
+      info.style.display = "none"
+    }else{
+      info.style.display = "block"
+      info.innerText = montarTextoProva()
+    }
+
+    if(capturado){
+      ui.style.display = "block"
+    }else{
+      ui.style.display = "none"
+    }
   }
-
-  if(capturado){
-    ui.style.display = "block"
-  }else{
-    ui.style.display = "none"
-  }
-}
 
   else{
     ui.style.display = "none"

@@ -275,16 +275,13 @@ button{
 /* ============================= */
 /* TELA INICIAL - MOBILE REAL */
 /* ============================= */
-
-#telaSelecao > div{
-
+#telaSelecao > div > div{
   width:95% !important;
   max-width:none !important;
-
   padding:25px 18px !important;
-
   border-radius:16px !important;
 }
+
 
 /* TÍTULO */
 #telaSelecao div[style*="font-size:26px"]{

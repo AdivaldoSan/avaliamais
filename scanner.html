@@ -415,15 +415,24 @@ function mapearTurma(numero){
   return resultado
 }
 //============================
-function montarRespostasAPI(){
+ function montarRespostasAPI(){
 
+  const versao = window.PROVA_ATUAL.versoes.find(v => v.v == versaoQR)
+
+  if(!versao){
+    console.error("Versão não encontrada")
+    return []
+  }
+
+  const questoes = versao.questoes
   const gabarito = gabaritoQR.split("")
+
   const lista = []
 
-  for(let i=0;i<gabarito.length;i++){
+  for(let i=0;i<questoes.length;i++){
 
     lista.push({
-      questao: "Q" + (i+1),
+      questao: questoes[i].ID, //ID REAL
       marcada: respostasLidas[i] || "-",
       correta: gabarito[i]
     })
@@ -431,7 +440,7 @@ function montarRespostasAPI(){
   }
 
   return lista
-}  
+}
 //=============================
 function salvarFilaLocal(registro){
 

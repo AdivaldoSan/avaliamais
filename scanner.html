@@ -243,6 +243,21 @@ TELA DO SCANNER
   </div>
 </div>
 
+<!-- BOTÃO VOLTAR (FORA DA CÂMERA) -->
+<div id="acoesScanner" style="
+  width:90vw;
+  margin:10px auto;
+  display:flex;
+  gap:10px;
+">
+
+  <button class="btn refazer" style="flex:1;" onclick="voltarSelecao()">
+    ← Voltar
+  </button>
+
+</div>
+    
+
  <div id="infoProvaScanner" style="
   width:90vw;
   margin:10px auto;
@@ -1420,6 +1435,30 @@ function ordenar(q){
   top.sort((a,b)=>a.x-b.x)
   bottom.sort((a,b)=>a.x-b.x)
   return {TL:top[0],TR:top[1],BL:bottom[0],BR:bottom[1]}
+}
+//==============================
+    function voltarSelecao(){
+
+  // PARA CÂMERA
+  if(video.srcObject){
+    video.srcObject.getTracks().forEach(track => track.stop())
+  }
+
+  // RESET TOTAL
+  resetEstadoScanner()
+
+  // VOLTA TELAS
+  document.getElementById("telaScanner").style.display = "none"
+  document.getElementById("telaSelecao").style.display = "flex"
+
+  // LIMPA ESTADO CRÍTICO
+  provaSelecionada = null
+  window.PROVA_ATUAL = null
+
+  // RESET SELECT
+  document.getElementById("selectProvas").value = ""
+
+  console.log("Voltou para seleção")
 }
 
 // ==============================

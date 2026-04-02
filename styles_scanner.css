@@ -350,9 +350,8 @@ button{
   outline:none;
   box-shadow:0 0 0 2px #00ffcc;
 }
-
 /* ============================= */
-/* LOADING GRANDE (IMPACTANTE) */
+/* LOADING GRANDE - DEFINITIVO */
 /* ============================= */
 
 body.loading{
@@ -368,7 +367,7 @@ body.loading::before{
   z-index:9998;
 }
 
-/* LOGO + TEXTO GRANDE */
+/* LOGO + TEXTO */
 body.loading::after{
   content:"Carregando provas...";
 
@@ -380,20 +379,19 @@ body.loading::after{
   align-items:center;
   justify-content:center;
 
-  gap:40px;
+  gap:50px;
 
   color:#00ffcc;
 
-  font-size:28px;
+  font-size:32px !important;
   font-weight:bold;
 
   z-index:9999;
 
-  /* LOGO GRANDE */
   background-image:url("favicon.svg");
   background-repeat:no-repeat;
-  background-position:center calc(50% - 90px);
-  background-size:140px;
+  background-position:center calc(50% - 120px);
+  background-size:180px;
 
   animation:pulsar 1.5s ease-in-out infinite;
 }

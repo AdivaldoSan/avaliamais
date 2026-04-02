@@ -826,14 +826,30 @@ function atualizarUI(){
     info.innerText = montarTextoProva()
   }
 
-  else if(modo === "leitura" && capturado){
+  /*else if(modo === "leitura" && capturado){
     ui.style.display = "block"
     qrBox.style.display = "none"
 
     // AQUI É O QUE VOCÊ QUER
     info.style.display = "block"
     info.innerText = montarTextoProva()
+  }*/
+
+else if(modo === "leitura"){
+
+  qrBox.style.display = "none"
+
+  // 🔥 MOSTRA SEMPRE NA LEITURA
+  info.style.display = "block"
+  info.innerText = montarTextoProva()
+
+  // 👇 só controla UI de respostas
+  if(capturado){
+    ui.style.display = "block"
+  }else{
+    ui.style.display = "none"
   }
+}
 
   else{
     ui.style.display = "none"

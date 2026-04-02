@@ -418,6 +418,13 @@ TELA DO SCANNER
 <script src="https://docs.opencv.org/4.x/opencv.js"></script>
 
 <script>
+const DEBUG = false
+
+if(!DEBUG && typeof console !== "undefined"){
+  console.log = () => {}
+  console.warn = () => {}
+  console.info = () => {}
+}
 
 // ==============================
 // VARIÁVEIS GLOBAIS

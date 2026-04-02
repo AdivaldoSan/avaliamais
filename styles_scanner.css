@@ -272,3 +272,43 @@ button{
   }
 
   }
+/* ============================= */
+/* TELA INICIAL - MOBILE REAL */
+/* ============================= */
+
+#telaSelecao > div{
+
+  width:95% !important;
+  max-width:none !important;
+
+  padding:25px 18px !important;
+
+  border-radius:16px !important;
+}
+
+/* TÍTULO */
+#telaSelecao div[style*="font-size:26px"]{
+  font-size:28px !important;
+}
+
+/* SUBTEXTO */
+#telaSelecao div[style*="font-size:14px"]{
+  font-size:16px !important;
+}
+
+/* SELECT */
+#selectProvas{
+  font-size:18px !important;
+  padding:18px !important;
+}
+
+/* BLOCO INFO */
+#infoProva{
+  padding:18px !important;
+}
+
+/* BOTÃO INICIAR */
+#btnIniciar{
+  font-size:20px !important;
+  padding:18px !important;
+}

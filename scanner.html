@@ -56,7 +56,7 @@ TELA INICIAL (SELEÇÃO DE PROVA)
       font-weight:700;
       margin-bottom:8px;
     ">
-      Iniciar Correção...
+      Iniciar Correção
     </div>
 
     <div style="
@@ -1694,7 +1694,19 @@ function abrirResumoFinal(){
 }
 //=======================================    
 function fecharResumo(){
-  document.getElementById("modalResumo").style.display = "none"
+
+  // limpa sessão
+  localStorage.removeItem("TOKEN")
+
+  // (opcional) limpar também dados do scanner
+  localStorage.removeItem("FILA_ENVIO")
+  localStorage.removeItem("PROVA_CACHE")
+
+  // NÃO limpar histórico se quiser manter dados locais
+  // localStorage.removeItem("HISTORICO_CORRECOES")
+
+  // redireciona
+  window.location.href = "index.html"
 }
 //========================================
 function irRelatorio(){

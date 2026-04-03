@@ -739,9 +739,8 @@ function montarAbasTurmas(dados){
     }
 
 }
-
-    
-function mostrarTurma(turma){
+//======================================
+  function mostrarTurma(turma){
 
     const lista = window.resultadosCache[turma] || [];
 
@@ -750,6 +749,9 @@ function mostrarTurma(turma){
     const totalQuestoes = lista[0].questoes.length;
 
     const resumo = gerarResumo(lista);
+
+    // 🔥 DETECTA SE TEM NOTA
+    const temNota = lista.some(a => a.nota !== undefined);
 
     let html = `
     <div class="tabela-scroll">
@@ -767,6 +769,7 @@ function mostrarTurma(turma){
     html += `
             <th>Acertos</th>
             <th>%</th>
+            ${temNota ? "<th>Nota</th>" : ""}
         </tr>
     </thead>
     <tbody>
@@ -799,26 +802,26 @@ function mostrarTurma(turma){
                 </div>
             </td>
             `;
-
         });
 
         html += `
             <td>${a.acertos}</td>
             <td>${a.percentual}%</td>
+            ${temNota ? `<td>${a.nota?.toFixed(1) ?? "-"}</td>` : ""}
         </tr>
         `;
     });
 
     html += "</tbody></table></div>";
 
-    // 🔥 RESUMO EMBAIXO
+    // RESUMO EMBAIXO
     let htmlResumo = "";
 
     if(resumo){
 
         htmlResumo = `
         <div class="resumo-linha">
-            📊 Média: <b>${resumo.media}%</b>(${resumo.respondentes}) |
+            📊 Média: <b>${resumo.media}%</b> (${resumo.respondentes}) |
             🏆 Maior: <b>${resumo.maior}%</b> |
             📉 Menor: <b>${resumo.menor}%</b> |
             ❌ Mais erro: <b>Q${resumo.questaoMaisErro}</b> |
@@ -829,8 +832,9 @@ function mostrarTurma(turma){
 
     document.getElementById("tabelaResultados").innerHTML = html;
     document.getElementById("resumoResultados").innerHTML = htmlResumo;
-}
+}  
 
+//======================================
 function fecharResultados(){
     const modal = document.getElementById("modalResultados");
     if(modal) modal.remove();

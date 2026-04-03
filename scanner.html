@@ -56,7 +56,7 @@ TELA INICIAL (SELEÇÃO DE PROVA)
       font-weight:700;
       margin-bottom:8px;
     ">
-      Iniciar Correção
+      Iniciar Correção...
     </div>
 
     <div style="
@@ -1340,7 +1340,7 @@ function lerRespostas(mat){
       let t=new cv.Mat()
       cv.threshold(gray,t,0,255,
         cv.THRESH_BINARY_INV+cv.THRESH_OTSU)
-
+6
       valores.push(cv.countNonZero(t)/(30*30))
 
       gray.delete(); t.delete(); roi.delete()
@@ -1472,11 +1472,23 @@ const turmaConvertida =
   window.TURMAS_PERMITIDAS?.[idxTurma] || "N/D"
 
 document.getElementById("percentualBox").innerHTML = `
-  
-  <div style="color:white;">
+  <div style="
+    font-size:32px;
+    color:#ffffff;
+    -webkit-text-fill-color:#ffffff;
+    font-weight:500;
+    margin-bottom:8px;
+  ">
     Aluno ${folhaQR} - Turma ${turmaConvertida}
   </div>
-  <div class="percentualValor">
+
+  <div style="
+    font-size:40px;
+    font-weight:800;
+    background:linear-gradient(90deg,#00ffcc,#00aaff);
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+  ">
     ${percentual}%
   </div>
 `

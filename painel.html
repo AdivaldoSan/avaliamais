@@ -797,9 +797,12 @@ function montarAbasTurmas(dados){
 
             html += `
             <td>
-                <div class="resposta-circulo ${classe}">
+            
+                <div class="resposta-circulo ${classe}"
+                     title="Marcada: ${q.marcada} | Correta: ${q.correta}">
                     ${q.marcada}
                 </div>
+                
             </td>
             `;
         });

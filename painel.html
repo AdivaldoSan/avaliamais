@@ -96,6 +96,7 @@ function montarTabela(dados, contagem){
     linhas.forEach(l=>{
 
         const id = l[0];
+        const ehImpressa = String(id).startsWith("PRV_");
 
         
          let disciplina = "-";
@@ -129,16 +130,16 @@ function montarTabela(dados, contagem){
 
         html += `
             <tr>
-                <td>${l[1]}</td>
+                <td>${l[1]} ${ehImpressa ? "🖨️" : "🌐"}</td>
                 <td>${disciplina}</td>
                 <td>${dataFormatada}</td>
                 <td class="text-center">${l[4]}</td>
                 <td>${turmas.join(", ")}</td>
                 <td class="text-center">${totalRespostas}</td>
 
-                <td class="text-center">
+               <td class="text-center">
                     <div class="acoes">
-
+                
                         ${
                             totalRespostas > 0
                             ? `<button class="btn-acao"
@@ -148,31 +149,37 @@ function montarTabela(dados, contagem){
                                </button>`
                             : "—"
                         }
-
-                        <button class="btn-acao"
-                                title="Prova"
-                                onclick="gerarPDF('${id}')">
-                                📄
-                        </button>
-
-                        <button class="btn-acao"
-                                title="Gabarito"
-                                onclick="gerarGabarito('${id}')">
-                                📑
-                        </button>
-
-                        <button class="btn-acao"
-                                title="Copiar link para os alunos"
-                                onclick="copiarLink('${linkAluno}')">
-                                🔗
-                        </button>
-
-                        <button class="btn-acao"
-                                title="QR CODE"
-                                onclick="abrirQRCode('${id}')">
-                                📱
-                        </button>
-
+                
+                        ${
+                            !ehImpressa
+                            ? `
+                                <button class="btn-acao"
+                                        title="Prova"
+                                        onclick="gerarPDF('${id}')">
+                                        📄
+                                </button>
+                
+                                <button class="btn-acao"
+                                        title="Gabarito"
+                                        onclick="gerarGabarito('${id}')">
+                                        📑
+                                </button>
+                
+                                <button class="btn-acao"
+                                        title="Copiar link para os alunos"
+                                        onclick="copiarLink('${linkAluno}')">
+                                        🔗
+                                </button>
+                
+                                <button class="btn-acao"
+                                        title="QR CODE"
+                                        onclick="abrirQRCode('${id}')">
+                                        📱
+                                </button>
+                              `
+                            : ""
+                        }
+                
                     </div>
                 </td>
 

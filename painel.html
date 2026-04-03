@@ -873,6 +873,7 @@ function exportarExcel(){
         lista.sort((a,b)=>a.numero - b.numero);
 
         const totalQuestoes = lista[0].questoes.length;
+        const temNota = lista.some(a => a.nota !== undefined);
 
         const planilha = [];
 
@@ -890,6 +891,10 @@ function exportarExcel(){
 
         cab.push("Acertos");
         cab.push("%");
+        
+        if(temNota){
+            cab.push("Nota");
+        }
 
         planilha.push(cab);
 
@@ -907,6 +912,10 @@ function exportarExcel(){
 
             linha.push(a.acertos);
             linha.push(a.percentual+"%");
+            
+            if(temNota){
+                linha.push(a.nota ?? "");
+            }
 
             planilha.push(linha);
 
@@ -919,8 +928,11 @@ function exportarExcel(){
             {wch:6},
             {wch:30},
             ...Array(totalQuestoes).fill({wch:5}),
-            {wch:10},
-            {wch:6}
+            ...[
+            {wch:10}, // acertos
+            {wch:6},  // %
+            ...(temNota ? [{wch:8}] : []) // nota
+        ]
         ];
 
         const range = XLSX.utils.decode_range(ws['!ref']);

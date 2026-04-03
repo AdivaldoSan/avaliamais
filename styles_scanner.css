@@ -406,7 +406,7 @@ body.loading::before{
 
 /* LOGO + TEXTO */
 body.loading::after{
-  content:"Carregando provas...";
+  content:"Carregando Provas";
 
   position:fixed;
   inset:0;

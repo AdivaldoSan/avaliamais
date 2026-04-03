@@ -1466,7 +1466,14 @@ function confirmar(){
   document.getElementById("acoesResultado").style.display = "flex"
 
   // EXIBE RESULTADOS
-  document.getElementById("percentualBox").innerText = percentual + "%"
+  document.getElementById("percentualBox").innerHTML = `
+  <span class="infoAluno">
+    Aluno ${folhaQR} - Turma ${turmaConvertida}
+  </span>
+  <span class="percentualValor">
+    ${percentual}%
+  </span>
+`
 
   document.getElementById("notaBox").innerText = "Acertos: " +
     somaAcertos + " de " + somaPesos +

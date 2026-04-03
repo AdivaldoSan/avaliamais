@@ -1466,13 +1466,18 @@ function confirmar(){
   document.getElementById("acoesResultado").style.display = "flex"
 
   // EXIBE RESULTADOS
-  document.getElementById("percentualBox").innerHTML = `
-  <span class="infoAluno">
+  const idxTurma = parseInt(turmaQR) - 1
+
+const turmaConvertida =
+  window.TURMAS_PERMITIDAS?.[idxTurma] || "N/D"
+
+document.getElementById("percentualBox").innerHTML = `
+  <div class="infoAluno">
     Aluno ${folhaQR} - Turma ${turmaConvertida}
-  </span>
-  <span class="percentualValor">
+  </div>
+  <div class="percentualValor">
     ${percentual}%
-  </span>
+  </div>
 `
 
   document.getElementById("notaBox").innerText = "Acertos: " +

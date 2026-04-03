@@ -632,14 +632,9 @@ async function abrirResultados(id){
 
     const token = localStorage.getItem("TOKEN");
 
-    const dados = await fetchProtegido(API, {
-    method: "POST",
-    body: JSON.stringify({
-        tipo: "obterResultados",
-        id: id,
-        token: token
-    })
-});
+    const dados = await fetchProtegido(
+    API + "?tipo=obterResultados&id=" + id + "&token=" + token
+);
 
     esconderLoading();
 

@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>LAB - Cadastro de Questões</title>
+
+<link rel="stylesheet" href="styles.css">
+
+<style>
+
+/* ===== AJUSTES LAB ===== */
+
+.lab-card{
+  background:white;
+  padding:20px;
+  border-radius:12px;
+  max-width:900px;
+}
+
+textarea{
+  width:100%;
+  padding:10px;
+  border-radius:8px;
+  border:1px solid #ccc;
+}
+
+.alt-box{
+  display:flex;
+  gap:10px;
+  margin-bottom:8px;
+}
+
+.alt-box input{
+  flex:1;
+}
+
+/* ===== MODAL ===== */
+
+.modal{
+  position:fixed;
+  inset:0;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  background:rgba(0,0,0,0.7);
+  z-index:9999;
+}
+
+.modal-box{
+  background:white;
+  padding:20px;
+  border-radius:10px;
+  max-width:420px;
+  width:95%;
+}
+
+/* 🔥 largura real da questão */
+.preview-area{
+  width:370px; /* 🔥 AJUSTAR AQUI DEPOIS */
+  margin:auto;
+}
+
+/* ===== PREVIEW ===== */
+
+.preview-questao{
+  background:#fff;
+  padding:12px;
+  border:1px solid #ddd;
+}
+
+.alt-preview{
+  padding:6px;
+  margin-bottom:5px;
+  background:#f3f4f6;
+  border-radius:6px;
+}
+
+.alt-correta{
+  background:#dcfce7;
+}
+
+/* ===== IMAGEM ===== */
+
+#canvasPreview{
+  max-width:100%;
+  margin-top:10px;
+}
+
+</style>
+</head>
+
+<body class="page-content">
+
+<div class="lab-card">
+
+<h2>Cadastro de Questão (LAB)</h2>
+
+<!-- METADADOS -->
+
+<div class="form-group">
+<label>Disciplina</label>
+<select id="disciplina">
+<option>MAT</option>
+<option>PORT</option>
+<option>BIO</option>
+</select>
+</div>
+
+<div class="form-group">
+<label>Nível</label>
+<select id="nivel">
+<option>EM</option>
+</select>
+</div>
+
+<div class="form-group">
+<label>Assunto</label>
+<select id="assunto">
+<option>Função</option>
+<option>Equação</option>
+<option>Gráfico</option>
+</select>
+</div>
+
+<div class="form-group">
+<label>Descritor</label>
+<select id="descritor"></select>
+</div>
+
+<div class="form-group">
+<label>Professor (iniciais)</label>
+<input id="prof" placeholder="Ex: AS">
+</div>
+
+<!-- ENUNCIADO -->
+
+<div class="form-group">
+<label>Enunciado</label>
+<textarea id="enunciado"></textarea>
+</div>
+
+<!-- IMAGEM -->
+
+<div class="form-group">
+<label>Imagem</label>
+<input type="file" id="imgInput">
+<canvas id="canvasPreview"></canvas>
+</div>
+
+<!-- ALTERNATIVAS -->
+
+<div class="form-group">
+<label>Alternativas</label>
+
+<div class="alt-box"><input id="a"><input type="radio" name="c" value="A"></div>
+<div class="alt-box"><input id="b"><input type="radio" name="c" value="B"></div>
+<div class="alt-box"><input id="c"><input type="radio" name="c" value="C"></div>
+<div class="alt-box"><input id="d"><input type="radio" name="c" value="D"></div>
+
+</div>
+
+<button class="btn-primary" onclick="abrirPreview()">Preview</button>
+
+</div>
+
+<!-- MODAL -->
+
+<div id="modal" class="modal">
+<div class="modal-box">
+
+<div class="preview-area">
+
+<div id="previewQuestao" class="preview-questao"></div>
+
+</div>
+
+<br>
+<button class="btn-primary" onclick="salvar()">Salvar</button>
+<button onclick="fecharModal()">Fechar</button>
+
+</div>
+</div>
+
+<!-- TABELA -->
+
+<div class="table-wrapper">
+<table class="tabela" id="tabela">
+<thead>
+<tr>
+<th>ID</th>
+<th>Professor</th>
+<th>Enunciado</th>
+<th>Imagem</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+</div>
+
+<script>
+
+// ===== CONFIG =====
+
+const LARGURA_PADRAO = 370; // 🔥 PONTO DE CONTROLE
+
+// ===== SIMULA DESCRITORES =====
+
+const descritores = [
+{cod:"D14", txt:"Função 1º grau"},
+{cod:"D20", txt:"Crescimento"},
+{cod:"D16", txt:"Equações"}
+];
+
+const select = document.getElementById("descritor");
+
+descritores.forEach(d=>{
+  const op = document.createElement("option");
+  op.value = d.cod;
+  op.textContent = `${d.cod} - ${d.txt}`;
+  select.appendChild(op);
+});
+
+// ===== IMAGEM =====
+
+let imgBase64 = "";
+
+document.getElementById("imgInput").addEventListener("change", e=>{
+  const file = e.target.files[0];
+  const reader = new FileReader();
+
+  reader.onload = ev=>{
+    const img = new Image();
+    img.onload = ()=>{
+      const canvas = document.getElementById("canvasPreview");
+      const ctx = canvas.getContext("2d");
+
+      const escala = LARGURA_PADRAO / img.width;
+
+      canvas.width = LARGURA_PADRAO;
+      canvas.height = img.height * escala;
+
+      ctx.drawImage(img,0,0,canvas.width,canvas.height);
+
+      imgBase64 = canvas.toDataURL("image/jpeg",0.8);
+    };
+    img.src = ev.target.result;
+  };
+
+  reader.readAsDataURL(file);
+});
+
+// ===== PREVIEW =====
+
+function abrirPreview(){
+
+  const prof = document.getElementById("prof").value;
+  const enun = document.getElementById("enunciado").value;
+
+  const preview = document.getElementById("previewQuestao");
+
+  preview.innerHTML = `
+  <p><b>(${prof})</b> ${enun}</p>
+  ${imgBase64 ? `<img src="${imgBase64}">` : ""}
+  <div class="alt-preview">A) ${a.value}</div>
+  <div class="alt-preview">B) ${b.value}</div>
+  <div class="alt-preview">C) ${c.value}</div>
+  <div class="alt-preview">D) ${d.value}</div>
+  `;
+
+  document.getElementById("modal").style.display="flex";
+}
+
+function fecharModal(){
+  document.getElementById("modal").style.display="none";
+}
+
+// ===== ID =====
+
+function gerarId(){
+
+  const disc = disciplina.value;
+  const niv = nivel.value;
+  const desc = descritor.value;
+
+  const banco = JSON.parse(localStorage.getItem("questoes")||"[]");
+
+  const prefixo = `${disc}_${niv}_${desc}_`;
+
+  let max=0;
+
+  banco.forEach(q=>{
+    if(q.id.startsWith(prefixo)){
+      const num = parseInt(q.id.split("_").pop());
+      if(num>max) max=num;
+    }
+  });
+
+  return prefixo + String(max+1).padStart(3,"0");
+}
+
+// ===== SALVAR =====
+
+function salvar(){
+
+  const id = gerarId();
+
+  const dados = {
+    id,
+    prof: prof.value,
+    enunciado: enunciado.value,
+    img: imgBase64 ? id+".jpg" : ""
+  };
+
+  const banco = JSON.parse(localStorage.getItem("questoes")||"[]");
+
+  banco.push(dados);
+
+  localStorage.setItem("questoes", JSON.stringify(banco));
+
+  renderTabela();
+
+  fecharModal();
+}
+
+// ===== TABELA =====
+
+function renderTabela(){
+
+  const tbody = document.querySelector("#tabela tbody");
+
+  tbody.innerHTML="";
+
+  const banco = JSON.parse(localStorage.getItem("questoes")||"[]");
+
+  banco.forEach(q=>{
+    const tr = document.createElement("tr");
+
+    tr.innerHTML = `
+    <td>${q.id}</td>
+    <td>${q.prof}</td>
+    <td>${q.enunciado}</td>
+    <td>${q.img}</td>
+    `;
+
+    tbody.appendChild(tr);
+  });
+}
+
+renderTabela();
+
+</script>
+
+</body>
+  </html>

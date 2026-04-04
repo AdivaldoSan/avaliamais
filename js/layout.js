@@ -57,6 +57,11 @@ function criarLayout(){
        class="${paginaAtual==='provas.html'?'active':''}">
        Gerar Prova Impressa
     </a>
+
+    <a href="provas.html"
+       class="${paginaAtual==='lab_questoes.html'?'active':''}">
+       Cadastrar Questões 
+    </a>
    
     ${perfil === "ADMIN" ? `
       <a href="admin.html"

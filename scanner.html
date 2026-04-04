@@ -418,6 +418,14 @@ TELA DO SCANNER
 <script src="https://docs.opencv.org/4.x/opencv.js"></script>
 
 <script>
+// =============================
+// VALIDAÇÃO
+// =============================
+const token = localStorage.getItem("TOKEN");
+
+if(!token){
+  window.location.href = "index.html";
+}
 const DEBUG = false
 
 if(!DEBUG && typeof console !== "undefined"){
@@ -669,14 +677,7 @@ function resetEstadoScanner(){
   console.log("Scanner resetado")
 }
 
-// =============================
-// VALIDAÇÃO
-// =============================
-const token = localStorage.getItem("TOKEN");
 
-if(!token){
-  window.location.href = "index.html";
-}
 //=============================
 function tocarSomQR(){
   const audio = document.getElementById("somQR")

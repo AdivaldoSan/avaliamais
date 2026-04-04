@@ -58,7 +58,7 @@ function criarLayout(){
        Gerar Prova Impressa
     </a>
 
-    <a href="provas.html"
+    <a href="lab_questoes.html"
        class="${paginaAtual==='lab_questoes.html'?'active':''}">
        Cadastrar Questões 
     </a>

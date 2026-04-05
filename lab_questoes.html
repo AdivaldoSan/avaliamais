@@ -29,21 +29,20 @@ textarea{
 .alt-box{
   display:flex;
   align-items:center;
-  gap:8px;
+  gap:10px;
   margin-bottom:8px;
 }
 
 .alt-box input[type="radio"]{
-  order: -1; /* joga pra esquerda */
-  transform: scale(0.8); /* menor */
-  cursor:pointer;
+  transform: scale(1); /*volta tamanho normal */
+  margin:0;
 }
 
-.alt-box input[type="text"],
 .alt-box input{
   flex:1;
 }
 
+.alt-box input[type="text"],
 .alt-box input{
   flex:1;
 }
@@ -218,6 +217,7 @@ document.getElementById("conteudo").innerHTML = `
 const LARGURA_PADRAO = 370;
 
 let larguraAtual = 370;
+let imgOriginal = "";
 
 document.addEventListener("input", function(e){
 
@@ -225,7 +225,8 @@ document.addEventListener("input", function(e){
 
     larguraAtual = parseInt(e.target.value);
 
-    atualizarPreviewImagem();
+    desenharImagem(larguraAtual);
+    abrirPreview();
 
   }
 
@@ -266,6 +267,7 @@ document.addEventListener("change", function(e){
   const reader = new FileReader();
 
   reader.onload = ev=>{
+    desenharImagem(LARGURA_PADRAO);
     const img = new Image();
     img.onload = ()=>{
       const canvas = document.getElementById("canvasPreview");
@@ -286,9 +288,9 @@ document.addEventListener("change", function(e){
   reader.readAsDataURL(file);
 });
 //====================
-function atualizarPreviewImagem(){
+function desenharImagem(largura){
 
-  if(!imgBase64) return;
+  if(!imgOriginal) return;
 
   const img = new Image();
 
@@ -297,19 +299,18 @@ function atualizarPreviewImagem(){
     const canvas = document.getElementById("canvasPreview");
     const ctx = canvas.getContext("2d");
 
-    const escala = larguraAtual / img.width;
+    const escala = largura / img.width;
 
-    canvas.width = larguraAtual;
+    canvas.width = largura;
     canvas.height = img.height * escala;
 
+    ctx.clearRect(0,0,canvas.width,canvas.height);
     ctx.drawImage(img,0,0,canvas.width,canvas.height);
 
     imgBase64 = canvas.toDataURL("image/jpeg",0.8);
-
-    abrirPreview(); // atualiza visual
   };
 
-  img.src = imgBase64;
+  img.src = imgOriginal; // 🔥 AGORA CORRETO
 }
 
 // ===== PREVIEW =====
@@ -324,7 +325,7 @@ function abrirPreview(){
 
   preview.innerHTML = `
   <p><b>(${prof})</b> ${enun}</p>
-  ${imgBase64 ? `<img src="${imgBase64}">` : ""}
+  ${imgBase64 ? `<<img src="${imgBase64}" style="width:${larguraAtual}px;">` : ""}
   <div class="alt-preview">A) ${a.value}</div>
   <div class="alt-preview">B) ${b.value}</div>
   <div class="alt-preview">C) ${c.value}</div>

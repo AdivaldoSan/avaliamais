@@ -28,8 +28,20 @@ textarea{
 
 .alt-box{
   display:flex;
-  gap:10px;
+  align-items:center;
+  gap:8px;
   margin-bottom:8px;
+}
+
+.alt-box input[type="radio"]{
+  order: -1; /* joga pra esquerda */
+  transform: scale(0.8); /* menor */
+  cursor:pointer;
+}
+
+.alt-box input[type="text"],
+.alt-box input{
+  flex:1;
 }
 
 .alt-box input{
@@ -168,6 +180,9 @@ document.getElementById("conteudo").innerHTML = `
 <div id="modal" class="modal">
 <div class="modal-box">
 
+<label>Ajustar largura da imagem</label>
+<input type="range" id="rangeImg" min="150" max="370" value="370">
+
 <div class="preview-area">
 <div id="previewQuestao" class="preview-questao"></div>
 </div>
@@ -202,6 +217,19 @@ document.getElementById("conteudo").innerHTML = `
 // ===== CONFIG =====
 const LARGURA_PADRAO = 370;
 
+let larguraAtual = 370;
+
+document.addEventListener("input", function(e){
+
+  if(e.target.id === "rangeImg"){
+
+    larguraAtual = parseInt(e.target.value);
+
+    atualizarPreviewImagem();
+
+  }
+
+});
 // ===== DESCRITORES =====
 const descritores = [
 {cod:"D14", txt:"Função 1º grau"},
@@ -257,6 +285,32 @@ document.addEventListener("change", function(e){
 
   reader.readAsDataURL(file);
 });
+//====================
+function atualizarPreviewImagem(){
+
+  if(!imgBase64) return;
+
+  const img = new Image();
+
+  img.onload = function(){
+
+    const canvas = document.getElementById("canvasPreview");
+    const ctx = canvas.getContext("2d");
+
+    const escala = larguraAtual / img.width;
+
+    canvas.width = larguraAtual;
+    canvas.height = img.height * escala;
+
+    ctx.drawImage(img,0,0,canvas.width,canvas.height);
+
+    imgBase64 = canvas.toDataURL("image/jpeg",0.8);
+
+    abrirPreview(); // atualiza visual
+  };
+
+  img.src = imgBase64;
+}
 
 // ===== PREVIEW =====
 function abrirPreview(){
@@ -319,7 +373,9 @@ function salvar(){
     id,
     prof,
     enunciado: enunciado.value,
-    img: imgBase64 ? id+".jpg" : ""
+    img: imgBase64 ? id+".jpg" : "",
+    img_base64: imgBase64,
+    largura_img: imgBase64 ? larguraAtual : null
   };
 
   const banco = JSON.parse(localStorage.getItem("questoes")||"[]");
@@ -332,6 +388,7 @@ function salvar(){
 
   fecharModal();
 }
+
 
 // ===== TABELA =====
 function renderTabela(){

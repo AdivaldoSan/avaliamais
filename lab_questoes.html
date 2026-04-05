@@ -24,27 +24,33 @@ textarea{
   padding:10px;
   border-radius:8px;
   border:1px solid #ccc;
+  resize: vertical;
+  min-height: 80px;
 }
 
 .alt-box{
   display:flex;
   align-items:center;
-  gap:10px;
+  gap:8px;
   margin-bottom:8px;
+  width:100%;
 }
 
 .alt-box input[type="radio"]{
-  transform: scale(1); /*volta tamanho normal */
+  flex: 0 0 auto; /* não cresce nem empurra */
   margin:0;
+  cursor:pointer;
 }
 
-.alt-box input{
-  flex:1;
+.alt-box span{
+  width:20px; /* A) B) alinhado */
+  font-weight:500;
 }
 
 .alt-box input[type="text"],
 .alt-box input{
-  flex:1;
+  flex:1; /* ocupa resto do espaço */
+  min-width:0; /* evita quebra estranha */
 }
 
 /* ===== MODAL ===== */
@@ -165,10 +171,29 @@ document.getElementById("conteudo").innerHTML = `
 <div class="form-group">
 <label>Alternativas</label>
 
-<div class="alt-box"><input id="a"><input type="radio" name="c" value="A"></div>
-<div class="alt-box"><input id="b"><input type="radio" name="c" value="B"></div>
-<div class="alt-box"><input id="c"><input type="radio" name="c" value="C"></div>
-<div class="alt-box"><input id="d"><input type="radio" name="c" value="D"></div>
+<div class="alt-box">
+  <input type="radio" name="c" value="A">
+  <span>A)</span>
+  <input id="a">
+</div>
+
+<div class="alt-box">
+  <input type="radio" name="c" value="B">
+  <span>B)</span>
+  <input id="b">
+</div>
+
+<div class="alt-box">
+  <input type="radio" name="c" value="C">
+  <span>C)</span>
+  <input id="c">
+</div>
+
+<div class="alt-box">
+  <input type="radio" name="c" value="D">
+  <span>D)</span>
+  <input id="d">
+</div>
 
 </div>
 
@@ -267,6 +292,7 @@ document.addEventListener("change", function(e){
   const reader = new FileReader();
 
   reader.onload = ev=>{
+    imgOriginal = ev.target.result;
     desenharImagem(LARGURA_PADRAO);
     const img = new Image();
     img.onload = ()=>{
@@ -310,22 +336,39 @@ function desenharImagem(largura){
     imgBase64 = canvas.toDataURL("image/jpeg",0.8);
   };
 
-  img.src = imgOriginal; // 🔥 AGORA CORRETO
+  img.src = imgOriginal; // AGORA CORRETO
 }
 
 // ===== PREVIEW =====
 function abrirPreview(){
 
+  const enun = document.getElementById("enunciado").value.trim();
+  const alternativas = [a.value, b.value, c.value, d.value];
+  const marcada = document.querySelector('input[name="c"]:checked');
+
+  if(!enun){
+    alert("Digite o enunciado");
+    return;
+  }
+
+  if(alternativas.some(v => !v.trim())){
+    alert("Preencha todas as alternativas");
+    return;
+  }
+
+  if(!marcada){
+    alert("Marque a alternativa correta");
+    return;
+  }
+
   const nomeUsuario = localStorage.getItem("NOME") || "Adivaldo Santos";
   const prof = gerarIniciais(nomeUsuario);
-
-  const enun = document.getElementById("enunciado").value;
 
   const preview = document.getElementById("previewQuestao");
 
   preview.innerHTML = `
   <p><b>(${prof})</b> ${enun}</p>
-  ${imgBase64 ? `<<img src="${imgBase64}" style="width:${larguraAtual}px;">` : ""}
+  ${imgBase64 ? `<img id="imgPreview" src="${imgBase64}" style="width:${larguraAtual}px; resize:horizontal; display:block;">` : ""}
   <div class="alt-preview">A) ${a.value}</div>
   <div class="alt-preview">B) ${b.value}</div>
   <div class="alt-preview">C) ${c.value}</div>
@@ -334,7 +377,7 @@ function abrirPreview(){
 
   document.getElementById("modal").style.display="flex";
 }
-
+//====================================
 function fecharModal(){
   document.getElementById("modal").style.display="none";
 }
@@ -389,7 +432,16 @@ function salvar(){
 
   fecharModal();
 }
+///===========================
+document.addEventListener("mouseup", function(){
 
+  const img = document.getElementById("imgPreview");
+
+  if(img){
+    larguraAtual = img.clientWidth;
+  }
+
+});
 
 // ===== TABELA =====
 function renderTabela(){

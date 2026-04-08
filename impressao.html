@@ -966,7 +966,18 @@ resizers.forEach(r => r.style.display = "none")
 
   await new Promise(r => setTimeout(r, 300))
 
-  pdf.save("prova.pdf")
+  //pdf.save("prova.pdf")
+  const nomeProva = prova.nome || "Prova"
+	const turma = document.getElementById("turmaSelect").value || "Turma"
+	
+	// limpa caracteres inválidos (IMPORTANTE)
+	function limpar(str){
+	  return str.replace(/[\\/:*?"<>|]/g, "").trim()
+	}
+	
+	const nomeArquivo = `${limpar(nomeProva)} - ${limpar(turma)}.pdf`
+	
+	pdf.save(nomeArquivo)
 
   try{
 

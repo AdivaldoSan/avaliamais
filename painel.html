@@ -555,57 +555,74 @@ async function alterarStatus(id, status){
 
     carregarAplicacoes();
 }
-
+//==========================================================================
 function abrirQRCode(id){
 
-    const link = window.location.origin +
-                 window.location.pathname.replace("painel.html","") +
-                 "aluno.html?id=" + id;
+    const base = window.location.origin;
+
+    const linkAluno = base + "/aluno.html?id=" + id;
+    const linkJogar = base + "/jogar";
+
+    // 🔥 PIN = ID sem APL_
+    const pin = id.replace("APL_","");
 
     const modal = document.createElement("div");
     modal.id = "modalQR";
 
-  modal.innerHTML = `
+    modal.innerHTML = `
     <div class="modal-bg" onclick="fecharQR()"></div>
-    <div class="modal-box" style="text-align:center;">
 
-        <h3 style="margin-bottom:15px;">Aplicação via QR Code</h3>
+    <div class="modal-box" style="text-align:center; max-width:420px;">
 
+        <h3 style="margin-bottom:15px;">
+            Acesso dos Alunos
+        </h3>
+
+        <!-- QR -->
         <div id="qrcode" style="margin:10px 0 20px;"></div>
 
-        <input id="inputLinkQR"
-               value="${link}"
-               readonly
-               style="
-                   width:100%;
-                   padding:8px;
-                   margin-bottom:15px;
-                   border:1px solid #ccc;
-                   border-radius:4px;
-               "
-               onclick="this.select()">
+        <!-- LINK -->
+        <input value="${linkAluno}" readonly
+            style="width:100%;padding:8px;margin-bottom:10px;"
+            onclick="this.select()">
 
-        <div style="display:flex; justify-content:center; gap:10px;">
-            <button onclick="copiarLink(document.getElementById('inputLinkQR').value)">
-                Copiar link
-            </button>
+        <button onclick="copiarLink('${linkAluno}')">
+            Copiar link
+        </button>
 
-            <button onclick="fecharQR()">
-                Fechar
-            </button>
+        <hr style="margin:20px 0;">
+
+        <!-- PIN -->
+        <p>Acesse:</p>
+        <b>${linkJogar}</b>
+
+        <p style="margin-top:10px;">PIN:</p>
+
+        <div style="
+            font-size:30px;
+            font-weight:bold;
+            letter-spacing:4px;
+            margin-bottom:15px;
+        ">
+            ${pin}
         </div>
 
+        <br><br>
+
+        <button onclick="fecharQR()">Fechar</button>
+
     </div>
-`;
+    `;
+
     document.body.appendChild(modal);
 
     new QRCode(document.getElementById("qrcode"), {
-        text: link,
+        text: linkAluno,
         width: 180,
         height: 180
     });
 }
-
+//=========================================================================
 function fecharQR(){
     const modal = document.getElementById("modalQR");
     if(modal) modal.remove();

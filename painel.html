@@ -557,6 +557,12 @@ async function alterarStatus(id, status){
 }
 //==========================================================================
 function abrirQRCode(id){
+    const linkJogar = base + "/jogar";
+
+    // versão limpa (sem https:// e www)
+    const linkJogarDisplay = linkJogar
+    .replace(/^https?:\/\//, '')
+    .replace(/^www\./, '');
 
     const base = window.location.origin;
 
@@ -618,7 +624,7 @@ function abrirQRCode(id){
                 color:#1976d2;
                 margin-bottom:20px;
             ">
-                ${linkJogar}
+                ${linkJogarDisplay}
             </div>
 
             <div style="font-size:14px; margin-bottom:5px;">

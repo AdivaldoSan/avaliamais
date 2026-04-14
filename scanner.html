@@ -472,14 +472,19 @@ if(!isMobile()){
   </div>
   `;
 
-  new QRCode(document.getElementById("qrcode"), {
-  text: link,
-  width: 200,
-  height: 200
-});
+  // IMPORTANTE: delay mínimo pra garantir render
+  setTimeout(()=>{
+    new QRCode(document.getElementById("qrcode"), {
+      text: link,
+      width: 200,
+      height: 200
+    });
+  }, 50);
 
+  // trava resto do sistema (SEM return)
+  window.stop?.();
 
-return;
+  throw new Error("Execução bloqueada no desktop");
 }
     
     

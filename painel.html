@@ -557,102 +557,83 @@ async function alterarStatus(id, status){
 }
 //==========================================================================
 function abrirQRCode(id){
-    const linkJogar = base + "/jogar";
-
-    // versão limpa (sem https:// e www)
-    const linkJogarDisplay = linkJogar
-    .replace(/^https?:\/\//, '')
-    .replace(/^www\./, '');
 
     const base = window.location.origin;
 
     const linkAluno = base + "/aluno.html?id=" + id;
     const linkJogar = base + "/jogar";
 
-    // PIN (provisório)
+    // 🔥 versão limpa
+    const linkJogarDisplay = linkJogar
+        .replace(/^https?:\/\//, '')
+        .replace(/^www\./, '');
+
     const pin = id.replace("APL_","");
 
     const modal = document.createElement("div");
     modal.id = "modalQR";
 
     modal.innerHTML = `
-<div class="modal-bg" onclick="fecharQR()"></div>
+    <div class="modal-bg" onclick="fecharQR()"></div>
 
-<div class="modal-box" style="
-    max-width:1000px;
-    width:95%;
-    display:flex;
-    flex-direction:column;
-    gap:25px;
-    padding:40px;
-    border-radius:12px;
-">
-
-    <!-- CONTEÚDO PRINCIPAL -->
-    <div style="
+    <div class="modal-box" style="
+        max-width:1000px;
+        width:95%;
         display:flex;
-        gap:60px;
-        align-items:center;
-        justify-content:space-between;
+        flex-direction:column;
+        gap:25px;
+        padding:40px;
+        border-radius:12px;
     ">
 
-        <!-- ESQUERDA -->
-        <div style="flex:1; text-align:center;">
+        <div style="
+            display:flex;
+            gap:60px;
+            align-items:center;
+            justify-content:space-between;
+        ">
 
-            <h3 style="margin-bottom:15px;">
-                Escaneie para acessar
-            </h3>
-
-            <div id="qrcode" style="margin:0 auto;"></div>
-
-        </div>
-
-        <!-- DIREITA -->
-        <div style="flex:1; text-align:center;">
-
-            <h3 style="margin-bottom:10px;">
-                Acesso via PIN
-            </h3>
-
-            <p style="margin-bottom:5px;">
-                Acesse:
-            </p>
-
-            <div style="
-                font-size:22px;
-                font-weight:600;
-                color:#1976d2;
-                margin-bottom:20px;
-            ">
-                ${linkJogarDisplay}
+            <div style="flex:1; text-align:center;">
+                <h3>Escaneie para acessar</h3>
+                <div id="qrcode"></div>
             </div>
 
-            <div style="font-size:14px; margin-bottom:5px;">
-                PIN:
-            </div>
+            <div style="flex:1; text-align:center;">
+                <h3>Acesso via PIN</h3>
 
-            <div style="
-                font-size:64px;
-                font-weight:bold;
-                letter-spacing:8px;
-                color:#1976d2;
-            ">
-                ${pin}
+                <p>Acesse:</p>
+
+                <div style="
+                    font-size:22px;
+                    font-weight:600;
+                    color:#1976d2;
+                    margin-bottom:20px;
+                ">
+                    ${linkJogarDisplay}
+                </div>
+
+                <div style="font-size:14px;">PIN:</div>
+
+                <div style="
+                    font-size:64px;
+                    font-weight:bold;
+                    letter-spacing:8px;
+                    color:#1976d2;
+                ">
+                    ${pin}
+                </div>
             </div>
 
         </div>
 
-    </div>
+        <div style="text-align:center;">
+            <button onclick="fecharQR()" class="btn-primary">
+                Fechar
+            </button>
+        </div>
 
-    <!-- BOTÃO -->
-    <div style="text-align:center;">
-        <button onclick="fecharQR()" class="btn-primary">
-            Fechar
-        </button>
     </div>
-
-</div>
-`;
+    `;
 
     document.body.appendChild(modal);
 

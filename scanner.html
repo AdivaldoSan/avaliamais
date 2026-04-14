@@ -419,6 +419,7 @@ TELA DO SCANNER
 <script src="https://docs.opencv.org/4.x/opencv.js"></script>
 
 <script>
+function iniciarSistema(){
 //========================================================   
 function isMobile(){
   return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
@@ -1843,7 +1844,8 @@ processarFila()
 
 
 
-    
+}
+document.addEventListener("DOMContentLoaded", iniciarSistema);
 </script>
 </div>
 

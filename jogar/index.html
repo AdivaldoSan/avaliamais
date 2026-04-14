@@ -10,10 +10,7 @@
 
 <style>
 body{
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    height:100vh;
+    margin:0;
     background:#111;
     color:white;
     font-family:Arial;
@@ -53,24 +50,48 @@ button{
     color:#ff6b6b;
     margin-top:10px;
 }
+
+/* CENTRALIZAÇÃO CORRETA */
+.aluno-container{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    height:calc(100vh - 70px);
+}
 </style>
 </head>
 
-<body>
+<body class="aluno-page">
 
-<div class="card">
+<!-- HEADER -->
+<div class="aluno-header">
+    <div class="aluno-header-left">
+        Avalia+ | Plataforma de Avaliação Digital
+    </div>
 
-    <h2>Digite o PIN</h2>
+    <img src="../favicon.svg"
+         class="aluno-logo-direita"
+         alt="Avalia+">
+</div>
 
-    <input id="pin"
-           placeholder="______"
-           maxlength="6"
-           inputmode="numeric"
-           autofocus>
+<!-- CONTEÚDO -->
+<div class="aluno-container">
 
-    <button onclick="entrar()">Entrar</button>
+    <div class="card">
 
-    <div id="erro" class="erro"></div>
+        <h2>Digite o PIN</h2>
+
+        <input id="pin"
+               placeholder="______"
+               maxlength="6"
+               inputmode="numeric"
+               autofocus>
+
+        <button onclick="entrar()">Entrar</button>
+
+        <div id="erro" class="erro"></div>
+
+    </div>
 
 </div>
 
@@ -88,8 +109,8 @@ function entrar(){
 
     erro.innerText = "";
 
-    if(pin.length < 4){
-        erro.innerText = "PIN inválido.";
+    if(pin.length !== 6){
+        erro.innerText = "PIN deve ter 6 dígitos.";
         return;
     }
 

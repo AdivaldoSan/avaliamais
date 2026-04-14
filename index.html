@@ -82,16 +82,27 @@
     const dados = await resposta.json();
 
     if(dados.autorizado){
+  
+    localStorage.setItem("TOKEN", dados.token);
+    localStorage.setItem("NOME", dados.nome);
+    localStorage.setItem("PERFIL", dados.perfil);
+  
+    const params = new URLSearchParams(window.location.search);
+    const redirect = params.get("redirect");
+  
+    // PRIORIDADE: redirect (scanner, etc)
+    if(redirect){
+      window.location.href = redirect + ".html";
+      return;
+    }
+  
+    // fluxo normal
+    if(dados.perfil === "ADMIN"){
+      window.location.href = "admin.html";
+    }else{
+      window.location.href = "painel.html";
+    }
 
-      localStorage.setItem("TOKEN", dados.token);
-      localStorage.setItem("NOME", dados.nome);
-      localStorage.setItem("PERFIL", dados.perfil);
-
-      if(dados.perfil === "ADMIN"){
-        window.location.href = "admin.html";
-      }else{
-        window.location.href = "painel.html";
-      }
 
     }else{
 

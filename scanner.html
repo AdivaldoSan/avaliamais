@@ -323,7 +323,7 @@ TELA DO SCANNER
 
   </div>
 
-<!-- 🔥 BOTÃO FORA DO PAINEL -->
+<!-- BOTÃO FORA DO PAINEL -->
 <div id="acoesResultado" style="
   display:none;
   width:90vw;
@@ -418,14 +418,87 @@ TELA DO SCANNER
 <script src="https://docs.opencv.org/4.x/opencv.js"></script>
 
 <script>
+//========================================================   
+function isMobile(){
+  return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+}
+//========================================================
+if(!isMobile()){
+
+  const link = window.location.origin + "/scanner.html?redirect=scanner";
+
+  document.body.innerHTML = `
+  
+  <div style="
+    height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:#111;
+    color:white;
+    font-family:Arial;
+  ">
+
+    <div style="
+      background:#1e1e1e;
+      padding:40px;
+      border-radius:16px;
+      text-align:center;
+      max-width:400px;
+      width:90%;
+    ">
+
+      <h2 style="margin-bottom:10px;">
+        Use o celular
+      </h2>
+
+      <p style="opacity:0.7; margin-bottom:20px;">
+        Este recurso funciona apenas no celular
+      </p>
+
+      <div id="qrcode"></div>
+
+      <p style="
+        margin-top:20px;
+        font-size:14px;
+        opacity:0.6;
+      ">
+        Escaneie para abrir no celular
+      </p>
+
+    </div>
+
+  </div>
+  `;
+
+  new QRCode(document.getElementById("qrcode"), {
+    text: link,
+    width: 200,
+    height: 200
+  });
+
+  throw new Error("Bloqueado no desktop");
+}
+    
+    
 // =============================
 // VALIDAÇÃO
 // =============================
 const token = localStorage.getItem("TOKEN");
 
 if(!token){
-  window.location.href = "index.html";
+
+  const params = new URLSearchParams(window.location.search);
+  const redirect = params.get("redirect");
+
+  if(redirect){
+    window.location.href = "index.html?redirect=" + redirect;
+  }else{
+    window.location.href = "index.html";
+  }
+
 }
+//=============================
 const DEBUG = false
 
 if(!DEBUG && typeof console !== "undefined"){

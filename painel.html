@@ -570,19 +570,27 @@ function abrirQRCode(id){
     modal.id = "modalQR";
 
     modal.innerHTML = `
-    <div class="modal-bg" onclick="fecharQR()"></div>
+<div class="modal-bg" onclick="fecharQR()"></div>
 
-    <div class="modal-box" style="
-        max-width:800px;
-        width:95%;
+<div class="modal-box" style="
+    max-width:1000px;
+    width:95%;
+    display:flex;
+    flex-direction:column;
+    gap:25px;
+    padding:40px;
+    border-radius:12px;
+">
+
+    <!-- CONTEÚDO PRINCIPAL -->
+    <div style="
         display:flex;
-        gap:40px;
+        gap:60px;
         align-items:center;
         justify-content:space-between;
-        padding:30px;
     ">
 
-        <!-- ESQUERDA: QR -->
+        <!-- ESQUERDA -->
         <div style="flex:1; text-align:center;">
 
             <h3 style="margin-bottom:15px;">
@@ -593,7 +601,7 @@ function abrirQRCode(id){
 
         </div>
 
-        <!-- DIREITA: PIN -->
+        <!-- DIREITA -->
         <div style="flex:1; text-align:center;">
 
             <h3 style="margin-bottom:10px;">
@@ -605,8 +613,8 @@ function abrirQRCode(id){
             </p>
 
             <div style="
-                font-weight:bold;
-                font-size:18px;
+                font-size:22px;
+                font-weight:600;
                 color:#1976d2;
                 margin-bottom:20px;
             ">
@@ -618,9 +626,9 @@ function abrirQRCode(id){
             </div>
 
             <div style="
-                font-size:56px;
+                font-size:64px;
                 font-weight:bold;
-                letter-spacing:6px;
+                letter-spacing:8px;
                 color:#1976d2;
             ">
                 ${pin}
@@ -630,10 +638,15 @@ function abrirQRCode(id){
 
     </div>
 
-    <div style="text-align:center; margin-top:15px;">
-        <button onclick="fecharQR()">Fechar</button>
+    <!-- BOTÃO -->
+    <div style="text-align:center;">
+        <button onclick="fecharQR()" class="btn-primary">
+            Fechar
+        </button>
     </div>
-    `;
+
+</div>
+`;
 
     document.body.appendChild(modal);
 

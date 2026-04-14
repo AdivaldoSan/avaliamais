@@ -1,5 +1,10 @@
 function criarLayout(){
-
+    if(typeof QRCode === "undefined"){
+    const script = document.createElement("script");
+    script.src = "https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js";
+    document.head.appendChild(script);
+    }
+    
     const token = localStorage.getItem("TOKEN");
     const perfil = localStorage.getItem("PERFIL");
     const nome = localStorage.getItem("NOME");

@@ -54,7 +54,10 @@ async function carregarAplicacoes(){
     const dados =
         await fetchProtegido(API + "?tipo=listarAplicacoes&token=" + token);
 
-    if(!dados) return;
+   if(!dados){
+    esconderLoading();
+    return;
+}
 
     if(!Array.isArray(dados) || dados.length <= 1){
         document.getElementById("listaAplicacoes").innerHTML =
@@ -66,7 +69,10 @@ async function carregarAplicacoes(){
     const contagem =
         await fetchProtegido(API + "?tipo=contarRespostas&token=" + token);
 
-    if(!contagem) return;
+       if(!contagem){
+        esconderLoading();
+        return;
+    }
 
     montarTabela(dados, contagem);
     esconderLoading();

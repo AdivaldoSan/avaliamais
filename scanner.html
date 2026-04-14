@@ -429,7 +429,6 @@ if(!isMobile()){
   const link = window.location.origin + "/scanner.html?redirect=scanner";
 
   document.body.innerHTML = `
-  
   <div style="
     height:100vh;
     display:flex;
@@ -449,15 +448,13 @@ if(!isMobile()){
       width:90%;
     ">
 
-      <h2 style="margin-bottom:10px;">
-        Use o celular
-      </h2>
+      <h2>Use o celular</h2>
 
-      <p style="opacity:0.7; margin-bottom:20px;">
+      <p style="opacity:0.7;">
         Este recurso funciona apenas no celular
       </p>
 
-      <div id="qrcode"></div>
+      <div id="qrcode" style="margin-top:20px;"></div>
 
       <p style="
         margin-top:20px;
@@ -472,7 +469,7 @@ if(!isMobile()){
   </div>
   `;
 
-  // IMPORTANTE: delay mínimo pra garantir render
+  // gera QR depois que o DOM existe
   setTimeout(()=>{
     new QRCode(document.getElementById("qrcode"), {
       text: link,
@@ -481,10 +478,12 @@ if(!isMobile()){
     });
   }, 50);
 
-  // trava resto do sistema (SEM return)
+  // BLOQUEIO LIMPO (SEM ERRO)
+  document.body.style.overflow = "hidden";
+
+  // ESSENCIAL: para execução restante
   window.stop?.();
 
-  throw new Error("Execução bloqueada no desktop");
 }
     
     

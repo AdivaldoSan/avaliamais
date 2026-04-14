@@ -501,9 +501,13 @@ async function gerarQuiz(){
 
 function finalizarPreview(selecionadas, turmasSelecionadas, nome){
 
+    // 🔥 GERA ID CURTO
+    const pin = Math.floor(100000 + Math.random() * 900000);
+    const id = "APL_" + pin;
+
     localStorage.setItem("previewQuiz",
         JSON.stringify({
-            id:"APL_"+Date.now(),
+            id: id,
             nome: nome,
             turmas: turmasSelecionadas,
             qtd: selecionadas.length,

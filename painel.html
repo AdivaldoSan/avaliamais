@@ -563,7 +563,7 @@ function abrirQRCode(id){
     const linkAluno = base + "/aluno.html?id=" + id;
     const linkJogar = base + "/jogar";
 
-    // 🔥 PIN = ID sem APL_
+    // PIN (provisório)
     const pin = id.replace("APL_","");
 
     const modal = document.createElement("div");
@@ -572,45 +572,66 @@ function abrirQRCode(id){
     modal.innerHTML = `
     <div class="modal-bg" onclick="fecharQR()"></div>
 
-    <div class="modal-box" style="text-align:center; max-width:420px;">
+    <div class="modal-box" style="
+        max-width:800px;
+        width:95%;
+        display:flex;
+        gap:40px;
+        align-items:center;
+        justify-content:space-between;
+        padding:30px;
+    ">
 
-        <h3 style="margin-bottom:15px;">
-            Acesso dos Alunos
-        </h3>
+        <!-- ESQUERDA: QR -->
+        <div style="flex:1; text-align:center;">
 
-        <!-- QR -->
-        <div id="qrcode" style="margin:10px 0 20px;"></div>
+            <h3 style="margin-bottom:15px;">
+                Escaneie para acessar
+            </h3>
 
-        <!-- LINK -->
-        <input value="${linkAluno}" readonly
-            style="width:100%;padding:8px;margin-bottom:10px;"
-            onclick="this.select()">
+            <div id="qrcode" style="margin:0 auto;"></div>
 
-        <button onclick="copiarLink('${linkAluno}')">
-            Copiar link
-        </button>
-
-        <hr style="margin:20px 0;">
-
-        <!-- PIN -->
-        <p>Acesse:</p>
-        <b>${linkJogar}</b>
-
-        <p style="margin-top:10px;">PIN:</p>
-
-        <div style="
-            font-size:30px;
-            font-weight:bold;
-            letter-spacing:4px;
-            margin-bottom:15px;
-        ">
-            ${pin}
         </div>
 
-        <br><br>
+        <!-- DIREITA: PIN -->
+        <div style="flex:1; text-align:center;">
 
+            <h3 style="margin-bottom:10px;">
+                Acesso via PIN
+            </h3>
+
+            <p style="margin-bottom:5px;">
+                Acesse:
+            </p>
+
+            <div style="
+                font-weight:bold;
+                font-size:18px;
+                color:#1976d2;
+                margin-bottom:20px;
+            ">
+                ${linkJogar}
+            </div>
+
+            <div style="font-size:14px; margin-bottom:5px;">
+                PIN:
+            </div>
+
+            <div style="
+                font-size:56px;
+                font-weight:bold;
+                letter-spacing:6px;
+                color:#1976d2;
+            ">
+                ${pin}
+            </div>
+
+        </div>
+
+    </div>
+
+    <div style="text-align:center; margin-top:15px;">
         <button onclick="fecharQR()">Fechar</button>
-
     </div>
     `;
 
@@ -618,8 +639,8 @@ function abrirQRCode(id){
 
     new QRCode(document.getElementById("qrcode"), {
         text: linkAluno,
-        width: 180,
-        height: 180
+        width: 220,
+        height: 220
     });
 }
 //=========================================================================

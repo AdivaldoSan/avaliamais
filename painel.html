@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Avalia+ | Painel do Professor</title>
 <link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="styles_painel.css">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="alternate icon" href="favicon.ico">
 </head>
@@ -20,24 +21,25 @@
 <script>
 
 function iniciarPagina(){
+
     criarLayout();
 
     document.getElementById("conteudo").innerHTML = `
         <h2 style="margin-bottom:20px;">📊 Painel de Aplicações.</h2>
-        <div id="listaAplicacoes" class="card">
-            Carregando aplicações...
-        </div>
+        <div id="listaAplicacoes" class="card"></div>
     `;
+
+    //ATIVA LOADING
+    mostrarLoading("Carregando aplicações...");
 
     carregarAplicacoes();
 }
+//=========================================    
 
 window.onload = iniciarPagina;
 
 
-// =============================
-// CARREGAR
-// =============================
+
 // =============================
 // CARREGAR
 // =============================
@@ -57,6 +59,7 @@ async function carregarAplicacoes(){
     if(!Array.isArray(dados) || dados.length <= 1){
         document.getElementById("listaAplicacoes").innerHTML =
             "Nenhuma aplicação encontrada.";
+        esconderLoading();
         return;
     }
 
@@ -66,6 +69,7 @@ async function carregarAplicacoes(){
     if(!contagem) return;
 
     montarTabela(dados, contagem);
+    esconderLoading();
 }
 
 // =============================

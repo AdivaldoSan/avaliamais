@@ -473,12 +473,13 @@ if(!isMobile()){
   `;
 
   new QRCode(document.getElementById("qrcode"), {
-    text: link,
-    width: 200,
-    height: 200
-  });
+  text: link,
+  width: 200,
+  height: 200
+});
 
-  throw new Error("Bloqueado no desktop");
+
+return;
 }
     
     

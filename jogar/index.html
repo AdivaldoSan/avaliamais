@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Avalia+ | Entrar com PIN</title>
+
+<link rel="stylesheet" href="../styles.css">
+<link rel="icon" href="../favicon.svg">
+
+<style>
+body{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    height:100vh;
+    background:#111;
+    color:white;
+    font-family:Arial;
+}
+
+.card{
+    background:#1e1e1e;
+    padding:30px;
+    border-radius:10px;
+    text-align:center;
+    width:100%;
+    max-width:350px;
+}
+
+input{
+    width:100%;
+    padding:12px;
+    font-size:22px;
+    text-align:center;
+    border-radius:6px;
+    border:none;
+    margin:15px 0;
+    letter-spacing:3px;
+}
+
+button{
+    width:100%;
+    padding:12px;
+    background:#1976d2;
+    color:white;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+}
+
+.erro{
+    color:#ff6b6b;
+    margin-top:10px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+
+    <h2>Digite o PIN</h2>
+
+    <input id="pin"
+           placeholder="______"
+           maxlength="6"
+           inputmode="numeric"
+           autofocus>
+
+    <button onclick="entrar()">Entrar</button>
+
+    <div id="erro" class="erro"></div>
+
+</div>
+
+<script>
+
+// ENTER
+document.getElementById("pin").addEventListener("keyup", e=>{
+    if(e.key === "Enter") entrar();
+});
+
+function entrar(){
+
+    const pin = document.getElementById("pin").value.trim();
+    const erro = document.getElementById("erro");
+
+    erro.innerText = "";
+
+    if(pin.length < 4){
+        erro.innerText = "PIN inválido.";
+        return;
+    }
+
+    if(!/^\d+$/.test(pin)){
+        erro.innerText = "Use apenas números.";
+        return;
+    }
+
+    const id = "APL_" + pin;
+
+    window.location.href = "../aluno.html?id=" + id;
+}
+
+</script>
+
+</body>
+</html>

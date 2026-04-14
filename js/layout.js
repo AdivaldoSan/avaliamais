@@ -48,7 +48,8 @@ function criarLayout(){
        Dashboard
     </a>
 
-    <a href="scanner.html"
+    <a href="#"
+       onclick="abrirScanner()"
        class="${paginaAtual==='scanner.html'?'active':''}">
        Corrigir Prova
     </a>
@@ -117,4 +118,86 @@ function toggleMenu(){
 function logout(){
     localStorage.clear();
     window.location.href = "index.html";
+}
+
+function isMobile(){
+    return window.innerWidth <= 900;
+}
+
+function abrirScanner(){
+
+    if(isMobile()){
+        window.location.href = "scanner.html";
+        return;
+    }
+
+    abrirModalScanner();
+}
+
+function abrirModalScanner(){
+
+    const link = window.location.origin + "/scanner.html";
+
+    const modal = document.createElement("div");
+    modal.id = "modalScanner";
+
+    modal.innerHTML = `
+    <div style="
+        position:fixed;
+        inset:0;
+        background:rgba(0,0,0,0.8);
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        z-index:9999;
+    ">
+
+        <div style="
+            background:#1e1e1e;
+            padding:40px;
+            border-radius:16px;
+            width:90%;
+            max-width:500px;
+            text-align:center;
+            color:white;
+        ">
+
+            <h2 style="margin-bottom:10px;">
+                📷 Use no celular
+            </h2>
+
+            <p style="opacity:0.7; margin-bottom:20px;">
+                O scanner funciona apenas no celular
+            </p>
+
+            <div id="qrScanner"></div>
+
+            <p style="
+                margin-top:15px;
+                font-size:14px;
+                opacity:0.6;
+            ">
+                Escaneie para abrir no smartphone
+            </p>
+
+            <button onclick="fecharModalScanner()" class="btn-primary">
+                Fechar
+            </button>
+
+        </div>
+    </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    new QRCode(document.getElementById("qrScanner"), {
+        text: link,
+        width: 220,
+        height: 220
+    });
+}
+
+function fecharModalScanner(){
+    const modal = document.getElementById("modalScanner");
+    if(modal) modal.remove();
 }

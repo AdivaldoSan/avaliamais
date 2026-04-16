@@ -14,14 +14,17 @@ async function criarLayout(){
     
     const temTurma = await verificarTurmas();
     window.temTurma = temTurma;
+
+    // 🔒 bloqueio de rota direta
+    const paginaAtual = window.location.pathname.split("/").pop();
+    
+    if(!temTurma && paginaAtual !== "turmas.html" && paginaAtual !== "sobre.html"){
+        window.location.href = "turmas.html";
+        return;
+    }
     
     const perfil = localStorage.getItem("PERFIL");
     const nome = localStorage.getItem("NOME");
-
-    if(!token){
-        window.location.href = "index.html";
-        return;
-    }
 
     // Detecta página atual
     const paginaAtual =

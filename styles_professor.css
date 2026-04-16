@@ -1,9 +1,11 @@
+/*======Controla Loading professor.html e provas.html==================*/
 .loading-box {
     height: 40px;
     padding: 0 10px;
 
     display: flex;
     align-items: center;
+    justify-content: flex-start;
 
     background: #2a2a2a;
     border: 1px solid rgb(229, 231, 235);
@@ -15,6 +17,11 @@
 .loading-text {
     font-size: 14px;
     color: #ccc;
+    
+    display: flex;
+    align-items: center;     /*garante alinhamento interno */
+    height: 100%;
+    
     animation: piscar 1s infinite alternate;
 }
 .loading-box {

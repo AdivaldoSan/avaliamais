@@ -18,9 +18,9 @@
     font-size: 14px;
     color: #ccc;
     
-    display: flex;
-    align-items: center;     /*garante alinhamento interno */
-    height: 100%;
+    line-height: 40px;   /*chave aqui */
+    height: 40px;
+
     
     animation: piscar 1s infinite alternate;
 }

@@ -399,7 +399,7 @@ function mostrarQuestoes(){
                   if(!img) return "";
               
                   return `
-                      <div style="text-align:center; margin:10px 0;">
+                      <div style="margin:10px 0; text-align:left;">
                       <img src="${img}"
                       loading="lazy"
                  style="max-width:165px; max-height:120px; width:auto; height:auto;"
@@ -407,7 +407,7 @@ function mostrarQuestoes(){
         </div>
     `;
 })()}
-            <div style="margin-left:10px;">
+            <div style="margin-top:10px;">
                 A) ${q.ALT_A}<br>
                 B) ${q.ALT_B}<br>
                 C) ${q.ALT_C}<br>
@@ -520,7 +520,7 @@ function atualizarPreview(){
             ${(() => {
                 const img = normalizarImagem(q.IMG);
                 return img ? `
-                    <div style="text-align:center; margin:10px 0;">
+                    <div style="margin:10px 0; text-align:left;">
                         <img src="${img}"
                              style="max-width:220px; max-height:160px; width:auto; height:auto;"
                              

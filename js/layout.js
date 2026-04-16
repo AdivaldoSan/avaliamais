@@ -1,4 +1,4 @@
-function criarLayout(){
+async function criarLayout(){
     if(typeof QRCode === "undefined"){
     const script = document.createElement("script");
     script.src = "https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js";
@@ -6,6 +6,15 @@ function criarLayout(){
     }
     
     const token = localStorage.getItem("TOKEN");
+
+    if(!token){
+        window.location.href = "index.html";
+        return;
+    }
+    
+    const temTurma = await verificarTurmas();
+    window.temTurma = temTurma;
+    
     const perfil = localStorage.getItem("PERFIL");
     const nome = localStorage.getItem("NOME");
 
@@ -19,6 +28,7 @@ function criarLayout(){
         window.location.pathname.split("/").pop();
 
     document.body.innerHTML = `
+    
     <div class="app">
 
         <div class="sidebar" id="sidebar">
@@ -110,14 +120,7 @@ function criarLayout(){
         </div>
     </div>
     `;
-    setTimeout(async () => {
-
-    const temTurma = await verificarTurmas();
-        window.temTurma = temTurma;
-    
-        aplicarBloqueioMenu(temTurma);
-    
-    }, 100);
+    aplicarBloqueioMenu(window.temTurma);
 }
 //============================================
 function toggleMenu(){

@@ -128,20 +128,26 @@ function logout(){
 function isMobile(){
     return window.innerWidth <= 900;
 }
-
+//===================================================
 function abrirScanner(){
 
+    const base = window.location.pathname.split("/")[1];
+    const prefix = base ? `/${base}` : "";
+
     if(isMobile()){
-        window.location.href = "scanner.html";
+        window.location.href = prefix + "/scanner.html";
         return;
     }
 
     abrirModalScanner();
 }
-
+//=================================================================
 function abrirModalScanner(){
 
-    const link = window.location.origin + "/corrigir";
+    const path = window.location.pathname.split("/")[1];
+    const base = path ? `/${path}` : "";
+    
+    const link = window.location.origin + base + "/corrigir";
 
     const modal = document.createElement("div");
     modal.id = "modalScanner";
@@ -189,6 +195,9 @@ function abrirModalScanner(){
                         display:flex;
                         justify-content:center;
                         margin:15px 0;
+                        background:#fff;
+                        padding:12px;
+                        border-radius:12px;
                      ">
                 </div>
 
@@ -254,11 +263,14 @@ function abrirModalScanner(){
 
     document.body.appendChild(modal);
 
-    new QRCode(document.getElementById("qrScanner"), {
-        text: link,
-        width: 220,
-        height: 220
-    });
+   new QRCode(document.getElementById("qrScanner"), {
+    text: link,
+    width: 200,
+    height: 200,
+    colorDark: "#000000",
+    colorLight: "#ffffff", // FUNDO BRANCO FORÇADO
+    correctLevel: QRCode.CorrectLevel.H
+});
 }
 
 function fecharModalScanner(){

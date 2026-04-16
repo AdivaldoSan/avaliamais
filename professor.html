@@ -239,12 +239,10 @@ function atualizarNiveis(){
     selNivel.innerHTML = `<option value="">Carregando...</option>`;
     blocoNivel.style.display = "block";
 
-    const filtrado = banco.filter(q =>
-        q.DISCIPLINA === disciplina.value
-    );
-
     const niveis = [...new Set(
-        filtrado.map(q => q.NIVEL_ENSINO)
+        banco
+            .filter(q => q.DISCIPLINA === disciplina.value)
+            .map(q => (q.NIVEL_ENSINO || "").trim())
     )];
 
     if(niveis.length === 0){

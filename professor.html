@@ -150,36 +150,26 @@ window.onload = iniciarPagina;
 // ================= INICIALIZAÇÃO =================
 
 async function iniciar(){
-    const textos = [
-    "Conectando ao servidor...",
-    "Carregando banco de questões...",
-    "Organizando disciplinas...",
-    "Finalizando..."
-    ];
-    
-    let i = 0;
-    
-    const elTexto = document.getElementById("loadingTextoDisciplina");
-    
-    const trocaTexto = setInterval(() => {
-        elTexto.innerText = textos[i % textos.length];
-        i++;
-    }, 1200);
 
+    const textos = [
+        "Conectando ao servidor...",
+        "Carregando banco de questões...",
+        "Organizando disciplinas...",
+        "Finalizando..."
+    ];
+
+    const elTexto = document.getElementById("loadingTextoDisciplina");
+
+    // ETAPA 1
+    elTexto.innerText = textos[0];
+
+    // ETAPA 2
+    elTexto.innerText = textos[1];
+    await new Promise(r => setTimeout(r, 200));
     const dados = await carregarBancoCompleto();
 
-    clearInterval(trocaTexto);
-
-    elTexto.innerText = "Pronto!";
-    
-    setTimeout(() => {
-    
-        document.getElementById("loadingBoxDisciplina").style.display = "none";
-    
-        const sel = document.getElementById("disciplina");
-        sel.style.display = "block";
-    
-    }, 300);
+    // ETAPA 3
+    elTexto.innerText = textos[2];
 
     banco = dados.questoes.filter(q =>
         String(q.ATIVO).trim().toUpperCase() === "SIM"
@@ -191,6 +181,19 @@ async function iniciar(){
         [...new Set(banco.map(q=>q.DISCIPLINA))]
     );
 
+    // ETAPA FINAL
+    elTexto.innerText = textos[3];
+
+    setTimeout(() => {
+
+        document.getElementById("loadingBoxDisciplina").style.display = "none";
+
+        const sel = document.getElementById("disciplina");
+        sel.style.display = "block";
+
+    }, 300);
+
+    // EVENTOS (mantém igual)
     document.getElementById("disciplina")
         .addEventListener("change", resetarFluxo);
 
@@ -226,7 +229,6 @@ async function iniciar(){
 
     await carregarTurmas();
 }
-
 
 // ================= RESET =================
 

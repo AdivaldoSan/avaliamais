@@ -1,0 +1,10 @@
+<script>
+const token = localStorage.getItem("TOKEN");
+
+if(token){
+    window.location.href = "/scanner.html";
+} else {
+    localStorage.setItem("REDIRECT_POS_LOGIN", "/scanner.html");
+    window.location.href = "/index.html";
+}
+</script>

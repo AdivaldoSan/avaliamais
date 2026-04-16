@@ -85,6 +85,8 @@ window.onload = iniciarPagina;
 // CARREGAR TURMAS
 // =============================
 async function carregar(){
+    const div = document.getElementById("listaTurmas");
+    div.innerHTML = `<div style="opacity:0.7;">Carregando...</div>`;
 
     const token = localStorage.getItem("TOKEN");
 
@@ -177,7 +179,7 @@ async function adicionar(){
         }
 
         input.value = "";
-        carregar();
+        await carregar();
 
     } catch(e){
         alert(e.message || "Erro ao adicionar turma");

@@ -180,6 +180,11 @@ async function adicionar(){
 
         input.value = "";
         await carregar();
+        window.temTurma = true;
+
+            if(typeof aplicarBloqueioMenu === "function"){
+                aplicarBloqueioMenu(true);
+            }
 
     } catch(e){
         alert(e.message || "Erro ao adicionar turma");

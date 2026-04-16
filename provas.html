@@ -427,6 +427,11 @@ function toggleQuestao(id){
         questoesSelecionadas =
             questoesSelecionadas.filter(x => x.ID !== id);
     }else{
+
+         if(questoesSelecionadas.length >= 15){
+            mostrarAvisoLimite();
+            return;
+        }
         questoesSelecionadas.push({
             ...q,
             PESO: 1
@@ -550,6 +555,10 @@ function alterarPeso(id, valor){
 
 // ================= GERAR =================
 function gerarProva(){
+  if(questoesSelecionadas.length > 15){
+      mostrarAvisoLimite();
+      return;
+  }
   // limpa qualquer prova anterior antes de criar nova
   localStorage.removeItem("provaGerada");
 
@@ -585,12 +594,29 @@ function gerarProva(){
           }))
         }));
 
-    alert("Prova pronta.");
-    
     window.location.href = "impressao.html"
     
 }
+//===========================================
+  function mostrarAvisoLimite(){
 
+    let aviso = document.getElementById("avisoLimite");
+
+    if(!aviso){
+        aviso = document.createElement("div");
+        aviso.id = "avisoLimite";
+        aviso.className = "tooltip-aviso";
+        document.body.appendChild(aviso);
+    }
+
+    aviso.innerText = "Máximo de 15 questões (limitação do leitor QR).";
+
+    aviso.style.opacity = "1";
+
+    setTimeout(() => {
+        aviso.style.opacity = "0";
+    }, 2500);
+}
 
 // ================= TURMAS =================
 async function carregarTurmas(){

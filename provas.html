@@ -477,11 +477,13 @@ function atualizarPreview(){
     const total = questoesSelecionadas
     .reduce((soma, q) => soma + (parseFloat(q.PESO) || 0), 0);
 
-    const qtd = questoesSelecionadas.length;
-
+    const textoQtd = qtd === 1
+        ? "1 questão selecionada"
+        : `${qtd}/15 questões selecionadas`;
+        
     lista.innerHTML = `
         <div style="display:flex; justify-content:space-between; align-items:center;">
-            <h3>${qtd} questão${qtd !== 1 ? 'ões' : ''} selecionada${qtd !== 1 ? 's' : ''}</h3>
+            <h3>${textoQtd}</h3>
             <div style="font-weight:bold; color:#2563EB;">
                 Peso total: ${total.toFixed(1)}
             </div>

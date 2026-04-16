@@ -148,6 +148,9 @@ function abrirModalScanner(){
     const base = path ? `/${path}` : "";
     
     const link = window.location.origin + base + "/corrigir";
+    const linkDisplay = link
+      .replace(/^https?:\/\//, "")
+      .replace(/^www\./, "");
 
     const modal = document.createElement("div");
     modal.id = "modalScanner";
@@ -243,10 +246,18 @@ function abrirModalScanner(){
                     font-size:13px;
                     word-break:break-all;
                 ">
+                
                     Ou digite no navegador:<br>
-                    <strong style="color:#4da3ff;">
-                        ${link}
-                    </strong>
+                
+                    <span style="
+                        color:#4da3ff;
+                        font-weight:bold;
+                        user-select:all;
+                        cursor:text;
+                    ">
+                        ${linkDisplay}
+                    </span>
+                
                 </div>
 
             </div>

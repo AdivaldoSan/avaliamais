@@ -269,7 +269,9 @@ function resetarFluxo(){
     etapaFinal.style.display = "none";
     etapaModo.style.display = "none";
     etapaTurmas.style.display = "none";
-    document.getElementById("blocoNivel").style.display = "none";
+    if(!disciplina.value){
+        document.getElementById("blocoNivel").style.display = "none";
+    }
 
     if(disciplina.value && nivel.value){
         etapaTurmas.style.display = "block";

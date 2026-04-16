@@ -476,7 +476,7 @@ function atualizarPreview(){
 
     const total = questoesSelecionadas
     .reduce((soma, q) => soma + (parseFloat(q.PESO) || 0), 0);
-
+    const qtd = questoesSelecionadas.length;
     const textoQtd = qtd === 1
         ? "1 questão selecionada"
         : `${qtd}/15 questões selecionadas`;

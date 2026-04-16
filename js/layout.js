@@ -110,8 +110,16 @@ function criarLayout(){
         </div>
     </div>
     `;
-}
+    setTimeout(async () => {
 
+    const temTurma = await verificarTurmas();
+        window.temTurma = temTurma;
+    
+        aplicarBloqueioMenu(temTurma);
+    
+    }, 100);
+}
+//============================================
 function toggleMenu(){
     const sidebar = document.getElementById("sidebar");
     const overlay = document.getElementById("overlay");
@@ -293,8 +301,45 @@ if(qrEl){
 }
     
 }
-
+//============================
 function fecharModalScanner(){
     const modal = document.getElementById("modalScanner");
     if(modal) modal.remove();
 }
+//============================
+async function verificarTurmas(){
+
+    const token = localStorage.getItem("TOKEN");
+    if(!token) return false;
+
+    const dados = await fetchProtegido(API + "?tipo=turmas&token=" + token);
+
+    if(!dados || dados.erro) return false;
+
+    return dados.length > 1;
+}
+//===========================================
+function aplicarBloqueioMenu(temTurma){
+
+    if(temTurma) return;
+
+    const links = document.querySelectorAll(".menu-principal a");
+
+    links.forEach(link => {
+
+        const href = link.getAttribute("href") || "";
+
+        // libera apenas turmas e sobre
+        if(href.includes("turmas") || href.includes("sobre")){
+            return;
+        }
+
+        // bloqueia
+        link.style.opacity = "0.4";
+        link.style.pointerEvents = "none";
+        link.style.cursor = "not-allowed";
+
+        link.title = "Cadastre uma turma para liberar";
+    });
+}
+//===========================================

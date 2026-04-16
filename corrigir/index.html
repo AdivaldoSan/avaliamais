@@ -1,10 +1,14 @@
 <script>
 const token = localStorage.getItem("TOKEN");
 
+// calcula base (funciona GitHub + Netlify)
+const base = window.location.pathname.split("/")[1];
+const prefix = base ? `/${base}` : "";
+
 if(token){
-    window.location.href = "/scanner.html";
+    window.location.href = prefix + "/scanner.html";
 } else {
-    localStorage.setItem("REDIRECT_POS_LOGIN", "/scanner.html");
-    window.location.href = "/index.html";
+    localStorage.setItem("REDIRECT_POS_LOGIN", prefix + "/scanner.html");
+    window.location.href = prefix + "/index.html";
 }
 </script>

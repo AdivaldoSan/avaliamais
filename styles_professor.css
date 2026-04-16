@@ -51,3 +51,8 @@
 
     z-index: 9999;
 }
+
+.checkbox-bloqueado {
+    opacity: 0.5;
+    cursor: not-allowed;
+}

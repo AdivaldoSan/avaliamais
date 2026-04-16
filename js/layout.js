@@ -167,7 +167,7 @@ function abrirModalScanner(){
 ">
 
     <div style="
-        background:#a5a5a5;
+        background:#121212;
         padding:30px;
         border-radius:16px;
         width:95%;

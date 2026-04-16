@@ -13,11 +13,13 @@
 }
 
 .loading-text {
-    font-size: 13px;
+    font-size: 14px;
     color: #ccc;
     animation: piscar 1s infinite alternate;
 }
-
+.loading-box {
+    opacity: 0.8;
+}
 @keyframes piscar {
     from { opacity: 0.5; }
     to { opacity: 1; }

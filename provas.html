@@ -69,16 +69,21 @@ function iniciarPagina(){
 
             <div class="form-group">
                 <label>Disciplina</label>
-                <select id="disciplina"></select>
+                
+                <div id="loadingBoxDisciplina" class="loading-box">
+                    <div id="loadingTextoDisciplina" class="loading-text">
+                        Iniciando...
+                    </div>
+                </div>
+
+<select id="disciplina" style="display:none;"></select>
+                
             </div>
 
-            <div class="form-group">
+            <div class="form-group" id="blocoNivel" style="display:none;">
                 <label>Nível</label>
                 <select id="nivel">
-                    <option value="">Selecione</option>
-                    <option value="EF1">EF1</option>
-                    <option value="EF2">EF2</option>
-                    <option value="EM">EM</option>
+                    <option value="">Selecione a disciplina</option>
                 </select>
             </div>
 
@@ -178,7 +183,20 @@ window.onload = iniciarPagina;
 // ================= INIT =================
 async function iniciar(){
 
+    const textos = [
+    "Conectando ao servidor...",
+    "Carregando banco de questões...",
+    "Organizando disciplinas...",
+    "Finalizando..."
+    ];
+    
+    const elTexto = document.getElementById("loadingTextoDisciplina");
+    
+    elTexto.innerText = textos[1];
+    
     const dados = await carregarBancoCompleto();
+    
+    elTexto.innerText = textos[2];
 
     banco = dados.questoes.filter(q =>
         String(q.ATIVO).trim().toUpperCase() === "SIM"
@@ -190,7 +208,19 @@ async function iniciar(){
         [...new Set(banco.map(q=>q.DISCIPLINA))]
     );
 
-    document.getElementById("disciplina").addEventListener("change", resetarFluxo);
+     elTexto.innerText = textos[3];
+
+   setTimeout(() => {
+        document.getElementById("loadingBoxDisciplina").style.display = "none";
+        document.getElementById("disciplina").style.display = "block";
+    }, 300);
+
+    document.getElementById("disciplina")
+    .addEventListener("change", () => {
+        resetarFluxo();
+        atualizarNiveis();
+    });
+  
     document.getElementById("nivel").addEventListener("change", resetarFluxo);
 
     document.querySelectorAll("input[name='modo']")
@@ -208,7 +238,23 @@ async function iniciar(){
     await carregarTurmas();
 }
 
+//==========================================
+function atualizarNiveis(){
 
+    const selNivel = document.getElementById("nivel");
+    const blocoNivel = document.getElementById("blocoNivel");
+
+    selNivel.innerHTML = `<option value="">Carregando...</option>`;
+    blocoNivel.style.display = "block";
+
+    const niveis = [...new Set(
+        banco
+            .filter(q => q.DISCIPLINA === disciplina.value)
+            .map(q => (q.NIVEL_ENSINO || "").trim())
+    )];
+
+    preencherSelect("nivel", niveis);
+}
 // ================= RESET =================
 function resetarFluxo(){
 
@@ -224,6 +270,8 @@ function resetarFluxo(){
     areaQuestoes.innerHTML = "";
     document.getElementById("previewLista").innerHTML = "";
     document.getElementById("previewAcao").style.display = "none";
+    document.getElementById("blocoNivel").style.display = "none";
+    
 
     // 🔥 mantém seleção persistente (NÃO limpa array)
 

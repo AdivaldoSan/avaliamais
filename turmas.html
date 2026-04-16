@@ -85,8 +85,9 @@ window.onload = iniciarPagina;
 // CARREGAR TURMAS
 // =============================
 async function carregar(){
-    const div = document.getElementById("listaTurmas");
-    div.innerHTML = `<div style="opacity:0.7;">Carregando...</div>`;
+
+    const listaTurmas = document.getElementById("listaTurmas");
+    listaTurmas.innerHTML = `<div style="opacity:0.7;">Carregando...</div>`;
 
     const token = localStorage.getItem("TOKEN");
 
@@ -98,18 +99,17 @@ async function carregar(){
     const dados =
     await fetchProtegido(API + "?tipo=turmas&token=" + token);
 
-        if(!dados) return;
+    if(!dados) return;
 
-    const div = document.getElementById("listaTurmas");
-    div.innerHTML = "";
+    listaTurmas.innerHTML = "";
 
     if(dados.erro){
-        div.innerHTML = "Erro ao carregar turmas.";
+        listaTurmas.innerHTML = "Erro ao carregar turmas.";
         return;
     }
 
     if(dados.length <= 1){
-        div.innerHTML = "Nenhuma turma cadastrada.";
+        listaTurmas.innerHTML = "Nenhuma turma cadastrada.";
         return;
     }
 
@@ -117,7 +117,7 @@ async function carregar(){
 
         const nome = l[2];
 
-        div.innerHTML += `
+        listaTurmas.innerHTML += `
             <div class="turma-item">
                 <span>${nome}</span>
 

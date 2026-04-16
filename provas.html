@@ -318,7 +318,30 @@ function atualizarFiltros(){
         [...new Set(filtrado.map(q=>q.ASSUNTO))];
 
     const descritores =
-        [...new Set(filtrado.map(q=>q.DESCRITOR))];
+        [...new Set(filtrado.map(q=>q.DESCRITOR))]
+        .sort((a,b)=>
+            parseInt(a.replace(/\D/g,'')) -
+            parseInt(b.replace(/\D/g,''))
+        );
+
+    // AQUI ESTÁ O QUE FALTAVA
+    mapaDescritores = {};
+
+    descritoresBanco.forEach(d=>{
+
+        let nivelPlanilha = d.NIVEL;
+
+        if(nivelPlanilha === "ENSINO MÉDIO") nivelPlanilha = "EM";
+        if(nivelPlanilha === "ENSINO FUNDAMENTAL 1") nivelPlanilha = "EF1";
+        if(nivelPlanilha === "ENSINO FUNDAMENTAL 2") nivelPlanilha = "EF2";
+
+        if(
+            d.DISCIPLINA === disciplina.value &&
+            nivelPlanilha === nivel.value
+        ){
+            mapaDescritores[d.CODIGO] = d.DESCRICAO;
+        }
+    });
 
     listaAssuntosHTML(assuntos);
     listaDescritoresHTML(descritores);
@@ -694,7 +717,7 @@ function listaAssuntosHTML(lista){
         div.appendChild(item);
     });
 }
-
+//========================================
 function listaDescritoresHTML(lista){
 
     const div = document.getElementById("listaDescritores");
@@ -705,7 +728,13 @@ function listaDescritoresHTML(lista){
         const item = document.createElement("div");
         item.className="multi-item";
         item.dataset.value = cod;
-        item.innerText = cod;
+
+        item.innerHTML = `
+            <span class="descritor-codigo">${cod}</span>
+            <span class="descritor-texto">
+                ${mapaDescritores[cod] || ""}
+            </span>
+        `;
 
         item.addEventListener("click", function(){
             this.classList.toggle("selected");
@@ -715,7 +744,7 @@ function listaDescritoresHTML(lista){
         div.appendChild(item);
     });
 }
-
+//=====================================================
 function atualizarHeader(id){
 
     const selecionados =

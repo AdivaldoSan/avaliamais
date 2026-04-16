@@ -1,133 +1,85 @@
 function criarLayout(){
 
+    // =========================
+    // TOKEN
+    // =========================
+    const token = localStorage.getItem("TOKEN");
+
+    if(!token){
+        window.location.href = "index.html";
+        return;
+    }
+
+    const perfil = localStorage.getItem("PERFIL");
+    const nome = localStorage.getItem("NOME");
+
+    const paginaAtual = window.location.pathname.split("/").pop();
+
+    // =========================
+    // 🔥 RENDERIZA IMEDIATO
+    // =========================
+    document.body.innerHTML = `
+    <div class="app">
+        <div class="sidebar" id="sidebar">
+            <div class="logo-area">
+                <h2 class="logo">
+                    Avalia<span class="logo-plus">+</span>
+                </h2>
+                <p class="logo-sub">
+                    Plataforma de Avaliação Digital
+                </p>
+            </div>
+
+            <div class="menu-principal">
+                <a href="painel.html">Relatórios</a>
+                <a href="professor.html">Gerar Simulado</a>
+                <a href="turmas.html">Turmas</a>
+                <a href="dashboard.html">Dashboard</a>
+                <a href="#" onclick="abrirScanner()">Corrigir Prova</a>
+                <a href="provas.html">Gerar Prova Impressa</a>
+                <a href="lab_questoes.html">Cadastrar Questões</a>
+                ${perfil === "ADMIN" ? `<a href="admin.html">Admin</a>` : ``}
+            </div>
+
+            <div class="sidebar-bottom">
+                <a href="sobre.html">Sobre</a>
+            </div>
+        </div>
+
+        <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
+
+        <div class="main">
+            <div class="topbar">
+                <div class="menu-toggle" onclick="toggleMenu()">☰</div>
+
+                <div class="user-info">
+                    ${nome} (${perfil})
+                    <button class="btn-logout" onclick="logout()">Sair</button>
+                </div>
+            </div>
+
+            <div class="page-content" id="conteudo">
+                <div style="opacity:0.6;">Carregando...</div>
+            </div>
+        </div>
+    </div>
+    `;
+
+    // =========================
+    // 🔥 AGORA SIM ASYNC
+    // =========================
     (async () => {
 
-        // =========================
-        // CARREGA QRCode (se precisar)
-        // =========================
-        if(typeof QRCode === "undefined"){
-            const script = document.createElement("script");
-            script.src = "https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js";
-            document.head.appendChild(script);
-        }
-
-        // =========================
-        // TOKEN
-        // =========================
-        const token = localStorage.getItem("TOKEN");
-
-        if(!token){
-            window.location.href = "index.html";
-            return;
-        }
-
-        // =========================
-        // VERIFICA TURMAS
-        // =========================
         const temTurma = await verificarTurmas();
         window.temTurma = temTurma;
 
-        // =========================
-        // BLOQUEIO DE ROTA
-        // =========================
-        const paginaAtual = window.location.pathname.split("/").pop();
-
+        // bloqueio de rota
         if(!temTurma && paginaAtual !== "turmas.html" && paginaAtual !== "sobre.html"){
             window.location.href = "turmas.html";
             return;
         }
 
-        // =========================
-        // DADOS USUÁRIO
-        // =========================
-        const perfil = localStorage.getItem("PERFIL");
-        const nome = localStorage.getItem("NOME");
-
-        // =========================
-        // RENDERIZA LAYOUT
-        // =========================
-        document.body.innerHTML = `
-        
-        <div class="app">
-
-            <div class="sidebar" id="sidebar">
-
-                <div class="logo-area">
-                    <h2 class="logo">
-                        Avalia<span class="logo-plus">+</span>
-                    </h2>
-                    <p class="logo-sub">
-                        Plataforma de Avaliação Digital
-                    </p>
-                </div>
-
-                <div class="menu-principal">
-                    <a href="painel.html" class="${paginaAtual==='painel.html'?'active':''}">
-                        Relatórios
-                    </a>
-
-                    <a href="professor.html" class="${paginaAtual==='professor.html'?'active':''}">
-                        Gerar Simulado
-                    </a>
-
-                    <a href="turmas.html" class="${paginaAtual==='turmas.html'?'active':''}">
-                        Turmas
-                    </a>
-
-                    <a href="dashboard.html" class="${paginaAtual==='dashboard.html'?'active':''}">
-                        Dashboard
-                    </a>
-
-                    <a href="#" onclick="abrirScanner()" class="${paginaAtual==='scanner.html'?'active':''}">
-                        Corrigir Prova
-                    </a>
-
-                    <a href="provas.html" class="${paginaAtual==='provas.html'?'active':''}">
-                        Gerar Prova Impressa
-                    </a>
-
-                    <a href="lab_questoes.html" class="${paginaAtual==='lab_questoes.html'?'active':''}">
-                        Cadastrar Questões 
-                    </a>
-
-                    ${perfil === "ADMIN" ? `
-                        <a href="admin.html" class="${paginaAtual==='admin.html'?'active':''}">
-                            Admin
-                        </a>
-                    ` : ``}
-                </div>
-
-                <div class="sidebar-bottom">
-                    <a href="sobre.html" class="${paginaAtual==='sobre.html'?'active':''}">
-                        Sobre
-                    </a>
-                </div>
-
-            </div>
-
-            <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
-
-            <div class="main">
-
-                <div class="topbar">
-                    <div class="menu-toggle" onclick="toggleMenu()">☰</div>
-
-                    <div class="user-info">
-                        ${nome} (${perfil})
-                        <button class="btn-logout" onclick="logout()">Sair</button>
-                    </div>
-                </div>
-
-                <div class="page-content" id="conteudo"></div>
-
-            </div>
-        </div>
-        `;
-
-        // =========================
-        // BLOQUEIA MENU SE PRECISAR
-        // =========================
-        aplicarBloqueioMenu(window.temTurma);
+        aplicarBloqueioMenu(temTurma);
 
     })();
 

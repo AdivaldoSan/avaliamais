@@ -141,57 +141,116 @@ function abrirScanner(){
 
 function abrirModalScanner(){
 
-    const link = window.location.origin + "/scanner.html";
+    const link = window.location.origin + "/corrigir";
 
     const modal = document.createElement("div");
     modal.id = "modalScanner";
 
     modal.innerHTML = `
+<div style="
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.85);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:9999;
+">
+
     <div style="
-        position:fixed;
-        inset:0;
-        background:rgba(0,0,0,0.8);
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        z-index:9999;
+        background:#121212;
+        padding:30px;
+        border-radius:16px;
+        width:95%;
+        max-width:850px;
+        color:#fff;
+        box-shadow:0 0 30px rgba(0,0,0,0.5);
     ">
 
         <div style="
-            background:#1e1e1e;
-            padding:40px;
-            border-radius:16px;
-            width:90%;
-            max-width:500px;
-            text-align:center;
-            color:white;
+            display:flex;
+            gap:30px;
+            flex-wrap:wrap;
+            align-items:center;
         ">
 
-            <h2 style="margin-bottom:10px;">
-                📷 Use no celular
-            </h2>
+            <!-- ESQUERDA (QR) -->
+            <div style="flex:1; text-align:center; min-width:250px;">
+                
+                <h2 style="
+                    margin-bottom:10px;
+                    color:#4da3ff;
+                ">
+                    📷 Use no celular
+                </h2>
 
-            <p style="opacity:0.7; margin-bottom:20px;">
-                O scanner funciona apenas no celular
-            </p>
+                <div id="qrScanner"
+                     style="
+                        display:flex;
+                        justify-content:center;
+                        margin:15px 0;
+                     ">
+                </div>
 
-            <div id="qrScanner"></div>
+                <p style="
+                    font-size:13px;
+                    opacity:0.6;
+                ">
+                    Escaneie o QR Code
+                </p>
+            </div>
 
-            <p style="
-                margin-top:15px;
-                font-size:14px;
-                opacity:0.6;
-            ">
-                Escaneie para abrir no smartphone
-            </p>
+            <!-- DIREITA (INSTRUÇÕES) -->
+            <div style="flex:1; min-width:260px;">
 
+                <h3 style="
+                    margin-bottom:10px;
+                    color:#4da3ff;
+                ">
+                    Como acessar
+                </h3>
+
+                <ol style="
+                    line-height:1.7;
+                    font-size:14px;
+                    opacity:0.9;
+                    padding-left:18px;
+                ">
+                    <li>Abra a câmera do celular</li>
+                    <li>Aponte para o QR Code</li>
+                    <li>Toque no link exibido</li>
+                    <li>Faça login no sistema</li>
+                    <li>O scanner abrirá automaticamente</li>
+                </ol>
+
+                <div style="
+                    margin-top:15px;
+                    padding:12px;
+                    background:#1e1e1e;
+                    border:1px solid #333;
+                    border-radius:8px;
+                    font-size:13px;
+                    word-break:break-all;
+                ">
+                    Ou digite no navegador:<br>
+                    <strong style="color:#4da3ff;">
+                        ${window.location.origin}/corrigir
+                    </strong>
+                </div>
+
+            </div>
+
+        </div>
+
+        <div style="text-align:center; margin-top:25px;">
             <button onclick="fecharModalScanner()" class="btn-primary">
                 Fechar
             </button>
-
         </div>
+
     </div>
-    `;
+</div>
+`;
 
     document.body.appendChild(modal);
 

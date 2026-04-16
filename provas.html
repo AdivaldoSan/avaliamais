@@ -372,21 +372,26 @@ function mostrarQuestoes(){
 
     areaQuestoes.innerHTML = "";
 
-    filtradas.forEach(q => {
+   filtradas.forEach(q => {
 
-        const jaSelecionada =
-            questoesSelecionadas.some(x => x.ID === q.ID);
+    const jaSelecionada =
+        questoesSelecionadas.some(x => x.ID === q.ID);
 
-        const div = document.createElement("div");
-        div.className = "preview-questao";
+    // NOVO
+    const bloqueado =
+        !jaSelecionada && questoesSelecionadas.length >= 15;
 
-        div.innerHTML = `
-            <label>
-                <input type="checkbox"
-                       ${jaSelecionada ? "checked" : ""}
-                       onchange="toggleQuestao('${q.ID}')">
-                <strong>${q.ENUNCIADO}</strong>
-            </label>
+    const div = document.createElement("div");
+    div.className = "preview-questao";
+
+    div.innerHTML = `
+        <label>
+            <input type="checkbox"
+                   ${jaSelecionada ? "checked" : ""}
+                   class="${bloqueado ? 'checkbox-bloqueado' : ''}"
+                   onclick="handleClickQuestao(event, '${q.ID}')">
+            <strong>${q.ENUNCIADO}</strong>
+        </label>
 
               ${(() => {
                   const img = normalizarImagem(q.IMG);
@@ -413,7 +418,28 @@ function mostrarQuestoes(){
         areaQuestoes.appendChild(div);
     });
 }
+//============================================
+function handleClickQuestao(e, id){
 
+    const existe = questoesSelecionadas
+        .find(item => item.ID === id);
+
+    // se já selecionada → pode remover normal
+    if(existe){
+        toggleQuestao(id);
+        return;
+    }
+
+    // se atingiu limite → bloqueia e avisa
+    if(questoesSelecionadas.length >= 15){
+        e.preventDefault(); // 🔥 impede marcar
+        mostrarAvisoLimite();
+        return;
+    }
+
+    // normal
+    toggleQuestao(id);
+}
 
 // ================= SELEÇÃO =================
 function toggleQuestao(id){

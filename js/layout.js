@@ -1,90 +1,117 @@
 function criarLayout(){
-
-    // =========================
-    // TOKEN
-    // =========================
+    if(typeof QRCode === "undefined"){
+    const script = document.createElement("script");
+    script.src = "https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js";
+    document.head.appendChild(script);
+    }
+    
     const token = localStorage.getItem("TOKEN");
+    const perfil = localStorage.getItem("PERFIL");
+    const nome = localStorage.getItem("NOME");
 
     if(!token){
         window.location.href = "index.html";
         return;
     }
 
-    const perfil = localStorage.getItem("PERFIL");
-    const nome = localStorage.getItem("NOME");
+    // Detecta página atual
+    const paginaAtual =
+        window.location.pathname.split("/").pop();
 
-    const paginaAtual = window.location.pathname.split("/").pop();
-
-    // =========================
-    // 🔥 RENDERIZA IMEDIATO
-    // =========================
     document.body.innerHTML = `
     <div class="app">
+
         <div class="sidebar" id="sidebar">
-            <div class="logo-area">
-                <h2 class="logo">
-                    Avalia<span class="logo-plus">+</span>
-                </h2>
-                <p class="logo-sub">
-                    Plataforma de Avaliação Digital
-                </p>
-            </div>
 
-            <div class="menu-principal">
-                <a href="painel.html">Relatórios</a>
-                <a href="professor.html">Gerar Simulado</a>
-                <a href="turmas.html">Turmas</a>
-                <a href="dashboard.html">Dashboard</a>
-                <a href="#" onclick="abrirScanner()">Corrigir Prova</a>
-                <a href="provas.html">Gerar Prova Impressa</a>
-                <a href="lab_questoes.html">Cadastrar Questões</a>
-                ${perfil === "ADMIN" ? `<a href="admin.html">Admin</a>` : ``}
-            </div>
+  <div class="logo-area">
+    <h2 class="logo">
+      Avalia<span class="logo-plus">+</span>
+    </h2>
+    <p class="logo-sub">
+      Plataforma de Avaliação Digital
+    </p>
+  </div>
 
-            <div class="sidebar-bottom">
-                <a href="sobre.html">Sobre</a>
-            </div>
-        </div>
+  <div class="menu-principal">
+    <a href="painel.html"
+       class="${paginaAtual==='painel.html'?'active':''}">
+       Relatórios
+    </a>
 
-        <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
+    <a href="professor.html"
+       class="${paginaAtual==='professor.html'?'active':''}">
+       Gerar Simulado
+    </a>
+
+    <a href="turmas.html"
+       class="${paginaAtual==='turmas.html'?'active':''}">
+       Turmas
+    </a>
+
+    <a href="dashboard.html"
+       class="${paginaAtual==='dashboard.html'?'active':''}">
+       Dashboard
+    </a>
+
+    <a href="#"
+       onclick="abrirScanner()"
+       class="${paginaAtual==='scanner.html'?'active':''}">
+       Corrigir Prova
+    </a>
+
+    <a href="provas.html"
+       class="${paginaAtual==='provas.html'?'active':''}">
+       Gerar Prova Impressa
+    </a>
+
+    <a href="lab_questoes.html"
+       class="${paginaAtual==='lab_questoes.html'?'active':''}">
+       Cadastrar Questões 
+    </a>
+   
+    ${perfil === "ADMIN" ? `
+      <a href="admin.html"
+         class="${paginaAtual==='admin.html'?'active':''}">
+         Admin
+      </a>
+    
+    ` : ``}
+  </div>
+
+  <div class="sidebar-bottom">
+    <a href="sobre.html"
+       class="${paginaAtual==='sobre.html'?'active':''}">
+       Sobre
+    </a>
+  </div>
+
+</div>
+
+        <div class="overlay"
+             id="overlay"
+             onclick="toggleMenu()"></div>
 
         <div class="main">
+
             <div class="topbar">
-                <div class="menu-toggle" onclick="toggleMenu()">☰</div>
+                <div class="menu-toggle"
+                     onclick="toggleMenu()">☰</div>
 
                 <div class="user-info">
                     ${nome} (${perfil})
-                    <button class="btn-logout" onclick="logout()">Sair</button>
+                    <button class="btn-logout"
+                            onclick="logout()">Sair</button>
                 </div>
             </div>
 
-            <div class="page-content" id="conteudo">
-                <div style="opacity:0.6;">Carregando...</div>
-            </div>
+            <div class="page-content"
+                 id="conteudo"></div>
+
         </div>
     </div>
     `;
-
-    // =========================
-    // 🔥 AGORA SIM ASYNC
-    // =========================
-    (async () => {
-
-        const temTurma = await verificarTurmas();
-        window.temTurma = temTurma;
-
-        // bloqueio de rota
-        if(!temTurma && paginaAtual !== "turmas.html" && paginaAtual !== "sobre.html"){
-            window.location.href = "turmas.html";
-            return;
-        }
-
-        aplicarBloqueioMenu(temTurma);
-
-    })();
-
 }
-//============================================
+
 function toggleMenu(){
     const sidebar = document.getElementById("sidebar");
     const overlay = document.getElementById("overlay");
@@ -266,45 +293,8 @@ if(qrEl){
 }
     
 }
-//============================
+
 function fecharModalScanner(){
     const modal = document.getElementById("modalScanner");
     if(modal) modal.remove();
 }
-//============================
-async function verificarTurmas(){
-
-    const token = localStorage.getItem("TOKEN");
-    if(!token) return false;
-
-    const dados = await fetchProtegido(API + "?tipo=turmas&token=" + token);
-
-    if(!dados || dados.erro) return false;
-
-    return dados.length > 1;
-}
-//===========================================
-function aplicarBloqueioMenu(temTurma){
-
-    if(temTurma) return;
-
-    const links = document.querySelectorAll(".menu-principal a");
-
-    links.forEach(link => {
-
-        const href = link.getAttribute("href") || "";
-
-        // libera apenas turmas e sobre
-        if(href.includes("turmas") || href.includes("sobre")){
-            return;
-        }
-
-        // bloqueia
-        link.style.opacity = "0.4";
-        link.style.pointerEvents = "none";
-        link.style.cursor = "not-allowed";
-
-        link.title = "Cadastre uma turma para liberar";
-    });
-}
-//===========================================

@@ -1,0 +1,17 @@
+.loading-box {
+    padding: 12px;
+    background: #1e1e1e;
+    border: 1px solid #333;
+    border-radius: 8px;
+}
+
+.loading-text {
+    font-size: 13px;
+    color: #ccc;
+    animation: piscar 1s infinite alternate;
+}
+
+@keyframes piscar {
+    from { opacity: 0.5; }
+    to { opacity: 1; }
+}

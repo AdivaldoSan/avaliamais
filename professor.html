@@ -39,7 +39,15 @@ function iniciarPagina(){
 
             <div class="form-group">
                 <label>Disciplina</label>
-                <select id="disciplina"></select>
+                
+                <div id="loadingBoxDisciplina" class="loading-box">
+                    <div id="loadingTextoDisciplina" class="loading-text">
+                        Iniciando...
+                    </div>
+                </div>
+                
+                <select id="disciplina" style="display:none;"></select>
+                
             </div>
 
             <div class="form-group">
@@ -141,8 +149,36 @@ window.onload = iniciarPagina;
 // ================= INICIALIZAÇÃO =================
 
 async function iniciar(){
+    const textos = [
+    "Conectando ao servidor...",
+    "Carregando banco de questões...",
+    "Organizando disciplinas...",
+    "Finalizando..."
+    ];
+    
+    let i = 0;
+    
+    const elTexto = document.getElementById("loadingTextoDisciplina");
+    
+    const trocaTexto = setInterval(() => {
+        elTexto.innerText = textos[i % textos.length];
+        i++;
+    }, 1200);
 
     const dados = await carregarBancoCompleto();
+
+    clearInterval(trocaTexto);
+
+    elTexto.innerText = "Pronto!";
+    
+    setTimeout(() => {
+    
+        document.getElementById("loadingBoxDisciplina").style.display = "none";
+    
+        const sel = document.getElementById("disciplina");
+        sel.style.display = "block";
+    
+    }, 300);
 
     banco = dados.questoes.filter(q =>
         String(q.ATIVO).trim().toUpperCase() === "SIM"

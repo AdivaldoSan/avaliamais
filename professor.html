@@ -51,15 +51,11 @@ function iniciarPagina(){
                 
             </div>
 
-            <div class="form-group">
+            <div class="form-group" id="blocoNivel" style="display:none;">
                <label>Nível das questões</label>
                 <select id="nivel">
                     <option value="">Selecione</option>
-                    <option value="EF1">Ensino Fundamental I</option>
-                    <option value="EF2">Ensino Fundamental II</option>
-                    <option value="EM">Ensino Médio</option>
                 </select>
-                
             </div>
 
             <div id="etapaTurmas" style="display:none;">
@@ -195,7 +191,12 @@ async function iniciar(){
 
     // EVENTOS (mantém igual)
     document.getElementById("disciplina")
-        .addEventListener("change", resetarFluxo);
+    .addEventListener("change", () => {
+
+        atualizarNiveis(); // <-- MOSTRA E PREENCHE
+
+        resetarFluxo();    // <-- mantém seu fluxo atual
+    });
 
     document.getElementById("nivel")
         .addEventListener("change", resetarFluxo);
@@ -229,6 +230,30 @@ async function iniciar(){
 
     await carregarTurmas();
 }
+//=========================================
+function atualizarNiveis(){
+
+    const selNivel = document.getElementById("nivel");
+    const blocoNivel = document.getElementById("blocoNivel");
+
+    selNivel.innerHTML = `<option value="">Carregando...</option>`;
+    blocoNivel.style.display = "block";
+
+    const filtrado = banco.filter(q =>
+        q.DISCIPLINA === disciplina.value
+    );
+
+    const niveis = [...new Set(
+        filtrado.map(q => q.NIVEL_ENSINO)
+    )];
+
+    if(niveis.length === 0){
+        selNivel.innerHTML = `<option value="">Nenhum nível disponível</option>`;
+        return;
+    }
+
+    preencherSelect("nivel", niveis);
+}
 
 // ================= RESET =================
 
@@ -246,6 +271,7 @@ function resetarFluxo(){
     etapaFinal.style.display = "none";
     etapaModo.style.display = "none";
     etapaTurmas.style.display = "none";
+    document.getElementById("blocoNivel").style.display = "none";
 
     if(disciplina.value && nivel.value){
         etapaTurmas.style.display = "block";

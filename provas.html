@@ -271,10 +271,12 @@ function resetarFluxo(){
     areaQuestoes.innerHTML = "";
     document.getElementById("previewLista").innerHTML = "";
     document.getElementById("previewAcao").style.display = "none";
-    document.getElementById("blocoNivel").style.display = "none";
+    if(!disciplina.value){
+        document.getElementById("blocoNivel").style.display = "none";
+    }
     
 
-    // 🔥 mantém seleção persistente (NÃO limpa array)
+    //mantém seleção persistente (NÃO limpa array)
 
     carregarTurmas();
 

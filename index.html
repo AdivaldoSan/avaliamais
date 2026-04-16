@@ -90,13 +90,22 @@
     const params = new URLSearchParams(window.location.search);
     const redirect = params.get("redirect");
   
-    // PRIORIDADE: redirect (scanner, etc)
+    // 1. redirect vindo por URL (caso exista)
     if(redirect){
       window.location.href = redirect + ".html";
       return;
     }
-  
-    // fluxo normal
+    
+    // 2. redirect salvo (fluxo do QR /corrigir)
+    const redirectPosLogin = localStorage.getItem("REDIRECT_POS_LOGIN");
+    
+    if(redirectPosLogin){
+      localStorage.removeItem("REDIRECT_POS_LOGIN");
+      window.location.href = redirectPosLogin;
+      return;
+    }
+    
+    // 3. fluxo padrão
     if(dados.perfil === "ADMIN"){
       window.location.href = "admin.html";
     }else{

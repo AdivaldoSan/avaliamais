@@ -26,10 +26,7 @@ async function criarLayout(){
     const perfil = localStorage.getItem("PERFIL");
     const nome = localStorage.getItem("NOME");
 
-    // Detecta página atual
-    const paginaAtual =
-        window.location.pathname.split("/").pop();
-
+    
     document.body.innerHTML = `
     
     <div class="app">

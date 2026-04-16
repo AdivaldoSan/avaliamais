@@ -193,11 +193,13 @@ function abrirModalScanner(){
                 <div id="qrScanner"
                      style="
                         display:flex;
+                        align-items:center;
                         justify-content:center;
-                        margin:15px 0;
                         background:#fff;
-                        padding:12px;
+                        padding:16px;
                         border-radius:12px;
+                        width:fit-content;
+                        margin:15px auto;
                      ">
                 </div>
 
@@ -243,7 +245,7 @@ function abrirModalScanner(){
                 ">
                     Ou digite no navegador:<br>
                     <strong style="color:#4da3ff;">
-                        ${window.location.origin}/corrigir
+                        ${link}
                     </strong>
                 </div>
 
@@ -271,6 +273,14 @@ function abrirModalScanner(){
     colorLight: "#ffffff", // FUNDO BRANCO FORÇADO
     correctLevel: QRCode.CorrectLevel.H
 });
+
+const qrEl = document.querySelector("#qrScanner img, #qrScanner canvas");
+if(qrEl){
+    qrEl.style.display = "block";
+    qrEl.style.width = "220px";
+    qrEl.style.height = "220px";
+}
+    
 }
 
 function fecharModalScanner(){

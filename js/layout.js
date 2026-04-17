@@ -304,21 +304,30 @@ function aplicarBloqueioMenuLocal(){
 
     const temTurma = localStorage.getItem("TEM_TURMA") === "1";
 
-    if(temTurma) return;
-
     const links = document.querySelectorAll(".menu-principal a");
 
     links.forEach(link => {
 
         const href = link.getAttribute("href") || "";
 
-        if(href.includes("turmas") || href.includes("sobre")){
-            return;
+        const permitido =
+            href.includes("turmas") ||
+            href.includes("sobre");
+
+        // 🔴 SEM TURMA → BLOQUEIA
+        if(!temTurma && !permitido){
+            link.style.opacity = "0.4";
+            link.style.pointerEvents = "none";
+            link.style.cursor = "not-allowed";
+            link.title = "Cadastre uma turma para liberar";
         }
 
-        link.style.opacity = "0.4";
-        link.style.pointerEvents = "none";
-        link.style.cursor = "not-allowed";
-        link.title = "Cadastre uma turma para liberar";
+        // 🟢 COM TURMA → DESBLOQUEIA
+        if(temTurma){
+            link.style.opacity = "";
+            link.style.pointerEvents = "";
+            link.style.cursor = "";
+            link.title = "";
+        }
     });
 }

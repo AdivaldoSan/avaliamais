@@ -1050,14 +1050,16 @@ function renderizarSelect(){
 
   select.innerHTML = `<option value="">Selecione uma prova</option>`
 
-  const inicio = paginaAtualLista * TAMANHO_PAGINA
-  const fim = inicio + TAMANHO_PAGINA
-
-  const pagina = listaGlobal
+  // 🔥 ordena mais novas primeiro
+  const filtradas = listaGlobal
     .filter(p => p.id.startsWith("PRV_"))
-    .slice(inicio, fim)
+    .sort((a,b)=> b.id.localeCompare(a.id))
 
-  pagina.forEach(p=>{
+  const quantidade = (paginaAtualLista + 1) * TAMANHO_PAGINA
+
+  const visiveis = filtradas.slice(0, quantidade)
+
+  visiveis.forEach(p=>{
     const option = document.createElement("option")
     option.value = p.id
     option.textContent = p.id + " | " + p.nome
@@ -1065,12 +1067,13 @@ function renderizarSelect(){
   })
 
   // botão carregar mais
-  if(fim < listaGlobal.length){
+  if(quantidade < filtradas.length){
     const option = document.createElement("option")
     option.value = "__mais__"
     option.textContent = "⬇ Carregar mais..."
     select.appendChild(option)
   }
+    select.value = ""
 }
 // ==============================
 // LEITOR QR (ANTES DE TUDO)

@@ -68,8 +68,16 @@ function iniciarPagina(){
 
             <hr style="margin:20px 0;">
 
-            <div id="listaTurmas">
-                Carregando...
+           <div id="listaTurmas">
+                <div style="
+                    height:120px;
+                    display:flex;
+                    align-items:center;
+                    justify-content:center;
+                    opacity:0.7;
+                ">
+                    Carregando...
+                </div>
             </div>
 
         </div>
@@ -87,7 +95,17 @@ window.onload = iniciarPagina;
 async function carregar(){
 
     const listaTurmas = document.getElementById("listaTurmas");
-    listaTurmas.innerHTML = `<div style="opacity:0.7;">Carregando...</div>`;
+        listaTurmas.innerHTML = `
+        <div style="
+            height:120px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            opacity:0.7;
+        ">
+            Carregando...
+        </div>
+    `;
 
     const token = localStorage.getItem("TOKEN");
 
@@ -173,7 +191,15 @@ async function adicionar(){
     }
 
     document.getElementById("listaTurmas").innerHTML = `
-        <div style="opacity:0.7;">Atualizando lista...</div>
+        <div style="
+            height:120px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            opacity:0.7;
+        ">
+            Atualizando lista...
+        </div>
     `;
 
     try {

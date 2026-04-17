@@ -222,7 +222,15 @@ async function adicionar(){
         }
 
         input.value = "";
+
+        // atualiza estado
+        localStorage.setItem("TEM_TURMA", "1");
+        
+        // ibera menu na hora
+        aplicarBloqueioMenuLocal();
+        
         await carregar();
+        
         window.temTurma = true;
 
             if(typeof aplicarBloqueioMenu === "function"){

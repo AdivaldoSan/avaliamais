@@ -109,9 +109,26 @@ async function carregar(){
     }
 
     if(dados.length <= 1){
-        listaTurmas.innerHTML = "Nenhuma turma cadastrada.";
+        listaTurmas.innerHTML = `
+            <div style="
+                height:120px;
+                display:flex;
+                align-items:center;
+                justify-content:center;
+                text-align:center;
+                line-height:1.6;
+            ">
+                <div>
+                    <strong style="color:#4da3ff;">Nenhuma turma cadastrada.</strong><br>
+                    Adicione pelo menos uma turma para liberar o sistema.<br><br>
+                    <span style="opacity:0.7; font-size:13px;">
+                        Ex: 3º A, 2º B, 1º Ano
+                    </span>
+                </div>
+            </div>
+        `;
         return;
-    }
+}
 
     dados.slice(1).forEach(l=>{
 

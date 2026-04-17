@@ -962,7 +962,7 @@ async function carregarListaProvas(){
 
     const filtradas = listaGlobal
       .filter(p => p.id.startsWith("PRV_"))
-      .sort((a,b)=> b.id.localeCompare(a.id))
+      .reverse()
 
     const quantidade = (paginaAtualLista + 1) * TAMANHO_PAGINA
 

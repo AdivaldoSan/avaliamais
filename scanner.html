@@ -75,17 +75,16 @@ TELA INICIAL (SELEÇÃO DE PROVA)
     box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
   ">
 
-    <select id="selectProvas" style="
-      width:100%;
-      padding:18px;
-      border-radius:12px;
-      background:#2a2a2a;
-      color:white;
-      border:none;
-      font-size:26px;
-    ">
-      <option value="">Selecione uma prova</option>
-    </select>
+   <div id="dropdownProvas" class="dropdown">
+
+      <div id="dropdownHeader" class="dropdown-header">
+        Selecione uma prova
+      </div>
+    
+      <div id="dropdownLista" class="dropdown-list">
+      </div>
+    
+    </div>
 
   </div>
 
@@ -956,32 +955,64 @@ async function carregarListaProvas(){
   const TAMANHO_PAGINA = 5
   let listaGlobal = []
 
-  function renderizarSelect(){
+  function renderizarLista(){
 
-    const select = document.getElementById("selectProvas")
+    const lista = document.getElementById("dropdownLista")
+    lista.innerHTML = ""
 
-    select.innerHTML = `<option value="">Selecione uma prova</option>`
+    const filtradas = listaGlobal
+      .filter(p => p.id.startsWith("PRV_"))
+      .sort((a,b)=> b.id.localeCompare(a.id))
 
-    const filtradas = listaGlobal.filter(p => p.id.startsWith("PRV_"))
+    const quantidade = (paginaAtualLista + 1) * TAMANHO_PAGINA
 
-    const inicio = paginaAtualLista * TAMANHO_PAGINA
-    const fim = inicio + TAMANHO_PAGINA
+    const visiveis = filtradas.slice(0, quantidade)
 
-    const pagina = filtradas.slice(inicio, fim)
+    visiveis.forEach(p=>{
 
-    pagina.forEach(p=>{
-      const option = document.createElement("option")
-      option.value = p.id
-      option.textContent = p.id + " | " + p.nome
-      select.appendChild(option)
+      const div = document.createElement("div")
+      div.className = "dropdown-item"
+      div.innerText = p.id + " | " + p.nome
+
+      div.onclick = async () => {
+
+        document.getElementById("dropdownHeader").innerText = div.innerText
+        lista.style.display = "none"
+
+        provaSelecionada = p
+
+        try{
+          window.TURMAS_PERMITIDAS = JSON.parse(p.turmas || "[]")
+        }catch{
+          window.TURMAS_PERMITIDAS = []
+        }
+
+        resetEstadoScanner()
+
+        document.getElementById("infoProva").style.display = "block"
+        document.getElementById("loadingProva").style.display = "block"
+        document.getElementById("dadosProva").style.display = "none"
+
+        await carregarProvaSelecionada()
+      }
+
+      lista.appendChild(div)
     })
 
     // botão carregar mais
-    if(fim < filtradas.length){
-      const option = document.createElement("option")
-      option.value = "__mais__"
-      option.textContent = "⬇ Carregar mais..."
-      select.appendChild(option)
+    if(quantidade < filtradas.length){
+
+      const mais = document.createElement("div")
+      mais.className = "dropdown-item"
+      mais.innerText = "⬇ Carregar mais..."
+
+      mais.onclick = (e)=>{
+        e.stopPropagation()
+        paginaAtualLista++
+        renderizarLista()
+      }
+
+      lista.appendChild(mais)
     }
   }
 
@@ -997,83 +1028,24 @@ async function carregarListaProvas(){
 
     console.log("📚 PROVAS DO BD:", listaGlobal)
 
-    const select = document.getElementById("selectProvas")
-
     document.body.classList.remove("loading")
 
-    // render inicial
     paginaAtualLista = 0
-    renderizarSelect()
-
-    // seleção
-    select.onchange = async () => {
-
-      if(select.value === "__mais__"){
-        paginaAtualLista++
-        renderizarSelect()
-        return
-      }
-
-      const id = select.value
-      if(!id) return
-
-      provaSelecionada = listaGlobal.find(p => p.id === id)
-
-      console.log("PROVA SELECIONADA:", provaSelecionada)
-
-      // conversão segura
-      try{
-        window.TURMAS_PERMITIDAS = JSON.parse(provaSelecionada.turmas || "[]")
-      }catch(e){
-        console.error("Erro ao converter TURMAS:", provaSelecionada.turmas)
-        window.TURMAS_PERMITIDAS = []
-      }
-
-      resetEstadoScanner()
-
-      document.getElementById("infoProva").style.display = "block"
-      document.getElementById("loadingProva").style.display = "block"
-      document.getElementById("dadosProva").style.display = "none"
-
-      await carregarProvaSelecionada()
-    }
+    renderizarLista()
 
   }catch(e){
     console.error("Erro ao carregar provas:", e)
     alert("Erro ao carregar lista de provas")
   }
-}
-//================================
-function renderizarSelect(){
 
-  const select = document.getElementById("selectProvas")
+  // abrir/fechar dropdown
+  document.getElementById("dropdownHeader").onclick = () => {
 
-  select.innerHTML = `<option value="">Selecione uma prova</option>`
+    const lista = document.getElementById("dropdownLista")
 
-  // 🔥 ordena mais novas primeiro
-  const filtradas = listaGlobal
-    .filter(p => p.id.startsWith("PRV_"))
-    .sort((a,b)=> b.id.localeCompare(a.id))
-
-  const quantidade = (paginaAtualLista + 1) * TAMANHO_PAGINA
-
-  const visiveis = filtradas.slice(0, quantidade)
-
-  visiveis.forEach(p=>{
-    const option = document.createElement("option")
-    option.value = p.id
-    option.textContent = p.id + " | " + p.nome
-    select.appendChild(option)
-  })
-
-  // botão carregar mais
-  if(quantidade < filtradas.length){
-    const option = document.createElement("option")
-    option.value = "__mais__"
-    option.textContent = "⬇ Carregar mais..."
-    select.appendChild(option)
+    lista.style.display =
+      lista.style.display === "block" ? "none" : "block"
   }
-    select.value = ""
 }
 // ==============================
 // LEITOR QR (ANTES DE TUDO)

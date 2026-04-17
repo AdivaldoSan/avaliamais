@@ -952,9 +952,42 @@ function iniciar(){
 //==============================
 async function carregarListaProvas(){
 
+  let paginaAtualLista = 0
+  const TAMANHO_PAGINA = 5
+  let listaGlobal = []
+
+  function renderizarSelect(){
+
+    const select = document.getElementById("selectProvas")
+
+    select.innerHTML = `<option value="">Selecione uma prova</option>`
+
+    const filtradas = listaGlobal.filter(p => p.id.startsWith("PRV_"))
+
+    const inicio = paginaAtualLista * TAMANHO_PAGINA
+    const fim = inicio + TAMANHO_PAGINA
+
+    const pagina = filtradas.slice(inicio, fim)
+
+    pagina.forEach(p=>{
+      const option = document.createElement("option")
+      option.value = p.id
+      option.textContent = p.id + " | " + p.nome
+      select.appendChild(option)
+    })
+
+    // botão carregar mais
+    if(fim < filtradas.length){
+      const option = document.createElement("option")
+      option.value = "__mais__"
+      option.textContent = "⬇ Carregar mais..."
+      select.appendChild(option)
+    }
+  }
+
   try{
 
-   const lista = await fetchProtegido(API, {
+    listaGlobal = await fetchProtegido(API, {
       method:"POST",
       body: JSON.stringify({
         tipo:"listar_aplicacoes",
@@ -962,66 +995,85 @@ async function carregarListaProvas(){
       })
     })
 
-    console.log("📚 PROVAS DO BD:", lista)
+    console.log("📚 PROVAS DO BD:", listaGlobal)
 
     const select = document.getElementById("selectProvas")
 
-    // limpa
-    select.innerHTML = `<option value="">Selecione uma prova</option>`
-
-    lista.forEach(p => {
-
-      //  FILTRA SÓ PROVAS IMPRESSAS
-      if(!p.id.startsWith("PRV_")) return
-
-      const option = document.createElement("option")
-      option.value = p.id
-      option.textContent = p.id + " | " + p.nome
-
-      select.appendChild(option)
-
-    })
     document.body.classList.remove("loading")
 
+    // render inicial
+    paginaAtualLista = 0
+    renderizarSelect()
+
     // seleção
-select.onchange = async () => {
+    select.onchange = async () => {
 
-  const id = select.value
-  if(!id) return
+      if(select.value === "__mais__"){
+        paginaAtualLista++
+        renderizarSelect()
+        return
+      }
 
-  provaSelecionada = lista.find(p => p.id === id)
+      const id = select.value
+      if(!id) return
 
-console.log("PROVA SELECIONADA:", provaSelecionada)
+      provaSelecionada = listaGlobal.find(p => p.id === id)
 
-// 🔥 CONVERSÃO SEGURA DAS TURMAS
-try{
-  window.TURMAS_PERMITIDAS = JSON.parse(provaSelecionada.turmas || "[]")
-}catch(e){
-document.body.classList.remove("loading")
-  console.error("Erro ao converter TURMAS:", provaSelecionada.turmas)
-  window.TURMAS_PERMITIDAS = []
-}
+      console.log("PROVA SELECIONADA:", provaSelecionada)
 
-console.log("TURMAS PERMITIDAS:", window.TURMAS_PERMITIDAS)
+      // conversão segura
+      try{
+        window.TURMAS_PERMITIDAS = JSON.parse(provaSelecionada.turmas || "[]")
+      }catch(e){
+        console.error("Erro ao converter TURMAS:", provaSelecionada.turmas)
+        window.TURMAS_PERMITIDAS = []
+      }
 
-  resetEstadoScanner()
+      resetEstadoScanner()
 
-  // 🔥 MOSTRA CAIXA + LOADING
-  document.getElementById("infoProva").style.display = "block"
-  document.getElementById("loadingProva").style.display = "block"
-  document.getElementById("dadosProva").style.display = "none"
+      document.getElementById("infoProva").style.display = "block"
+      document.getElementById("loadingProva").style.display = "block"
+      document.getElementById("dadosProva").style.display = "none"
 
-  await carregarProvaSelecionada()
-}
+      await carregarProvaSelecionada()
+    }
 
   }catch(e){
     console.error("Erro ao carregar provas:", e)
     alert("Erro ao carregar lista de provas")
   }
 }
+//================================
+function renderizarSelect(){
 
+  const select = document.getElementById("selectProvas")
+
+  select.innerHTML = `<option value="">Selecione uma prova</option>`
+
+  const inicio = paginaAtualLista * TAMANHO_PAGINA
+  const fim = inicio + TAMANHO_PAGINA
+
+  const pagina = listaGlobal
+    .filter(p => p.id.startsWith("PRV_"))
+    .slice(inicio, fim)
+
+  pagina.forEach(p=>{
+    const option = document.createElement("option")
+    option.value = p.id
+    option.textContent = p.id + " | " + p.nome
+    select.appendChild(option)
+  })
+
+  // botão carregar mais
+  if(fim < listaGlobal.length){
+    const option = document.createElement("option")
+    option.value = "__mais__"
+    option.textContent = "⬇ Carregar mais..."
+    select.appendChild(option)
+  }
+}
 // ==============================
-// 🔥 LEITOR QR (ANTES DE TUDO)
+// LEITOR QR (ANTES DE TUDO)
 // ==============================
 
   function detectarQR(){

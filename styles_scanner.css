@@ -454,3 +454,36 @@ body.loading::after{
 
   margin-bottom:8px;
 }
+
+.dropdown {
+  position: relative;
+}
+
+.dropdown-header {
+  background: #2a2a2a;
+  padding: 18px;
+  border-radius: 12px;
+  font-size: 26px;
+  cursor: pointer;
+}
+
+.dropdown-list {
+  display: none;
+  position: absolute;
+  width: 100%;
+  background: #1a1a1a;
+  border-radius: 12px;
+  margin-top: 5px;
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 50;
+}
+
+.dropdown-item {
+  padding: 14px;
+  cursor: pointer;
+}
+
+.dropdown-item:hover {
+  background: #333;
+}

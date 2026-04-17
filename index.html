@@ -107,32 +107,35 @@
     
     // 3. fluxo padrão (COM VALIDAÇÃO DE TURMAS)
 
-try {
-
-  const turmas = await fetchProtegido(API + "?tipo=turmas&token=" + dados.token);
-
-  if(!turmas || turmas.erro){
-    throw new Error("Erro ao carregar turmas");
-  }
-
-  // 🔴 SEM TURMA → vai direto pra turmas
-  if(turmas.length <= 1){
-    window.location.href = "turmas.html";
-    return;
-  }
-
-  // 🟢 COM TURMA → segue fluxo normal
-  if(dados.perfil === "ADMIN"){
-    window.location.href = "admin.html";
-  }else{
-    window.location.href = "painel.html";
-  }
-
-} catch(e){
-
-  // fallback seguro
-  window.location.href = "turmas.html";
-}
+    try {
+    
+      const turmas = await fetchProtegido(API + "?tipo=turmas&token=" + dados.token);
+    
+      if(!turmas || turmas.erro){
+        throw new Error("Erro ao carregar turmas");
+      }
+    
+      // 🔴 SEM TURMA → vai direto pra turmas
+      if(turmas.length <= 1){
+          localStorage.setItem("TEM_TURMA", "0");
+          window.location.href = "turmas.html";
+          return;
+      }else{
+          localStorage.setItem("TEM_TURMA", "1");
+      }
+          
+      // 🟢 COM TURMA → segue fluxo normal
+      if(dados.perfil === "ADMIN"){
+        window.location.href = "admin.html";
+      }else{
+        window.location.href = "painel.html";
+      }
+    
+    } catch(e){
+    
+      // fallback seguro
+      window.location.href = "turmas.html";
+    }
 
 
     }else{

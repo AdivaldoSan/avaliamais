@@ -110,6 +110,7 @@ function criarLayout(){
         </div>
     </div>
     `;
+    aplicarBloqueioMenuLocal();
 }
 
 function toggleMenu(){
@@ -297,4 +298,27 @@ if(qrEl){
 function fecharModalScanner(){
     const modal = document.getElementById("modalScanner");
     if(modal) modal.remove();
+}
+//==============================
+function aplicarBloqueioMenuLocal(){
+
+    const temTurma = localStorage.getItem("TEM_TURMA") === "1";
+
+    if(temTurma) return;
+
+    const links = document.querySelectorAll(".menu-principal a");
+
+    links.forEach(link => {
+
+        const href = link.getAttribute("href") || "";
+
+        if(href.includes("turmas") || href.includes("sobre")){
+            return;
+        }
+
+        link.style.opacity = "0.4";
+        link.style.pointerEvents = "none";
+        link.style.cursor = "not-allowed";
+        link.title = "Cadastre uma turma para liberar";
+    });
 }

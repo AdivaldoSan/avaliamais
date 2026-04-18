@@ -474,7 +474,7 @@ body.loading::after{
   left: 50%;
   transform: translate(-50%, -50%);
 
-  width: 92vw;          /* largura real baseada na tela */
+  width: 96vw;          /* largura real baseada na tela */
   max-width: 500px;     /* limite em telas maiores */
 
   max-height: 70vh;     /* limite vertical */
@@ -491,7 +491,7 @@ body.loading::after{
 
 .dropdown-item {
   padding: 18px 16px;
-  font-size: 24px; /* aumenta leitura */
+  font-size: 28px; /* aumenta leitura */
   line-height: 1.4;
   border-bottom: 1px solid #222;
 }

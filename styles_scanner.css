@@ -447,7 +447,7 @@ body.loading::after{
 .infoAluno{
   display:block;
 
-  font-size:36px !important;   /* 👈 aumenta aqui */
+  font-size:36px !important;   /* aumenta aqui */
   font-weight:500;
 
   opacity:0.8;
@@ -473,9 +473,9 @@ body.loading::after{
   left: 50%;
   transform: translateX(-50%);
 
-  bottom: 20px;
+  bottom: 80px;
 
-  width: 98%;
+  width: 100%;
   max-width: 600px;
 
   max-height: 60vh; /* limite */

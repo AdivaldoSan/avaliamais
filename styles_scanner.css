@@ -470,25 +470,22 @@ body.loading::after{
   display: none;
   position: fixed;
 
+  top: 50%;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translate(-50%, -50%);
 
-  bottom: 80px;
+  width: 92vw;          /* largura real baseada na tela */
+  max-width: 500px;     /* limite em telas maiores */
 
-  width: 100%;
-  max-width: 600px;
-
-  max-height: 60vh; /* limite */
-  height: auto;     /* cresce conforme conteúdo */
+  max-height: 70vh;     /* limite vertical */
+  overflow-y: auto;
 
   background: #1a1a1a;
-
   border-radius: 18px;
-  padding: 16px;
+  padding: 18px;
 
-  box-shadow: 0 12px 30px rgba(0,0,0,0.8);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.9);
 
-  overflow-y: auto;
   z-index: 999;
 }
 

@@ -19,6 +19,8 @@
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
 
 <script>
+let pollingResultados = null;
+let idAplicacaoAtual = null;
 
 function iniciarPagina(){
 
@@ -682,7 +684,7 @@ function mostrarToast(mensagem){
 // RESULTADOS EM MODAL
 // =============================
 async function abrirResultados(id){
-    
+    idAplicacaoAtual = id;
     mostrarLoading("Carregando resultados da aplicação...");
 
     const token = localStorage.getItem("TOKEN");
@@ -728,8 +730,14 @@ async function abrirResultados(id){
     window.nomeAplicacao = dados.nome;
 
     montarAbasTurmas(dados.turmas);
+    // inicia atualização automática
+    if(pollingResultados) clearInterval(pollingResultados);
+    
+    pollingResultados = setInterval(()=>{
+        atualizarResultadosTempoReal();
+    }, 3000);
 } 
-
+//=============================================================
 function montarAbasTurmas(dados){
 
     const turmas = Object.keys(dados);
@@ -884,13 +892,41 @@ function montarAbasTurmas(dados){
     document.getElementById("tabelaResultados").innerHTML = html;
     document.getElementById("resumoResultados").innerHTML = htmlResumo;
 }  
+//======================================
+async function atualizarResultadosTempoReal(){
 
+    if(!idAplicacaoAtual) return;
+
+    const token = localStorage.getItem("TOKEN");
+
+    const dados = await fetchProtegido(
+        API + "?tipo=obterResultados&id=" + idAplicacaoAtual + "&token=" + token
+    );
+
+    if(!dados) return;
+
+    window.resultadosCache = dados.turmas;
+
+    // pega turma atual selecionada
+    const abaAtiva = document.querySelector(".abaTurma[style*='background']");
+
+    if(abaAtiva){
+        mostrarTurma(abaAtiva.dataset.turma);
+    }
+}
 //======================================
 function fecharResultados(){
+    if(pollingResultados){
+        clearInterval(pollingResultados);
+        pollingResultados = null;
+    }
+
+    idAplicacaoAtual = null;
+    
     const modal = document.getElementById("modalResultados");
     if(modal) modal.remove();
 }
-
+//==========================================================
 // fechar modal com ESC
 document.addEventListener("keydown", function(e){
 
@@ -903,7 +939,7 @@ document.addEventListener("keydown", function(e){
     }
 
 }); 
-
+//=======================================================
 
 function exportarExcel(){
 

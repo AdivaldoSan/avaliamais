@@ -310,7 +310,7 @@ TELA DO SCANNER
 </div>
 
  <div id="notaBox" style="
-  font-size:64px;
+  font-size:74px;
   font-weight:800;
   margin-bottom:15px;
 ">
@@ -1524,11 +1524,17 @@ document.getElementById("percentualBox").innerHTML = `
   </div>
 `
 
- document.getElementById("notaBox").innerText =
+document.getElementById("notaBox").innerText =
+  "Nota " +
   somaAcertos.toLocaleString("pt-BR", {
     minimumFractionDigits: 1,
     maximumFractionDigits: 1
-  }) + " de " + somaPesos
+  }) +
+  " de " +
+  somaPesos.toLocaleString("pt-BR", {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1
+  })
 
   document.getElementById("bolinhasResultado").innerHTML = bolinhasHTML
 

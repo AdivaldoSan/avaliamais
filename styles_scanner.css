@@ -473,9 +473,9 @@ body.loading::after{
   left: 50%;
   transform: translateX(-50%);
 
-  bottom: 100px;
+  bottom: 20px;
 
-  width: 96%;
+  width: 98%;
   max-width: 600px;
 
   max-height: 60vh; /* limite */

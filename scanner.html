@@ -309,11 +309,11 @@ TELA DO SCANNER
   --
 </div>
 
-   <div id="notaBox" style="
-  font-size:50px;
-  opacity:0.8;
-  margin-bottom:25px;
-   ">
+ <div id="notaBox" style="
+  font-size:64px;
+  font-weight:800;
+  margin-bottom:15px;
+">
    </div>
 
   <div id="bolinhasResultado" class="bolinhas"></div>
@@ -333,6 +333,9 @@ TELA DO SCANNER
   <button class="btn confirmar" style="flex:1;" onclick="proximo()">
     Próximo
   </button>
+    <button class="btn" style="flex:0.8;" onclick="voltarSelecao()">
+      Voltar
+    </button>
   <button class="btn refazer" style="flex:1;" onclick="abrirResumoFinal()">
     Finalizar
   </button>
@@ -1521,12 +1524,11 @@ document.getElementById("percentualBox").innerHTML = `
   </div>
 `
 
-  document.getElementById("notaBox").innerText = "Acertos: " +
-    somaAcertos + " de " + somaPesos +
-    " • Nota: " + nota10.toLocaleString("pt-BR", { 
-  minimumFractionDigits: 1,
-  maximumFractionDigits: 1
-})
+ document.getElementById("notaBox").innerText =
+  somaAcertos.toLocaleString("pt-BR", {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1
+  }) + " de " + somaPesos
 
   document.getElementById("bolinhasResultado").innerHTML = bolinhasHTML
 

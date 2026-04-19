@@ -60,6 +60,7 @@ function criarLayout(){
     </a>
 
     <a href="provas.html"
+       onclick="return acessarProvas(event)"
        class="${paginaAtual==='provas.html'?'active':''}">
        Gerar Prova Impressa
     </a>
@@ -331,3 +332,17 @@ function aplicarBloqueioMenuLocal(){
         }
     });
 }
+//=====================================================
+function acessarProvas(e){
+
+    if(isMobile()){
+        e.preventDefault();
+
+        alert("⚠️ A geração de provas ainda não está disponível no celular.\n\nAcesse pelo computador.");
+
+        return false;
+    }
+
+    return true;
+}
+//====================================================

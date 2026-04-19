@@ -68,6 +68,13 @@
      Nova Prova
     </button>
 
+	  <div id="recuperarPDF" style="display:none; margin-top:10px; font-size:14px;">
+		  <span>Erro ao gerar PDF. </span>
+		  <a href="#" onclick="gerarPDF(); return false;" style="color:#2563eb; text-decoration:underline;">
+		    Tentar novamente
+		  </a>
+	  </div>
+
 	 <div class="painel-footer">
 	  <button class="btn-voltar" onclick="history.back()">
 	    Voltar
@@ -943,148 +950,142 @@ function ativarResize(){
   })
 }
 
+//============================================
 async function gerarPDF(){
-	// esconder resizers antes do capture
-const resizers = document.querySelectorAll(".resizer")
-resizers.forEach(r => r.style.display = "none")
-	
-  // remove páginas vazias antes de gerar PDF
-     document.querySelectorAll(".pagina").forEach(p => {
-      if(p.innerText.trim().length < 10){
-      p.remove()
-  }
-})
+
+  const areaRecuperar = document.getElementById("recuperarPDF")
+  if(areaRecuperar) areaRecuperar.style.display = "none"
 
   const btn = document.getElementById("btnPDF")
 
-  btn.disabled = true
-  btn.innerText = "Gerando PDF..."
-
-  const { jsPDF } = window.jspdf
-  const paginas = document.querySelectorAll(".pagina")
-
-  if(paginas.length === 0){
-    btn.disabled = false
-    btn.innerText = "Gerar PDF"
-    alert("Nada para gerar")
-    return
-  }
-
-  const pdf = new jsPDF("p", "mm", "a4")
-
-  for(let i = 0; i < paginas.length; i++){
-
-    btn.innerText = `Gerando ${i+1}/${paginas.length}...`
-
-    const el = paginas[i]
-
-    const canvas = await html2canvas(el, {
-      scale: 2,
-      useCORS: true
-    })
-
-    const imgData = canvas.toDataURL("image/jpeg", 0.8)
-
-
-	const imgWidth = 210
-    const pageHeight = 297
-
-    let imgHeight = (canvas.height * imgWidth) / canvas.width
-
-      
-
-    if(i > 0){
-    const isBlank = paginas[i].innerText.trim().length < 10
-    if(!isBlank){
-    pdf.addPage()
-    }else{
-    continue
-  }
-}
-
-    pdf.addImage(imgData, "JPEG", 0, 0, imgWidth, imgHeight)
-  }
-
-  btn.innerText = "Finalizando..."
-
-  await new Promise(r => setTimeout(r, 300))
-
-  //pdf.save("prova.pdf")
-  const nomeProva = prova.nome || "Prova"
-	const turma = document.getElementById("turmaSelect").value || "Turma"
-	
-	// limpa caracteres inválidos (IMPORTANTE)
-	function limpar(str){
-	  return str.replace(/[\\/:*?"<>|]/g, "").trim()
-	}
-	
-	const nomeArquivo = `${limpar(nomeProva)} - ${limpar(turma)}.pdf`
-	
-	pdf.save(nomeArquivo)
+  // captura resizers uma vez só
+  const resizers = document.querySelectorAll(".resizer")
 
   try{
 
-  const turmaSelecionada = document.getElementById("turmaSelect").value;
-  const turmaCodigo = prova.mapaTurmas[turmaSelecionada];
-  const qtd = parseInt(document.getElementById("qtd").value) || 1;
-  const qtdQuestoes = prova.versoes[0].questoes.length
+    // esconder resizers
+    resizers.forEach(r => r.style.display = "none")
 
-  console.log("TURMA SELECIONADA:", turmaSelecionada);
-  console.log("CODIGO TURMA:", turmaCodigo);
-  console.log("ID PROVA:", prova.id);	
+    // remove páginas vazias
+    document.querySelectorAll(".pagina").forEach(p => {
+      if(p.innerText.trim().length < 10){
+        p.remove()
+      }
+    })
 
-  console.log("enviarVersoes:", !prova.versoesSalvas);
+    btn.disabled = true
+    btn.innerText = "Gerando PDF..."
 
-	await fetchProtegido(API, {
-	  method: "POST",
-	  body: JSON.stringify({
-	    tipo: "aplicacao",
-	    token: localStorage.getItem("TOKEN"),
-	
-	    id: prova.id,
-	    nome: prova.nome,
-	
-	    qtd: qtdQuestoes,
-	
-	    turmas: [turmaSelecionada],
-	
-	    //  AQUI ESTÁ A CHAVE
-		questoes: !prova.versoesSalvas ? {
-		  versoes: prova.versoes
-		} : undefined
-	  })
-	});
+    const { jsPDF } = window.jspdf
+    const paginas = document.querySelectorAll(".pagina")
 
-  console.log("✔ Impressão enviada:", turmaSelecionada);
-	  
-  // marca versões como já enviadas
-	if(!prova.versoesSalvas){
-	  prova.versoesSalvas = true;
-	  localStorage.setItem("provaGerada", JSON.stringify(prova));
-	}
+    if(paginas.length === 0){
+      alert("Nada para gerar")
+      return
+    }
 
-}catch(e){
-  console.error("Erro ao salvar impressão:", e);
+    const pdf = new jsPDF("p", "mm", "a4")
+
+    for(let i = 0; i < paginas.length; i++){
+
+      btn.innerText = `Gerando ${i+1}/${paginas.length}...`
+
+      const el = paginas[i]
+
+      const canvas = await html2canvas(el, {
+        scale: 2,
+        useCORS: true
+      })
+
+      const imgData = canvas.toDataURL("image/jpeg", 0.8)
+
+      const imgWidth = 210
+      let imgHeight = (canvas.height * imgWidth) / canvas.width
+
+      if(i > 0){
+        const isBlank = paginas[i].innerText.trim().length < 10
+        if(!isBlank){
+          pdf.addPage()
+        }else{
+          continue
+        }
+      }
+
+      pdf.addImage(imgData, "JPEG", 0, 0, imgWidth, imgHeight)
+    }
+
+    btn.innerText = "Finalizando..."
+
+    await new Promise(r => setTimeout(r, 300))
+
+    // nome do arquivo
+    const nomeProva = prova.nome || "Prova"
+    const turma = document.getElementById("turmaSelect").value || "Turma"
+
+    function limpar(str){
+      return str.replace(/[\\/:*?"<>|]/g, "").trim()
+    }
+
+    const nomeArquivo = `${limpar(nomeProva)} - ${limpar(turma)}.pdf`
+
+    pdf.save(nomeArquivo)
+
+    // ===== SALVAR NO BD =====
+    try{
+
+      const turmaSelecionada = document.getElementById("turmaSelect").value
+      const qtdQuestoes = prova.versoes[0].questoes.length
+
+      await fetchProtegido(API, {
+        method: "POST",
+        body: JSON.stringify({
+          tipo: "aplicacao",
+          token: localStorage.getItem("TOKEN"),
+          id: prova.id,
+          nome: prova.nome,
+          qtd: qtdQuestoes,
+          turmas: [turmaSelecionada],
+          questoes: !prova.versoesSalvas ? {
+            versoes: prova.versoes
+          } : undefined
+        })
+      })
+
+      if(!prova.versoesSalvas){
+        prova.versoesSalvas = true
+        localStorage.setItem("provaGerada", JSON.stringify(prova))
+      }
+
+    }catch(e){
+      console.error("Erro ao salvar impressão:", e)
+    }
+
+    // trava nome
+    if(!prova.nomeTravado){
+      document.getElementById("nomeProva").disabled = true
+      prova.nomeTravado = true
+      localStorage.setItem("provaGerada", JSON.stringify(prova))
+    }
+
+  }catch(e){
+
+    console.error("ERRO PDF:", e)
+    alert("Erro ao gerar PDF")
+
+    if(areaRecuperar){
+      areaRecuperar.style.display = "block"
+    }
+
+  }finally{
+
+    // RESTAURA SEMPRE (mesmo com erro)
+    resizers.forEach(r => r.style.display = "block")
+
+    btn.disabled = false
+    btn.innerText = "Gerar PDF"
+  }
 }
-
-	
-
- // trava nome após primeiro PDF
-if(!prova.nomeTravado){
-  document.getElementById("nomeProva").disabled = true
-  prova.nomeTravado = true
-  localStorage.setItem("provaGerada", JSON.stringify(prova))
-}
-
-  // restaurar resizers depois do PDF
-  resizers.forEach(r => r.style.display = "block")
-
-  btn.disabled = false
-  btn.innerText = "Gerar PDF"
-  
-}
-
-
+//============================================
 function novaProva(){
 
   if(confirm("Deseja iniciar uma nova prova?")){

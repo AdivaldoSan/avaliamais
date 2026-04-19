@@ -148,7 +148,7 @@ prova.turmas.forEach((t, i) => {
 
   select.appendChild(option)
 })
-	// 🔥 mantém nome travado ao recarregar
+	// mantém nome travado ao recarregar
   if(prova.nomeTravado){
   document.getElementById("nomeProva").disabled = true
 }
@@ -285,7 +285,7 @@ function gerarImagemGabarito(imgEl, q, qrData){
   // reutiliza sua função atual
   gerarCanvasReal(canvas, q, qrData)
 
-  // 🔥 espera o QR desenhar
+  // espera o QR desenhar
   setTimeout(() => {
     imgEl.src = canvas.toDataURL("image/png")
   }, 500)
@@ -299,7 +299,7 @@ function gerarVersoes(questoes, qtdVersoes = 4){
 
   for(let v = 1; v <= qtdVersoes; v++){
 
-    // 🔀 embaralha ordem das questões
+    // embaralha ordem das questões
     const questoesEmbaralhadas = [...questoes]
       .sort(() => Math.random() - 0.5);
 
@@ -322,7 +322,7 @@ function gerarVersoes(questoes, qtdVersoes = 4){
         alt.correta = (alt.letra === corretaOriginal);
       });
 
-      // 🔀 embaralha alternativas
+      //  embaralha alternativas
       const embaralhadas = [...alternativas]
         .sort(() => Math.random() - 0.5);
 
@@ -456,14 +456,14 @@ function criarPaginaCompleta(escola, disciplina, turma, numero, instrucoesHTML){
 /*======Justificar  Colunas======*/
 function justificarColuna(col){
 
-  // 🔥 só justifica se foi marcada como cheia
+  // só justifica se foi marcada como cheia
   if(col.dataset.cheia !== "true") return
 
   const itens = Array.from(col.children)
 
   if(itens.length < 2) return
 
-  // 🔥 evita distorção
+  // evita distorção
   if(itens.length <= 3) return
 
   col.style.display = "flex"
@@ -513,7 +513,7 @@ async function prepararQuestoesParaLayout(questoes, larguraColuna){
     temp.appendChild(bloco)
     document.body.appendChild(temp)
 
-    // 🔥 esperar imagens (CRÍTICO)
+    //  esperar imagens (CRÍTICO)
     const imgs = temp.querySelectorAll("img")
 
     await Promise.all([...imgs].map(img => {
@@ -547,7 +547,7 @@ function distribuirQuestoes(pagina, questoes, folhas){
 
   const areaQuestoes = pagina.querySelector(".questoes")
 
-  // 🔥 FORÇA RENDER
+  // FORÇA RENDER
   pagina.offsetHeight
 
   // ================= CÁLCULO ÁREA ÚTIL =================
@@ -572,7 +572,7 @@ function distribuirQuestoes(pagina, questoes, folhas){
   const alturaPagina = pagina.clientHeight - paddingTop - paddingBottom
   const alturaDisponivel = alturaPagina - alturaOcupada - margemInferior
 
-  // 🔥 TRAVA VISUAL
+  // TRAVA VISUAL
   areaQuestoes.style.height = alturaDisponivel + "px"
   areaQuestoes.style.overflow = "hidden"
 
@@ -593,7 +593,7 @@ function distribuirQuestoes(pagina, questoes, folhas){
       alturaEsq += altura
       return
     }
-	// 🔥 coluna esquerda encheu
+	// coluna esquerda encheu
     colEsq.dataset.cheia = "true"  
 
     // ===== TENTA DIREITA =====
@@ -604,7 +604,7 @@ function distribuirQuestoes(pagina, questoes, folhas){
       alturaDir += altura
       return
     }
-	// 🔥 coluna direita encheu
+	// coluna direita encheu
     colDir.dataset.cheia = "true"
 
     // ===== NOVA PÁGINA =====
@@ -618,7 +618,7 @@ function distribuirQuestoes(pagina, questoes, folhas){
 
     const areaNova = nova.querySelector(".questoes")
 
-    // 🔥 cálculo REAL da nova página
+    // cálculo REAL da nova página
     const rectPagina = nova.getBoundingClientRect()
     const rectQuestoes = areaNova.getBoundingClientRect()
 
@@ -635,7 +635,7 @@ function distribuirQuestoes(pagina, questoes, folhas){
     alturaEsq = 0
     alturaDir = 0
 
-    // 🔥 INSERE NA NOVA PÁGINA
+    // INSERE NA NOVA PÁGINA
     const bloco = criarQuestaoHTML(q, index)
     colEsq.appendChild(bloco)
     alturaEsq += altura
@@ -716,14 +716,14 @@ async function gerarPreview(){
   const disciplina = document.getElementById("disciplina").value
   const turma = document.getElementById("turmaSelect").value
 
-  // 🔥 ID fixo
+  // ID fixo
   if(!prova.id){
     prova.id = "PRV_" + Date.now()
   }
 
   prova.nome = nomeProva.value
 
-  // 🔥 mapa de turmas
+  // mapa de turmas
   if(!prova.mapaTurmas){
     const turmasOrdenadas = [...prova.turmas].sort()
     prova.mapaTurmas = {}
@@ -793,27 +793,27 @@ async function gerarPreview(){
 
     folhas.appendChild(pagina)
 
-    // 🔥 QR
+    // QR
     const img = pagina.querySelector(".imgGabarito")
     const qrData = `ID=${prova.id}|T=${turmaCodigo}|V=${versaoAtual.v}|F=${i}`
 
     gerarImagemGabarito(img, questoesVersao.length, qrData)
 
-    // 🔥 espera layout real
+    // espera layout real
     await esperarRenderCompleto(pagina)
 
     pagina.offsetHeight
 
-    // 🔥 largura real
+    // largura real
     const larguraColuna = pagina.querySelector(".col-esq").clientWidth
 
-    // 🔥 mede questões
+    // mede questões
     const questoesComAltura = await prepararQuestoesParaLayout(
       questoesVersao,
       larguraColuna
     )
 
-    // 🔥 distribuição
+    // distribuição
     distribuirQuestoes(pagina, questoesComAltura, folhas)
 
     // ================= PAGINAÇÃO CORRETA =================
@@ -837,13 +837,13 @@ async function gerarPreview(){
     })
   }
 
-	// 🔥 garante layout + imagens
+	// garante layout + imagens
 	await esperarLayoutEstavel()
 	await esperarImagensQuestoes()
-	// 🔥 força reflow real após imagens
+	// força reflow real após imagens
     document.body.offsetHeight
 	
-	// 🔥 JUSTIFICAÇÃO CORRETA
+	// JUSTIFICAÇÃO CORRETA
 	const todasPaginas = Array.from(document.querySelectorAll(".pagina"))
 	
 	todasPaginas.forEach(p => {
@@ -938,11 +938,11 @@ function ativarResize(){
 }
 
 async function gerarPDF(){
-	// 🔥 esconder resizers antes do capture
+	// esconder resizers antes do capture
 const resizers = document.querySelectorAll(".resizer")
 resizers.forEach(r => r.style.display = "none")
 	
-  // 🔥 remove páginas vazias antes de gerar PDF
+  // remove páginas vazias antes de gerar PDF
      document.querySelectorAll(".pagina").forEach(p => {
       if(p.innerText.trim().length < 10){
       p.remove()
@@ -1063,14 +1063,14 @@ resizers.forEach(r => r.style.display = "none")
 
 	
 
- // 🔥 trava nome após primeiro PDF
+ // trava nome após primeiro PDF
 if(!prova.nomeTravado){
   document.getElementById("nomeProva").disabled = true
   prova.nomeTravado = true
   localStorage.setItem("provaGerada", JSON.stringify(prova))
 }
 
-  // 🔥 restaurar resizers depois do PDF
+  // restaurar resizers depois do PDF
   resizers.forEach(r => r.style.display = "block")
 
   btn.disabled = false
@@ -1078,9 +1078,6 @@ if(!prova.nomeTravado){
   
 }
 
-/* INIT */
-//gerarPreview()
-//window.onload = carregarPainel
 
 function novaProva(){
 

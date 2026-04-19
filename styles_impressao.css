@@ -362,13 +362,11 @@ button:hover{
 /* ================= MOBILE REAL ================= */
 @media (max-width: 900px){
 
-  .painel{
-    transform: translateX(-100%); /* escondido */
-  }
+  body:not(.menu-fechado) .painel{
+  transform: translateX(-100%);
+}
 
-  .painel.ativo{
-    transform: translateX(0);
-  }
+  
 
   .preview{
     margin-left: 0;
@@ -378,7 +376,7 @@ button:hover{
 
   /* escala A4 pra caber */
   .pagina{
-    transform: scale(0.85);
+    transform: scale(0.6);
     transform-origin: top center;
   }
   

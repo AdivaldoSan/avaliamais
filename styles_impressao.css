@@ -16,9 +16,9 @@ body{
 .painel{
   position: fixed;
   transition: transform 0.3s ease;
-  top: 00px;
+  top: 60px;
   left: 0;
-  padding-top: 60px;
+  padding-top: 15px;
 
   width: 350px;
   height: calc(100vh - 60px);

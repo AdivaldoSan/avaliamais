@@ -74,6 +74,7 @@ body{
   overflow: auto;
   padding: 20px;
   background: #F3F4F6; /* padrão global */
+  padding-bottom: 80px;
 }
 
 #folhas{

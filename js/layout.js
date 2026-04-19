@@ -318,7 +318,11 @@ function aplicarBloqueioMenuLocal(){
         // 🔴 SEM TURMA → BLOQUEIA
         if(!temTurma && !permitido){
             link.style.opacity = "0.4";
-            link.style.pointerEvents = "none";
+            
+            if(!href.includes("provas")){
+                link.style.pointerEvents = "none";
+            }
+            
             link.style.cursor = "not-allowed";
             link.title = "Cadastre uma turma para liberar";
         }

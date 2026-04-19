@@ -64,15 +64,20 @@ body{
 
 /* ===== RODAPÉ FIXO DO PAINEL ===== */
 .painel-footer{
-  position: sticky;
+  position: fixed;
+
   bottom: 0;
+  left: 0;
+
+  width: 350px; /* mesma largura do painel */
 
   background: var(--card);
-  padding-top: 10px;
+  padding: 10px 15px;
 
   border-top: 1px solid #ccc;
-}
 
+  z-index: 20;
+}
 /* ================= PREVIEW ================= */
 .preview{
   margin-left: 350px;
@@ -366,6 +371,9 @@ button:hover{
   
   .topbar-left{
     gap: 30px; /* aumenta só no mobile */
+  }
+  .painel-footer{
+    width: 100%;
   }
 
 }

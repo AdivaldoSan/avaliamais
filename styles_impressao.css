@@ -87,6 +87,10 @@ body{
   outline: none;
   box-shadow: none;
 }
+#btnMenu{
+  display: none;
+}
+
 /* ================= PREVIEW ================= */
 .preview{
   margin-left: 350px;
@@ -383,6 +387,9 @@ button:hover{
   }
   .painel-footer{
     width: 100%;
+  }
+   #btnMenu{
+    display: block;
   }
 
 }

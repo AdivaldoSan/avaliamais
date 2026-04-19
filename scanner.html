@@ -424,10 +424,16 @@ TELA DO SCANNER
 // VALIDAÇÃO
 // =============================
 const token = localStorage.getItem("TOKEN");
-
+//=================================================
 if(!token){
+  console.log("Token ausente → salvando retorno")
+
+  localStorage.setItem("REDIRECT_APOS_LOGIN", window.location.pathname)
+
   window.location.href = "index.html";
 }
+
+//==============================================    
 const DEBUG = false
 
 if(!DEBUG && typeof console !== "undefined"){

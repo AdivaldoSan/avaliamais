@@ -350,6 +350,13 @@ button:hover{
     transform: scale(0.85);
     transform-origin: top center;
   }
+  @media (max-width: 900px){
+
+  .topbar-left{
+    gap: 30px; /* aumenta só no mobile */
+  }
+
+}
 
 }
 /*========================*/

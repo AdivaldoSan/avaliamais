@@ -68,7 +68,8 @@
      Nova Prova
     </button>
 
-	  <div id="recuperarPDF" style="display:none; margin-top:10px; font-size:14px;">
+	  <div id="recuperarPDF" style="   display:none;  margin-top:10px; font-size:14px; text-align:center;
+">
 		  <span>Erro ao gerar PDF. </span>
 		  <a href="#" onclick="gerarPDF(); return false;" style="color:#2563eb; text-decoration:underline;">
 		    Tentar novamente
@@ -962,7 +963,6 @@ async function gerarPDF(){
   const resizers = document.querySelectorAll(".resizer")
 
   try{
-      throw new Error("teste")
     // esconder resizers
     resizers.forEach(r => r.style.display = "none")
 

@@ -962,7 +962,7 @@ async function gerarPDF(){
   const resizers = document.querySelectorAll(".resizer")
 
   try{
-
+      throw new Error("teste")
     // esconder resizers
     resizers.forEach(r => r.style.display = "none")
 

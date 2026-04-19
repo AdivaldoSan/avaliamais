@@ -83,6 +83,77 @@ async function carregarAplicacoes(){
     montarTabela(dados, contagem);
     esconderLoading();
 }
+//==================================
+function gerarAcoesHTML(id, totalRespostas){
+
+    const ehImpressa = String(id).startsWith("PRV_");
+
+    const linkAluno =
+        window.location.origin +
+        "/aluno.html?id=" + id;
+
+    let html = `<div class="acoes">`;
+
+    // 🔹 PRV_ → só relatório
+    if(ehImpressa){
+
+        if(totalRespostas > 0){
+            html += `
+                <button class="btn-acao"
+                    title="Relatório"
+                    onclick="abrirResultados('${id}')">
+                    📊
+                </button>
+            `;
+        }else{
+            return "—";
+        }
+
+    }else{
+
+        // 🔹 APL_ → sempre tem ações base
+
+        if(totalRespostas > 0){
+            html += `
+                <button class="btn-acao"
+                    title="Relatório"
+                    onclick="abrirResultados('${id}')">
+                    📊
+                </button>
+            `;
+        }
+
+        html += `
+            <button class="btn-acao"
+                title="Prova"
+                onclick="gerarPDF('${id}')">
+                📄
+            </button>
+
+            <button class="btn-acao"
+                title="Gabarito"
+                onclick="gerarGabarito('${id}')">
+                📑
+            </button>
+
+            <button class="btn-acao"
+                title="Copiar link para os alunos"
+                onclick="copiarLink('${linkAluno}')">
+                🔗
+            </button>
+
+            <button class="btn-acao"
+                title="QR CODE"
+                onclick="abrirQRCode('${id}')">
+                📱
+            </button>
+        `;
+    }
+
+    html += `</div>`;
+
+    return html;
+}
 
 // =============================
 // TABELA
@@ -153,51 +224,9 @@ function montarTabela(dados, contagem){
                 <td>${turmas.join(", ")}</td>
                 <td class="text-center">${totalRespostas}</td>
 
-               <td class="text-center">
-                    <div class="acoes">
-                
-                        ${
-                            totalRespostas > 0
-                            ? `<button class="btn-acao"
-                                       title="Relatório"
-                                       onclick="abrirResultados('${id}')">
-                                       📊
-                               </button>`
-                            : "—"
-                        }
-                
-                        ${
-                            !ehImpressa
-                            ? `
-                                <button class="btn-acao"
-                                        title="Prova"
-                                        onclick="gerarPDF('${id}')">
-                                        📄
-                                </button>
-                
-                                <button class="btn-acao"
-                                        title="Gabarito"
-                                        onclick="gerarGabarito('${id}')">
-                                        📑
-                                </button>
-                
-                                <button class="btn-acao"
-                                        title="Copiar link para os alunos"
-                                        onclick="copiarLink('${linkAluno}')">
-                                        🔗
-                                </button>
-                
-                                <button class="btn-acao"
-                                        title="QR CODE"
-                                        onclick="abrirQRCode('${id}')">
-                                        📱
-                                </button>
-                              `
-                            : ""
-                        }
-                
-                    </div>
-                </td>
+              <td class="text-center">
+                ${gerarAcoesHTML(id, totalRespostas)}
+              </td>
 
                 <td class="text-center">
                     <label class="switch">
@@ -243,21 +272,7 @@ async function atualizarTabelaTempoReal(){
 
         // coluna AÇÕES (coluna 7 → index 6)
         const tdAcoes = tr.children[6];
-
-        if(total > 0){
-
-            tdAcoes.innerHTML = `
-                <div class="acoes">
-                    <button class="btn-acao"
-                        title="Relatório"
-                        onclick="abrirResultados('${id}')">
-                        📊
-                    </button>
-                </div>
-            `;
-        }else{
-            tdAcoes.innerHTML = "—";
-        }
+        tdAcoes.innerHTML = gerarAcoesHTML(id, total);
 
     });
 }

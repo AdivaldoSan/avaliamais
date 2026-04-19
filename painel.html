@@ -35,6 +35,10 @@ function iniciarPagina(){
     mostrarLoading("Carregando aplicações...");
 
     carregarAplicacoes();
+    
+    setInterval(()=>{
+    atualizarTabelaTempoReal();
+}, 5000);
 }
 //=========================================    
 
@@ -141,7 +145,7 @@ function montarTabela(dados, contagem){
             );
 
         html += `
-            <tr>
+            <tr data-id="${id}">
                 <td>${l[1]} ${ehImpressa ? "🖨️" : "🌐"}</td>
                 <td>${disciplina}</td>
                 <td>${dataFormatada}</td>
@@ -212,7 +216,51 @@ function montarTabela(dados, contagem){
 
     document.getElementById("listaAplicacoes").innerHTML = html;
 }
+//================================
+async function atualizarTabelaTempoReal(){
 
+    const token = localStorage.getItem("TOKEN");
+
+    const contagem =
+        await fetchProtegido(API + "?tipo=contarRespostas&token=" + token);
+
+    if(!contagem) return;
+
+    document.querySelectorAll("tbody tr").forEach(tr => {
+
+        const id = tr.dataset.id;
+        if(!id) return;
+
+        const total = contagem[id] || 0;
+
+        // coluna RESPOSTAS (coluna 6 → index 5)
+        tr.children[5].innerText = total;
+
+         if(total > 0 && tr.dataset.iniciado !== "1"){
+            tr.style.background = "#1f3d1f";
+            tr.dataset.iniciado = "1";
+        }
+
+        // coluna AÇÕES (coluna 7 → index 6)
+        const tdAcoes = tr.children[6];
+
+        if(total > 0){
+
+            tdAcoes.innerHTML = `
+                <div class="acoes">
+                    <button class="btn-acao"
+                        title="Relatório"
+                        onclick="abrirResultados('${id}')">
+                        📊
+                    </button>
+                </div>
+            `;
+        }else{
+            tdAcoes.innerHTML = "—";
+        }
+
+    });
+}
 
 // =============================
 // COPIAR LINK

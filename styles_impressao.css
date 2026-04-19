@@ -362,13 +362,7 @@ button:hover{
 /* ================= MOBILE REAL ================= */
 @media (max-width: 900px){
 
-  body:not(.menu-fechado) .painel{
-  transform: translateX(-100%);
-}
-
-  
-
-  .preview{
+    .preview{
     margin-left: 0;
     width: 100%;
     padding: 10px;

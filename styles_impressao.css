@@ -362,30 +362,29 @@ button:hover{
 /* ================= MOBILE REAL ================= */
 @media (max-width: 900px){
 
-    .preview{
+  .preview{
     margin-left: 0;
     width: 100%;
     padding: 10px;
   }
 
-  /* escala A4 pra caber */
   .pagina{
-  transform: scale(0.5);
-  transform-origin: top center;
-  margin: 0 auto;
-}
+    transform: scale(0.5);
+    transform-origin: top center;
+    margin: 0 auto;
   }
-  
+
   .topbar-left{
-    gap: 30px; /* aumenta só no mobile */
+    gap: 30px;
   }
+
   .painel-footer{
     width: 100%;
   }
-   #btnMenu{
+
+  #btnMenu{
     display: block;
   }
-
 
 }
 /*========================*/

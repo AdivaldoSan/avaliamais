@@ -387,9 +387,6 @@ button:hover{
 
 }
 /*========================*/
-body.menu-fechado .painel{
-  transform: translateX(-100%);
-}
 
 body.menu-fechado .preview{
   margin-left: 0;

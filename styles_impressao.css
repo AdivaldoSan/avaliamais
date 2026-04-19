@@ -370,8 +370,10 @@ button:hover{
 
   /* escala A4 pra caber */
   .pagina{
-    transform: scale(0.6);
-    transform-origin: top center;
+  transform: scale(0.5);
+  transform-origin: top center;
+  margin: 0 auto;
+}
   }
   
   .topbar-left{

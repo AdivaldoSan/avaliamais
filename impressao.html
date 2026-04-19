@@ -86,11 +86,29 @@
 
 <script>
 /*=======VARIÁVEIS=======*/
+
+	
 //======================================
 const btnMenu = document.getElementById("btnMenu")
 
+const btnPDF = document.getElementById("btnPDF")
+const btnPDFFixo = document.getElementById("btnPDFFixo")
+
+function mostrarBotaoPDF(){
+  btnPDF.style.display = "block"
+  btnPDFFixo.style.display = "block"
+}
+//==============================================
 btnMenu.onclick = () => {
+
   document.body.classList.toggle("menu-fechado")
+
+  const fechado = document.body.classList.contains("menu-fechado")
+
+  // botão fixo só aparece quando painel estiver fechado
+  if(btnPDFFixo){
+    btnPDFFixo.style.display = fechado ? "block" : "none"
+  }
 }
 
 /*=========================*/	
@@ -827,7 +845,9 @@ async function gerarPreview(){
 	
 	})
   localStorage.setItem("provaGerada", JSON.stringify(prova))
-  document.getElementById("btnPDF").style.display = "block"
+	
+  //document.getElementById("btnPDF").style.display = "block"
+   mostrarBotaoPDF()
 }
 
   /*=====Criar Questoes no  HTML =====*/
@@ -1068,6 +1088,10 @@ window.onload = () => {
 }
 
 </script>
-
+	
+<button id="btnPDFFixo" onclick="gerarPDF()">
+  Gerar PDF
+</button>
+	
 </body>
 </html>

@@ -20,6 +20,7 @@
 	
 <div class="topbar">
   <div class="topbar-left">
+	<button id="btnMenu">☰</button>
     <button class="btn-voltar" onclick="history.back()">←</button>
     <span class="topbar-title">Gerar Prova</span>
   </div>
@@ -85,11 +86,17 @@
 
 <script>
 /*=======VARIÁVEIS=======*/
+//======================================
+const btnMenu = document.getElementById("btnMenu")
+const painel = document.querySelector(".painel")
 
+btnMenu.onclick = () => {
+  painel.classList.toggle("ativo")
+}
 
 /*=========================*/	
 const prova = JSON.parse(localStorage.getItem("provaGerada"))
-// 🔥 controle de travamento do nome
+// controle de travamento do nome
 if(!prova.nomeTravado){
   prova.nomeTravado = false
 }

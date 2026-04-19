@@ -78,6 +78,15 @@ body{
 
   z-index: 100; /* aumenta pra garantir */
 }
+
+.btn-voltar:focus{
+  outline: none;
+}
+
+.btn-voltar:focus-visible{
+  outline: none;
+  box-shadow: none;
+}
 /* ================= PREVIEW ================= */
 .preview{
   margin-left: 350px;

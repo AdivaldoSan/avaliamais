@@ -86,7 +86,7 @@
 
 <script>
 /*=======VARIÁVEIS=======*/
-let pdfDisponivel = false
+window.pdfDisponivel = false
 	
 //======================================
 const btnMenu = document.getElementById("btnMenu")
@@ -96,12 +96,13 @@ const btnPDFFixo = document.getElementById("btnPDFFixo")
 //==================================================
 function mostrarBotaoPDF(){
 
-  pdfDisponivel = true
+  window.pdfDisponivel = true
 
   btnPDF.style.display = "block"
 
-  // só mostra fixo se painel estiver fechado
   const fechado = document.body.classList.contains("menu-fechado")
+
+  const btnPDFFixo = document.getElementById("btnPDFFixo")
 
   if(btnPDFFixo){
     btnPDFFixo.style.display = fechado ? "block" : "none"
@@ -114,8 +115,10 @@ btnMenu.onclick = () => {
 
   const fechado = document.body.classList.contains("menu-fechado")
 
+  const btnPDFFixo = document.getElementById("btnPDFFixo")
+
   if(btnPDFFixo){
-    btnPDFFixo.style.display = (fechado && pdfDisponivel) ? "block" : "none"
+    btnPDFFixo.style.display = (fechado && window.pdfDisponivel) ? "block" : "none"
   }
 }
 
@@ -1088,17 +1091,27 @@ function novaProva(){
 }	
 /*============================*/	
 window.onload = () => {
+
   carregarPainel()
 
   document.getElementById("turmaSelect").addEventListener("change", () => {
+
+    const btnPDFFixo = document.getElementById("btnPDFFixo")
+
+    // esconde botão lateral
     document.getElementById("btnPDF").style.display = "none"
 
-	pdfDisponivel = false
+    // RESET GLOBAL CORRETO
+    window.pdfDisponivel = false
 
-	  if(btnPDFFixo){
-	    btnPDFFixo.style.display = "none"
-	  }
+    // esconde botão fixo
+    if(btnPDFFixo){
+      btnPDFFixo.style.display = "none"
+    }
+
+    console.log("PDF resetado após troca de turma")
   })
+
 }
 
 </script>

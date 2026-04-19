@@ -86,17 +86,26 @@
 
 <script>
 /*=======VARIÁVEIS=======*/
-
+let pdfDisponivel = false
 	
 //======================================
 const btnMenu = document.getElementById("btnMenu")
 
 const btnPDF = document.getElementById("btnPDF")
 const btnPDFFixo = document.getElementById("btnPDFFixo")
-
+//==================================================
 function mostrarBotaoPDF(){
+
+  pdfDisponivel = true
+
   btnPDF.style.display = "block"
-  btnPDFFixo.style.display = "block"
+
+  // só mostra fixo se painel estiver fechado
+  const fechado = document.body.classList.contains("menu-fechado")
+
+  if(btnPDFFixo){
+    btnPDFFixo.style.display = fechado ? "block" : "none"
+  }
 }
 //==============================================
 btnMenu.onclick = () => {
@@ -105,9 +114,8 @@ btnMenu.onclick = () => {
 
   const fechado = document.body.classList.contains("menu-fechado")
 
-  // botão fixo só aparece quando painel estiver fechado
   if(btnPDFFixo){
-    btnPDFFixo.style.display = fechado ? "block" : "none"
+    btnPDFFixo.style.display = (fechado && pdfDisponivel) ? "block" : "none"
   }
 }
 
@@ -1084,6 +1092,12 @@ window.onload = () => {
 
   document.getElementById("turmaSelect").addEventListener("change", () => {
     document.getElementById("btnPDF").style.display = "none"
+
+	pdfDisponivel = false
+
+	  if(btnPDFFixo){
+	    btnPDFFixo.style.display = "none"
+	  }
   })
 }
 

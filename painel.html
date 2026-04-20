@@ -952,8 +952,23 @@ function montarAbasTurmas(dados){
         `;
     }
 
-    document.getElementById("tabelaResultados").innerHTML = html;
+    ;const container = document.getElementById("tabelaResultados");
+
+    // 🔹 salva posição atual
+    const scrollTop = container.scrollTop;
+    const scrollHeight = container.scrollHeight;
+    
+    // 🔹 atualiza conteúdo
+    container.innerHTML = html;
     document.getElementById("resumoResultados").innerHTML = htmlResumo;
+    
+    // 🔹 calcula diferença
+    const newScrollHeight = container.scrollHeight;
+    const diff = newScrollHeight - scrollHeight;
+    
+    // 🔹 restaura posição compensando
+    container.scrollTop = scrollTop + diff;
+      
 }  
 //======================================
 async function atualizarResultadosTempoReal(){

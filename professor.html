@@ -16,7 +16,31 @@
 <script src="./js/layout.js"></script>
 
 <script>
+//=============================================
+function normalizarImagem(url){
 
+    if(!url) return "";
+
+    url = url.trim();
+    url = url.replace(/\s+/g, "");
+
+    if(url.includes("drive.google.com")){
+
+        let match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+
+        if(match && match[1]){
+            return `https://drive.google.com/uc?export=view&id=${match[1]}`;
+        }
+
+        match = url.match(/id=([a-zA-Z0-9_-]+)/);
+
+        if(match && match[1]){
+            return `https://drive.google.com/uc?export=view&id=${match[1]}`;
+        }
+    }
+
+    return url;
+}
 
 
 // ================= VARIÁVEIS =================
@@ -566,17 +590,22 @@ async function gerarQuiz(){
 
 function finalizarPreview(selecionadas, turmasSelecionadas, nome){
 
-    // 🔥 GERA ID CURTO
     const pin = Math.floor(100000 + Math.random() * 900000);
     const id = "APL_" + pin;
+
+    const questoesTratadas = selecionadas.map(q => ({
+        ...q,
+        IMG: normalizarImagem(q.IMG),
+        ENUNCIADO: (q.ENUNCIADO || "").trim()
+    }));
 
     localStorage.setItem("previewQuiz",
         JSON.stringify({
             id: id,
             nome: nome,
             turmas: turmasSelecionadas,
-            qtd: selecionadas.length,
-            questoes: selecionadas
+            qtd: questoesTratadas.length,
+            questoes: questoesTratadas
         })
     );
 

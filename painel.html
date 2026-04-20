@@ -952,22 +952,20 @@ function montarAbasTurmas(dados){
         `;
     }
 
-    ;const container = document.getElementById("tabelaResultados");
-
-    // 🔹 salva posição atual
-    const scrollTop = container.scrollTop;
-    const scrollHeight = container.scrollHeight;
     
-    // 🔹 atualiza conteúdo
+    const container = document.getElementById("tabelaResultados");
+    
+    // 1. Salva a posição exata antes de limpar o HTML
+    const scrollAnterior = container.scrollTop;
+    
+    // 2. Atualiza o conteúdo
     container.innerHTML = html;
     document.getElementById("resumoResultados").innerHTML = htmlResumo;
     
-    // 🔹 calcula diferença
-    const newScrollHeight = container.scrollHeight;
-    const diff = newScrollHeight - scrollHeight;
-    
-    // 🔹 restaura posição compensando
-    container.scrollTop = scrollTop + diff;
+    // 3. Força o navegador a manter a posição (o requestAnimationFrame é o segredo)
+    requestAnimationFrame(() => {
+        container.scrollTop = scrollAnterior;
+    });
       
 }  
 //======================================

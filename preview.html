@@ -103,7 +103,10 @@ function iniciarPagina(){
 }
 
     div.innerHTML = `
-    <strong>${i+1}) ${q.ENUNCIADO}</strong><br><br>
+    <div>
+        <strong>${i+1})</strong><br><br>
+        ${q.ENUNCIADO}
+    </div><br>
 
     ${img ? `
         <img 

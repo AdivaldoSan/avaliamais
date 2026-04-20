@@ -276,6 +276,48 @@ async function atualizarTabelaTempoReal(){
 
     });
 }
+//==========================================
+async function atualizarResultadosTempoReal() {
+    // 1. Se não tiver um modal aberto, não precisa atualizar
+    if (!idAplicacaoAtual) return;
+
+    const token = localStorage.getItem("TOKEN");
+    
+    // 2. Busca os dados novos no servidor
+    const dados = await fetchProtegido(
+        API + "?tipo=obterResultados&id=" + idAplicacaoAtual + "&token=" + token
+    );
+
+    if (!dados || !dados.turmas) return;
+
+    // 3. Atualiza o cache global para o Excel e outras abas
+    window.resultadosCache = dados.turmas;
+
+    // 4. Descobre qual aba (turma) o professor está vendo agora
+    const abaAtiva = document.querySelector(".abaTurma[style*='background']");
+    if (!abaAtiva) return;
+
+    const nomeTurma = abaAtiva.dataset.turma;
+    const listaAlunosDaTurma = dados.turmas[nomeTurma] || [];
+
+    // 5. CHAMA AS FUNÇÕES QUE ATUALIZAM A TELA SEM MEXER NO SCROLL
+    atualizarDadosSemRecriar(listaAlunosDaTurma);
+    
+    // 6. Atualiza o resumo (Média, etc) que fica no rodapé
+    const resumo = gerarResumo(listaAlunosDaTurma);
+    if (resumo) {
+        const htmlResumo = `
+            <div class="resumo-linha">
+                📊 Média: <b>${resumo.media}%</b> (${resumo.respondentes}) |
+                🏆 Maior: <b>${resumo.maior}%</b> |
+                📉 Menor: <b>${resumo.menor}%</b> |
+                ❌ Mais erro: <b>Q${resumo.questaoMaisErro}</b> |
+                ✅ Mais acerto: <b>Q${resumo.questaoMaisAcerto}</b>
+            </div>`;
+        const resumoCont = document.getElementById("resumoResultados");
+        if (resumoCont) resumoCont.innerHTML = htmlResumo;
+    }
+}
 
 // =============================
 // COPIAR LINK

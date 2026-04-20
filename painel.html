@@ -278,44 +278,69 @@ async function atualizarTabelaTempoReal(){
 }
 //==========================================
 async function atualizarResultadosTempoReal() {
-    // 1. Se não tiver um modal aberto, não precisa atualizar
     if (!idAplicacaoAtual) return;
 
     const token = localStorage.getItem("TOKEN");
-    
-    // 2. Busca os dados novos no servidor
     const dados = await fetchProtegido(
         API + "?tipo=obterResultados&id=" + idAplicacaoAtual + "&token=" + token
     );
 
     if (!dados || !dados.turmas) return;
 
-    // 3. Atualiza o cache global para o Excel e outras abas
-    window.resultadosCache = dados.turmas;
-
-    // 4. Descobre qual aba (turma) o professor está vendo agora
-    const abaAtiva = document.querySelector(".abaTurma[style*='background']");
-    if (!abaAtiva) return;
-
-    const nomeTurma = abaAtiva.dataset.turma;
-    const listaAlunosDaTurma = dados.turmas[nomeTurma] || [];
-
-    // 5. CHAMA AS FUNÇÕES QUE ATUALIZAM A TELA SEM MEXER NO SCROLL
-    atualizarDadosSemRecriar(listaAlunosDaTurma);
+    // 1. Identifica se há turmas no servidor que ainda não têm botão na tela
+    const nomesTurmasServidor = Object.keys(dados.turmas);
+    const abasNaTela = Array.from(document.querySelectorAll(".abaTurma")).map(b => b.dataset.turma);
     
-    // 6. Atualiza o resumo (Média, etc) que fica no rodapé
-    const resumo = gerarResumo(listaAlunosDaTurma);
-    if (resumo) {
-        const htmlResumo = `
-            <div class="resumo-linha">
-                📊 Média: <b>${resumo.media}%</b> (${resumo.respondentes}) |
-                🏆 Maior: <b>${resumo.maior}%</b> |
-                📉 Menor: <b>${resumo.menor}%</b> |
-                ❌ Mais erro: <b>Q${resumo.questaoMaisErro}</b> |
-                ✅ Mais acerto: <b>Q${resumo.questaoMaisAcerto}</b>
-            </div>`;
-        const resumoCont = document.getElementById("resumoResultados");
-        if (resumoCont) resumoCont.innerHTML = htmlResumo;
+    const temNovaTurma = nomesTurmasServidor.some(nome => !abasNaTela.includes(nome));
+
+    if (temNovaTurma) {
+        // Guarda qual aba está selecionada no momento (estilo azul)
+        const abaAtivaAntes = document.querySelector(".abaTurma[style*='background']")?.dataset.turma;
+        
+        // Atualiza o cache e reconstrói os botões das abas
+        window.resultadosCache = dados.turmas;
+        montarAbasTurmas(dados.turmas);
+
+        // Devolve o destaque para a aba que o professor estava vendo
+        if (abaAtivaAntes) {
+            document.querySelectorAll(".abaTurma").forEach(btn => {
+                if (btn.dataset.turma === abaAtivaAntes) {
+                    btn.style.background = "#1976d2";
+                    btn.style.color = "white";
+                } else {
+                    btn.style.background = "";
+                    btn.style.color = "";
+                }
+            });
+        }
+    } else {
+        // Se não há turmas novas, apenas atualiza os dados em memória
+        window.resultadosCache = dados.turmas;
+    }
+
+    // 2. Atualiza a tabela da aba que está aberta agora
+    const abaAberta = document.querySelector(".abaTurma[style*='background']");
+    if (abaAberta) {
+        const nomeDaTurmaAtiva = abaAberta.dataset.turma;
+        const alunos = dados.turmas[nomeDaTurmaAtiva] || [];
+        
+        // Atualiza linhas (Nomes, Notas, Círculos) sem mexer no scroll
+        atualizarDadosSemRecriar(alunos);
+        
+        // Atualiza o resumo do rodapé
+        const resumo = gerarResumo(alunos);
+        if (resumo) {
+            const htmlResumo = `
+                <div class="resumo-linha">
+                    📊 Média: <b>${resumo.media}%</b> (${resumo.respondentes}) |
+                    🏆 Maior: <b>${resumo.maior}%</b> |
+                    📉 Menor: <b>${resumo.menor}%</b> |
+                    ❌ Mais erro: <b>Q${resumo.questaoMaisErro}</b> |
+                    ✅ Mais acerto: <b>Q${resumo.questaoMaisAcerto}</b>
+                </div>`;
+            const resumoCont = document.getElementById("resumoResultados");
+            if (resumoCont) resumoCont.innerHTML = htmlResumo;
+        }
     }
 }
 

@@ -977,26 +977,89 @@ function montarAbasTurmas(dados){
 } // Fechamento da função mostrarTurma
         
 //======================================
-async function atualizarResultadosTempoReal(){
+function atualizarApenasValores(listaAlunos) {
+    const tabela = document.querySelector("#tabelaResultados table tbody");
+    if (!tabela) return;
 
-    if(!idAplicacaoAtual) return;
+    listaAlunos.forEach(aluno => {
+        // Busca a linha desse aluno específico pelo número (primeira coluna)
+        const linha = Array.from(tabela.rows).find(r => r.cells[0].innerText == aluno.numero);
+        
+        if (linha) {
+            // Atualiza cada questão
+            aluno.questoes.forEach((q, i) => {
+                const celula = linha.cells[i + 2]; // +2 porque pula Nº e Nome
+                if (!celula || !q) return;
 
-    const token = localStorage.getItem("TOKEN");
+                const circulo = celula.querySelector(".resposta-circulo");
+                if (circulo) {
+                    // Só atualiza se a resposta mudou (evita tremulação)
+                    if (circulo.innerText !== q.marcada) {
+                        circulo.innerText = q.marcada;
+                        circulo.className = `resposta-circulo ${q.marcada === q.correta ? 'resposta-acerto' : 'resposta-erro'}`;
+                    }
+                }
+            });
 
-    const dados = await fetchProtegido(
-        API + "?tipo=obterResultados&id=" + idAplicacaoAtual + "&token=" + token
-    );
+            // Atualiza Acertos, % e Nota (últimas colunas)
+            const totalColunas = linha.cells.length;
+            const temNota = aluno.nota !== undefined;
+            
+            linha.cells[totalColunas - (temNota ? 3 : 2)].innerText = aluno.acertos;
+            linha.cells[totalColunas - (temNota ? 2 : 1)].innerText = aluno.percentual + "%";
+            if (temNota) {
+                linha.cells[totalColunas - 1].innerText = aluno.nota?.toFixed(1) ?? "-";
+            }
+        }
+    });
+}
+//======================================
+function atualizarDadosSemRecriar(listaAlunos){
+    const corpoTabela = document.querySelector("#tabelaResultados tbody");
+    if(!corpoTabela) return;
 
-    if(!dados) return;
+    listaAlunos.forEach(aluno => {
+        // Localiza a linha do aluno pelo Número (coluna 0)
+        const linha = Array.from(corpoTabela.rows).find(r => r.cells[0].innerText == aluno.numero);
+        
+        if(linha){
+            // 1. Atualiza as questões (começam na coluna 2 [índice 2])
+            aluno.questoes.forEach((q, i) => {
+                const celula = linha.cells[i + 2];
+                if(celula && q){
+                    const circulo = celula.querySelector(".resposta-circulo");
+                    if(circulo){
+                        // Só mexe no DOM se o valor mudou para evitar "flicker"
+                        if(circulo.innerText !== q.marcada){
+                            circulo.innerText = q.marcada;
+                            circulo.className = `resposta-circulo ${q.marcada === q.correta ? 'resposta-acerto' : 'resposta-erro'}`;
+                        }
+                    }
+                }
+            });
 
-    window.resultadosCache = dados.turmas;
+            // 2. Atualiza as colunas finais (Acertos, % e Nota)
+            const totalCols = linha.cells.length;
+            const temNota = aluno.nota !== undefined;
 
-    // pega turma atual selecionada
-    const abaAtiva = document.querySelector(".abaTurma[style*='background']");
+            // Índices de trás para frente para não errar com/sem nota
+            const idxAcertos = totalCols - (temNota ? 3 : 2);
+            const idxPerc = totalCols - (temNota ? 2 : 1);
+            const idxNota = totalCols - 1;
 
-    if(abaAtiva){
-        mostrarTurma(abaAtiva.dataset.turma);
-    }
+            if(linha.cells[idxAcertos].innerText != aluno.acertos) 
+                linha.cells[idxAcertos].innerText = aluno.acertos;
+            
+            if(linha.cells[idxPerc].innerText != (aluno.percentual + "%"))
+                linha.cells[idxPerc].innerText = aluno.percentual + "%";
+            
+            if(temNota){
+                const notaFormatada = aluno.nota?.toFixed(1) ?? "-";
+                if(linha.cells[idxNota].innerText != notaFormatada)
+                    linha.cells[idxNota].innerText = notaFormatada;
+            }
+        }
+    });
 }
 //======================================
 function fecharResultados(){

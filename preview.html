@@ -19,9 +19,32 @@
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
 
 <script>
+function normalizarImagem(url){
 
+  if(!url) return "";
 
+  url = url.trim();
+  url = url.replace(/\s+/g, "");
 
+  if(url.includes("drive.google.com")){
+
+    let match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+
+    if(match && match[1]){
+      return `https://drive.google.com/uc?export=view&id=${match[1]}`;
+    }
+
+    match = url.match(/id=([a-zA-Z0-9_-]+)/);
+
+    if(match && match[1]){
+      return `https://drive.google.com/uc?export=view&id=${match[1]}`;
+    }
+  }
+
+  return url;
+}
+
+//=============================================
 let publicado = false;
 
 function iniciarPagina(){
@@ -65,6 +88,7 @@ function iniciarPagina(){
     const container = document.getElementById("listaQuestoes");
 
     preview.questoes.forEach((q,i)=>{
+    const img = normalizarImagem(q.IMG);
 
     const div = document.createElement("div");
     div.className = "preview-questao";
@@ -79,12 +103,21 @@ function iniciarPagina(){
 }
 
     div.innerHTML = `
-        <strong>${i+1}) ${q.ENUNCIADO}</strong><br><br>
-        ${alt("A", q.ALT_A)}
-        ${alt("B", q.ALT_B)}
-        ${alt("C", q.ALT_C)}
-        ${alt("D", q.ALT_D)}
-    `;
+    <strong>${i+1}) ${q.ENUNCIADO}</strong><br><br>
+
+    ${img ? `
+        <img 
+            src="${img}" 
+            style="max-width:100%; margin:10px auto; display:block;"
+            onerror="this.style.display='none'"
+        >
+    ` : ""}
+
+    ${alt("A", q.ALT_A)}
+    ${alt("B", q.ALT_B)}
+    ${alt("C", q.ALT_C)}
+    ${alt("D", q.ALT_D)}
+`;
 
     container.appendChild(div);
 });

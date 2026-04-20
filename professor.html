@@ -18,13 +18,16 @@
 <script>
 //=============================================
 function normalizarImagem(url){
-
     if(!url) return "";
 
-    url = url.trim();
+    // Caso 1: formato /d/ID/
+    let match = url.match(/\/d\/(.*?)\//);
+    if(match){
+        return `https://lh3.googleusercontent.com/d/${match[1]}`;
+    }
 
-    const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
-
+    // Caso 2: formato id=ID
+    match = url.match(/id=([^&]+)/);
     if(match){
         return `https://lh3.googleusercontent.com/d/${match[1]}`;
     }

@@ -1065,13 +1065,20 @@ function atualizarDadosSemRecriar(listaAlunos){
         const linha = Array.from(corpoTabela.rows).find(r => r.cells[0].innerText == aluno.numero);
         
         if(linha){
-            // 1. Atualiza as questões (começam na coluna 2 [índice 2])
+            // --- ATUALIZAÇÃO DO NOME ---
+            // O nome fica na segunda coluna (index 1)
+            const celulaNome = linha.cells[1];
+            const nomeNovo = aluno.nome || "-";
+            if(celulaNome.innerText !== nomeNovo){
+                celulaNome.innerText = nomeNovo;
+            }
+
+            // --- ATUALIZAÇÃO DAS QUESTÕES ---
             aluno.questoes.forEach((q, i) => {
                 const celula = linha.cells[i + 2];
                 if(celula && q){
                     const circulo = celula.querySelector(".resposta-circulo");
                     if(circulo){
-                        // Só mexe no DOM se o valor mudou para evitar "flicker"
                         if(circulo.innerText !== q.marcada){
                             circulo.innerText = q.marcada;
                             circulo.className = `resposta-circulo ${q.marcada === q.correta ? 'resposta-acerto' : 'resposta-erro'}`;
@@ -1080,11 +1087,10 @@ function atualizarDadosSemRecriar(listaAlunos){
                 }
             });
 
-            // 2. Atualiza as colunas finais (Acertos, % e Nota)
+            // --- ATUALIZAÇÃO DOS TOTAIS ---
             const totalCols = linha.cells.length;
             const temNota = aluno.nota !== undefined;
 
-            // Índices de trás para frente para não errar com/sem nota
             const idxAcertos = totalCols - (temNota ? 3 : 2);
             const idxPerc = totalCols - (temNota ? 2 : 1);
             const idxNota = totalCols - 1;

@@ -73,13 +73,40 @@ function mostrarAlerta(mensagem, tipo = "normal"){
 
     box.style.display = "block";
 
-    // 🔥 ÚNICA MUDANÇA — auto sumir sempre
+    // ÚNICA MUDANÇA — auto sumir sempre
     setTimeout(()=>{
         if(box){
             box.style.display = "none";
         }
     }, 4000);
 }
+//===============================================
+function normalizarImagem(url){
+
+  if(!url) return "";
+
+  url = url.trim();
+
+  if(url.includes("drive.google.com")){
+
+    const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+
+    if(match && match[1]){
+      return `https://lh3.googleusercontent.com/d/${match[1]}`;
+    }
+
+    if(url.includes("uc?export=view")){
+      const idMatch = url.match(/id=([a-zA-Z0-9_-]+)/);
+      if(idMatch && idMatch[1]){
+        return `https://lh3.googleusercontent.com/d/${idMatch[1]}`;
+      }
+    }
+  }
+
+  return url;
+}
+
+//===============================================
 	
 function esconderAlertaDepois(tempo = 6000){
     const box = document.getElementById("alertaQuiz");
@@ -194,6 +221,18 @@ function mostrarQuestao(){
                 </div>
                 <div class="questao-texto">
                     ${q.ENUNCIADO}
+
+					${(() => {
+					    const img = normalizarImagem(q.IMAGEM || q.IMG);
+					    if(!img) return "";
+					
+					    return `
+					        <div style="margin-top:10px;">
+					            <img src="${img}"
+					                 style="max-width:100%; height:auto; border-radius:8px;">
+					        </div>
+					    `;
+					})()}
                 </div>
             </div>
 

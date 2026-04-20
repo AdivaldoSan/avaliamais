@@ -2422,3 +2422,15 @@ transform:translateX(-50%);
 border:6px solid transparent;
 border-top-color:#111827;
 }
+.preview-questao {
+    position: relative;
+    overflow: hidden;
+}
+
+.preview-questao img {
+    display: block;
+    position: relative !important;
+    max-width: 100%;
+    height: auto;
+    margin: 10px auto;
+}

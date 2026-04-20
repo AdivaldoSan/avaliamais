@@ -19,31 +19,6 @@
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
 
 <script>
-function normalizarImagem(url){
-
-  if(!url) return "";
-
-  url = url.trim();
-  url = url.replace(/\s+/g, "");
-
-  if(url.includes("drive.google.com")){
-
-    let match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
-
-    if(match && match[1]){
-      return `https://drive.google.com/uc?export=view&id=${match[1]}`;
-    }
-
-    match = url.match(/id=([a-zA-Z0-9_-]+)/);
-
-    if(match && match[1]){
-      return `https://drive.google.com/uc?export=view&id=${match[1]}`;
-    }
-  }
-
-  return url;
-}
-
 //=============================================
 let publicado = false;
 
@@ -88,7 +63,7 @@ function iniciarPagina(){
     const container = document.getElementById("listaQuestoes");
 
     preview.questoes.forEach((q,i)=>{
-    const img = normalizarImagem(q.IMG);
+    const img = (q.IMG || "").trim();
 
     const div = document.createElement("div");
     div.className = "preview-questao";

@@ -280,10 +280,14 @@ async function atualizarTabelaTempoReal(){
 async function atualizarResultadosTempoReal() {
     if (!idAplicacaoAtual) return;
 
+    const idRequisicao = idAplicacaoAtual;
+
     const token = localStorage.getItem("TOKEN");
     const dados = await fetchProtegido(
-        API + "?tipo=obterResultados&id=" + idAplicacaoAtual + "&token=" + token
+        API + "?tipo=obterResultados&id=" + idRequisicao + "&token=" + token
     );
+        // Se mudou de aplicação enquanto carregava, IGNORA
+    if (idRequisicao !== idAplicacaoAtual) return;
 
     if (!dados || !dados.turmas) return;
 

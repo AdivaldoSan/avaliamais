@@ -953,21 +953,29 @@ function montarAbasTurmas(dados){
     }
 
     
+  // --- APAGUE AS ÚLTIMAS LINHAS E COLE ESTAS NO LUGAR ---
+    
     const container = document.getElementById("tabelaResultados");
-    
-    // 1. Salva a posição exata antes de limpar o HTML
-    const scrollAnterior = container.scrollTop;
-    
-    // 2. Atualiza o conteúdo
-    container.innerHTML = html;
-    document.getElementById("resumoResultados").innerHTML = htmlResumo;
-    
-    // 3. Força o navegador a manter a posição (o requestAnimationFrame é o segredo)
-    requestAnimationFrame(() => {
+    const resumoCont = document.getElementById("resumoResultados");
+
+    if (container) {
+        // 1. Captura a posição exata ANTES da mudança
+        const scrollAnterior = container.scrollTop;
+
+        // 2. Atualiza o HTML (isso normalmente resetaria o scroll para 0)
+        container.innerHTML = html;
+        if (resumoCont) resumoCont.innerHTML = htmlResumo;
+
+        // 3. Trava o scroll no lugar IMEDIATAMENTE
         container.scrollTop = scrollAnterior;
-    });
-      
-}  
+
+        // 4. Trava novamente no próximo frame (garante que o renderizador não mova)
+        requestAnimationFrame(() => {
+            container.scrollTop = scrollAnterior;
+        });
+    }
+} // Fechamento da função mostrarTurma
+        
 //======================================
 async function atualizarResultadosTempoReal(){
 

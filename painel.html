@@ -1056,58 +1056,101 @@ function atualizarApenasValores(listaAlunos) {
     });
 }
 //======================================
-function atualizarDadosSemRecriar(listaAlunos){
-    const corpoTabela = document.querySelector("#tabelaResultados tbody");
-    if(!corpoTabela) return;
+function atualizarDadosSemRecriar(listaAlunos) {
+    const corpoTabela = document.querySelector("#tabelaResultados table tbody");
+    if (!corpoTabela) return;
+
+    // 1. Ordena os dados para processar do menor número para o maior
+    listaAlunos.sort((a, b) => a.numero - b.numero);
 
     listaAlunos.forEach(aluno => {
-        // Localiza a linha do aluno pelo Número (coluna 0)
-        const linha = Array.from(corpoTabela.rows).find(r => r.cells[0].innerText == aluno.numero);
+        let linhasExistentes = corpoTabela.rows;
         
-        if(linha){
-            // --- ATUALIZAÇÃO DO NOME ---
-            // O nome fica na segunda coluna (index 1)
-            const celulaNome = linha.cells[1];
-            const nomeNovo = aluno.nome || "-";
-            if(celulaNome.innerText !== nomeNovo){
-                celulaNome.innerText = nomeNovo;
-            }
+        // 2. Lógica para preencher os "buracos" (ex: do 19 ao 25)
+        // Pega o número da última linha que está aparecendo na tela agora
+        let ultimoNumeroNaTela = linhasExistentes.length > 0 
+            ? parseInt(linhasExistentes[linhasExistentes.length - 1].cells[0].innerText) 
+            : 0;
 
-            // --- ATUALIZAÇÃO DAS QUESTÕES ---
-            aluno.questoes.forEach((q, i) => {
-                const celula = linha.cells[i + 2];
-                if(celula && q){
-                    const circulo = celula.querySelector(".resposta-circulo");
-                    if(circulo){
-                        if(circulo.innerText !== q.marcada){
-                            circulo.innerText = q.marcada;
-                            circulo.className = `resposta-circulo ${q.marcada === q.correta ? 'resposta-acerto' : 'resposta-erro'}`;
-                        }
-                    }
+        // Se o aluno que chegou tem um número maior que o próximo da sequência,
+        // cria linhas com "-" até alcançar o número dele.
+        while (ultimoNumeroNaTela < aluno.numero - 1) {
+            ultimoNumeroNaTela++;
+            criarLinhaVazia(corpoTabela, ultimoNumeroNaTela, listaAlunos);
+        }
+
+        // 3. Busca a linha do aluno atual
+        let linha = Array.from(linhasExistentes).find(r => r.cells[0].innerText == aluno.numero);
+
+        // 4. Se a linha não existe (é o fim da lista), cria ela
+        if (!linha) {
+            linha = criarLinhaVazia(corpoTabela, aluno.numero, listaAlunos);
+        }
+
+        // 5. INJETA OS DADOS REAIS NA LINHA (Nome e Notas)
+        if (linha.cells[1].innerText !== (aluno.nome || "-")) {
+            linha.cells[1].innerText = aluno.nome || "-";
+        }
+
+        aluno.questoes.forEach((q, i) => {
+            const celula = linha.cells[i + 2];
+            if (celula && q) {
+                let circulo = celula.querySelector(".resposta-circulo");
+                const textoMarcado = q.marcada || "-";
+                const classeCorreta = q.marcada === q.correta ? 'resposta-acerto' : 'resposta-erro';
+
+                if (circulo && circulo.innerText !== textoMarcado) {
+                    circulo.innerText = textoMarcado;
+                    circulo.className = `resposta-circulo ${classeCorreta}`;
                 }
-            });
-
-            // --- ATUALIZAÇÃO DOS TOTAIS ---
-            const totalCols = linha.cells.length;
-            const temNota = aluno.nota !== undefined;
-
-            const idxAcertos = totalCols - (temNota ? 3 : 2);
-            const idxPerc = totalCols - (temNota ? 2 : 1);
-            const idxNota = totalCols - 1;
-
-            if(linha.cells[idxAcertos].innerText != aluno.acertos) 
-                linha.cells[idxAcertos].innerText = aluno.acertos;
-            
-            if(linha.cells[idxPerc].innerText != (aluno.percentual + "%"))
-                linha.cells[idxPerc].innerText = aluno.percentual + "%";
-            
-            if(temNota){
-                const notaFormatada = aluno.nota?.toFixed(1) ?? "-";
-                if(linha.cells[idxNota].innerText != notaFormatada)
-                    linha.cells[idxNota].innerText = notaFormatada;
             }
+        });
+
+        // Atualiza Totais
+        const totalCols = linha.cells.length;
+        const temNota = aluno.nota !== undefined;
+        const idxAcertos = totalCols - (temNota ? 3 : 2);
+        const idxPerc = totalCols - (temNota ? 2 : 1);
+        const idxNota = totalCols - 1;
+
+        if (linha.cells[idxAcertos].innerText != aluno.acertos) 
+            linha.cells[idxAcertos].innerText = aluno.acertos;
+        
+        if (linha.cells[idxPerc].innerText != (aluno.percentual + "%"))
+            linha.cells[idxPerc].innerText = aluno.percentual + "%";
+        
+        if (temNota) {
+            const notaFormatada = aluno.nota?.toFixed(1) ?? "-";
+            if (linha.cells[idxNota].innerText != notaFormatada)
+                linha.cells[idxNota].innerText = notaFormatada;
         }
     });
+}
+
+// FUNÇÃO AUXILIAR: Cria a linha com os traços "-" exatamente como era antes
+function criarLinhaVazia(corpoTabela, numero, listaReferencia) {
+    const novaLinha = corpoTabela.insertRow();
+    
+    novaLinha.insertCell(0).innerText = numero; // Nº
+    novaLinha.insertCell(1).innerText = "-";    // Nome
+
+    // Cria as colunas de questões baseadas no primeiro aluno da lista
+    const qtdQuestoes = listaReferencia[0].questoes.length;
+    for (let i = 0; i < qtdQuestoes; i++) {
+        const td = novaLinha.insertCell();
+        td.innerHTML = `<div class="resposta-circulo resposta-vazio">-</div>`;
+    }
+
+    novaLinha.insertCell().innerText = "0";   // Acertos
+    novaLinha.insertCell().innerText = "0%";  // %
+
+    // Verifica se a tabela deve exibir a coluna de Nota
+    const temNotaGeral = listaReferencia.some(a => a.nota !== undefined);
+    if (temNotaGeral) {
+        novaLinha.insertCell().innerText = "-";
+    }
+    
+    return novaLinha;
 }
 //======================================
 function fecharResultados(){

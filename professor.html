@@ -101,6 +101,10 @@ function iniciarPagina(){
 
             <div id="etapaFiltro" style="display:none;">
 
+            <div id="loadingFiltros" class="loading-box" style="display:none;">
+                <div class="loading-text">Carregando filtros...</div>
+            </div>
+
                 <div class="form-group" id="blocoAssunto">
                     <label>Assunto:</label>
                     <div class="multi-select" id="msAssunto">
@@ -309,15 +313,24 @@ async function mostrarFiltro(){
     etapaFiltro.style.display = "block";
     etapaFinal.style.display = "none";
 
+    const loading = document.getElementById("loadingFiltros");
+
+    // MOSTRA loading
+    loading.style.display = "block";
+    blocoAssunto.style.display = "none";
+    blocoDescritor.style.display = "none";
+
     await atualizarFiltros();
+
     limparSelecoes();
     limparConsolidacoes();
 
+    // ESCONDE loading
+    loading.style.display = "none";
+
     if(modoGeracao === "ASSUNTO"){
         blocoAssunto.style.display="block";
-        blocoDescritor.style.display="none";
     }else{
-        blocoAssunto.style.display="none";
         blocoDescritor.style.display="block";
     }
 }

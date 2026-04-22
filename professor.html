@@ -201,15 +201,22 @@ async function iniciar(){
     
      const token = localStorage.getItem("TOKEN");
 
-        const lista = await fetchProtegido(
-            API + "?tipo=listarDisciplinas&token=" + token
+       const dados = await fetchProtegido(
+            API + "?tipo=dadosIniciais&token=" + token
         );
         
-        if(!lista) return;
+        if(!dados) return;
         
-        preencherSelect("disciplina", lista);
+        // disciplina
+        preencherSelect("disciplina", dados.disciplinas);
         
-            
+        // guarda mapa global
+        window.mapaNiveis = dados.niveisPorDisciplina;
+        
+        // turmas
+        renderTurmas(dados.turmas);
+                
+                    
     // ETAPA FINAL
     elTexto.innerText = textos[3];
 
@@ -261,17 +268,16 @@ async function iniciar(){
     configurarMultiSelect("msDescritor");
     document.addEventListener("click", fecharMultiSelect);
 
-    await carregarTurmas();
+    renderTurmas(dados.turmas);
 }
 //=========================================
 function atualizarNiveis(){
 
-    const selNivel = document.getElementById("nivel");
-    const blocoNivel = document.getElementById("blocoNivel");
+    const lista = window.mapaNiveis[disciplina.value] || [];
 
-    blocoNivel.style.display = "block";
+    document.getElementById("blocoNivel").style.display = "block";
 
-    preencherSelect("nivel", ["EM"]);
+    preencherSelect("nivel", lista);
 }
 
 // ================= RESET =================

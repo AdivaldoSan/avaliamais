@@ -42,12 +42,16 @@ function normalizarImagem(url){
 }
 
     
-let banco = [];
-let descritoresBanco = [];
+//let banco = [];
+//let descritoresBanco = [];
+
+let questoesCarregadas = [];
+let mapaNiveis = {};  
+  
 let mapaDescritores = {};
 let modoGeracao = null;
 
-// 🔥 ESTADO GLOBAL (ESSENCIAL)
+// ESTADO GLOBAL (ESSENCIAL)
 let questoesSelecionadas = [];
 let turmasSelecionadas = [];
 
@@ -146,7 +150,7 @@ function iniciarPagina(){
 
         </div>
 
-    </div> <!-- 🔥 FECHAMENTO CORRETO DO TOPO -->
+    </div> <!-- FECHAMENTO CORRETO DO TOPO -->
 
     <!-- SEPARADOR -->
     <hr style="margin:20px 0;">
@@ -195,15 +199,24 @@ async function iniciar(){
     
     elTexto.innerText = textos[1];
     
-    const dados = await carregarBancoCompleto();
     
     elTexto.innerText = textos[2];
 
-    banco = dados.questoes.filter(q =>
-        String(q.ATIVO).trim().toUpperCase() === "SIM"
-    );
+    const token = localStorage.getItem("TOKEN");
 
-    descritoresBanco = dados.descritores;
+    const dados = await fetchProtegido(
+        API + "?tipo=dadosIniciais&token=" + token
+    );
+    
+    if(!dados) return;
+    
+    preencherSelect("disciplina", dados.disciplinas);
+    
+    mapaNiveis = dados.niveisPorDisciplina;
+    
+    await carregarTurmas();
+
+  
 
     preencherSelect("disciplina",
         [...new Set(banco.map(q=>q.DISCIPLINA))]
@@ -248,14 +261,11 @@ function atualizarNiveis(){
     selNivel.innerHTML = `<option value="">Carregando...</option>`;
     blocoNivel.style.display = "block";
 
-    const niveis = [...new Set(
-        banco
-            .filter(q => q.DISCIPLINA === disciplina.value)
-            .map(q => (q.NIVEL_ENSINO || "").trim())
-    )];
-
+   const niveis = mapaNiveis[disciplina.value] || [];
     preencherSelect("nivel", niveis);
-}
+    
+        preencherSelect("nivel", niveis);
+    }
 // ================= RESET =================
 function resetarFluxo(){
 
@@ -307,107 +317,132 @@ function mostrarFiltro(){
 
 
 // ================= LISTAS =================
-function atualizarFiltros(){
+async function atualizarFiltros(){
 
-    const filtrado = banco.filter(q =>
-        q.DISCIPLINA === disciplina.value &&
-        q.NIVEL_ENSINO === nivel.value
-    );
+    const token = localStorage.getItem("TOKEN");
 
-    const assuntos =
-        [...new Set(filtrado.map(q=>q.ASSUNTO))];
+    const url =
+        API +
+        "?tipo=listarFiltros" +
+        "&token=" + token +
+        "&disciplina=" + encodeURIComponent(disciplina.value) +
+        "&nivel=" + encodeURIComponent(nivel.value);
 
-    const descritores =
-        [...new Set(filtrado.map(q=>q.DESCRITOR))]
-        .sort((a,b)=>
-            parseInt(a.replace(/\D/g,'')) -
-            parseInt(b.replace(/\D/g,''))
-        );
+    const resp = await fetch(url);
+    const dados = await resp.json();
 
-    // AQUI ESTÁ O QUE FALTAVA
-    mapaDescritores = {};
+    mapaDescritores = dados.mapaDescritores || {};
 
-    descritoresBanco.forEach(d=>{
-
-        let nivelPlanilha = d.NIVEL;
-
-        if(nivelPlanilha === "ENSINO MÉDIO") nivelPlanilha = "EM";
-        if(nivelPlanilha === "ENSINO FUNDAMENTAL 1") nivelPlanilha = "EF1";
-        if(nivelPlanilha === "ENSINO FUNDAMENTAL 2") nivelPlanilha = "EF2";
-
-        if(
-            d.DISCIPLINA === disciplina.value &&
-            nivelPlanilha === nivel.value
-        ){
-            mapaDescritores[d.CODIGO] = d.DESCRICAO;
-        }
-    });
-
-    listaAssuntosHTML(assuntos);
-    listaDescritoresHTML(descritores);
+    listaAssuntosHTML(dados.assuntos || []);
+    listaDescritoresHTML(dados.descritores || []);
 }
-
-
 // ================= QUESTÕES =================
-function mostrarQuestoes(){
+async function mostrarQuestoes(){
 
     const selecionados =
         modoGeracao === "ASSUNTO"
         ? [...document.querySelectorAll("#listaAssuntos .selected")].map(el=>el.dataset.value)
         : [...document.querySelectorAll("#listaDescritores .selected")].map(el=>el.dataset.value);
 
-    const filtradas = banco.filter(q => {
-
-        if(q.DISCIPLINA !== disciplina.value) return false;
-        if(q.NIVEL_ENSINO !== nivel.value) return false;
-
-        if(modoGeracao === "ASSUNTO")
-            return selecionados.includes(q.ASSUNTO);
-
-        if(modoGeracao === "DESCRITOR")
-            return selecionados.includes(q.DESCRITOR);
-
-        return false;
+    // 🔥 AGORA BUSCA NA API (ANTES ERA banco.filter)
+    const resposta = await gerarQuestoesAPI({
+        disciplina: disciplina.value,
+        nivel: nivel.value,
+        modo: modoGeracao,
+        valores: selecionados,
+        qtd: 50
     });
+
+    if(!resposta || resposta.length <= 1){
+        areaQuestoes.innerHTML = "Nenhuma questão encontrada.";
+        return;
+    }
+
+    const cab = resposta[0];
+
+    const filtradas = resposta.slice(1).map(l => {
+        let obj = {};
+        cab.forEach((c,i)=> obj[c] = l[i]);
+        return obj;
+    });
+
+    // 🔥 LIMPA
+    areaQuestoes.innerHTML = "";
+
+    // 🔥 AQUI MANTÉM SUA LÓGICA ORIGINAL
+    filtradas.forEach(q => {
+
+        const jaSelecionada =
+            questoesSelecionadas.some(x => x.ID === q.ID);
+
+        const bloqueado =
+            !jaSelecionada && questoesSelecionadas.length >= 15;
+
+        const div = document.createElement("div");
+        div.className = "preview-questao";
+
+        div.innerHTML = `
+            <label>
+                <input type="checkbox"
+                       ${jaSelecionada ? "checked" : ""}
+                       class="${bloqueado ? 'checkbox-bloqueado' : ''}"
+                       onclick="handleClickQuestao(event, '${q.ID}')">
+                <strong>${q.ENUNCIADO}</strong>
+            </label>
+
+            ${(() => {
+                const img = normalizarImagem(q.IMG);
+
+                if(!img) return "";
+
+                return `
+                    <div style="margin:10px 0; text-align:left;">
+                        <img src="${img}"
+                             loading="lazy"
+                             style="max-width:165px; max-height:120px; width:auto; height:auto;">
+                    </div>
+                `;
+            })()}
+
+            <div style="margin-top:10px;">
+                A) ${q.ALT_A}<br>
+                B) ${q.ALT_B}<br>
+                C) ${q.ALT_C}<br>
+                D) ${q.ALT_D}
+            </div>
+        `;
+
+        areaQuestoes.appendChild(div);
+    });
+}
+//==========================================
+function renderQuestoes(){
 
     areaQuestoes.innerHTML = "";
 
-   filtradas.forEach(q => {
+    questoesCarregadas.forEach(q => {
 
-    const jaSelecionada =
-        questoesSelecionadas.some(x => x.ID === q.ID);
+        const jaSelecionada =
+            questoesSelecionadas.some(x => x.ID === q.ID);
 
-    // NOVO
-    const bloqueado =
-        !jaSelecionada && questoesSelecionadas.length >= 15;
+        const bloqueado =
+            !jaSelecionada && questoesSelecionadas.length >= 15;
 
-    const div = document.createElement("div");
-    div.className = "preview-questao";
+        const div = document.createElement("div");
+        div.className = "preview-questao";
 
-    div.innerHTML = `
-        <label>
-            <input type="checkbox"
-                   ${jaSelecionada ? "checked" : ""}
-                   class="${bloqueado ? 'checkbox-bloqueado' : ''}"
-                   onclick="handleClickQuestao(event, '${q.ID}')">
-            <strong>${q.ENUNCIADO}</strong>
-        </label>
+        div.innerHTML = `
+            <label>
+                <input type="checkbox"
+                       ${jaSelecionada ? "checked" : ""}
+                       class="${bloqueado ? 'checkbox-bloqueado' : ''}"
+                       onclick="handleClickQuestao(event, '${q.ID}')">
+                <strong>${q.ENUNCIADO}</strong>
+            </label>
 
-              ${(() => {
-                  const img = normalizarImagem(q.IMG);
-              
-                  if(!img) return "";
-              
-                  return `
-                      <div style="margin:10px 0; text-align:left;">
-                      <img src="${img}"
-                      loading="lazy"
-                 style="max-width:165px; max-height:120px; width:auto; height:auto;"
-                 
-        </div>
-    `;
-})()}
-            <div style="margin-top:10px;">
+            ${q.IMG ? `<img src="${normalizarImagem(q.IMG)}" style="max-width:160px;">` : ""}
+
+            <div>
                 A) ${q.ALT_A}<br>
                 B) ${q.ALT_B}<br>
                 C) ${q.ALT_C}<br>
@@ -444,7 +479,7 @@ function handleClickQuestao(e, id){
 // ================= SELEÇÃO =================
 function toggleQuestao(id){
 
-    const q = banco.find(x => x.ID === id);
+    const q = questoesCarregadas.find(x => x.ID === id);
 
     const existe = questoesSelecionadas
         .find(item => item.ID === id);
@@ -466,7 +501,33 @@ function toggleQuestao(id){
 
     atualizarPreview();
 }
+//===========================================
+async function gerarQuestoesAPI(params){
 
+  const token = localStorage.getItem("TOKEN");
+
+  const url =
+    API +
+    "?tipo=gerarQuestoes" +
+    "&token=" + token +
+    "&disciplina=" + encodeURIComponent(params.disciplina) +
+    "&nivel=" + encodeURIComponent(params.nivel) +
+    "&modo=" + params.modo +
+    "&valores=" + encodeURIComponent(JSON.stringify(params.valores)) +
+    "&qtd=" + params.qtd;
+
+  try {
+    const resp = await fetch(url);
+
+    if(!resp.ok) throw new Error();
+
+    return await resp.json();
+
+  } catch (e) {
+    console.error(e);
+    return null;
+  }
+}
 
 // ================= PREVIEW =================
 function atualizarPreview(){

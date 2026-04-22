@@ -179,16 +179,16 @@ async function iniciar(){
     // ETAPA 2
     elTexto.innerText = textos[1];
     await new Promise(r => setTimeout(r, 200));
-    const dados = await carregarBancoCompleto();
+    //const dados = await carregarBancoCompleto();
 
     // ETAPA 3
     elTexto.innerText = textos[2];
 
-    banco = dados.questoes.filter(q =>
+    /*banco = dados.questoes.filter(q =>
         String(q.ATIVO).trim().toUpperCase() === "SIM"
     );
 
-    descritoresBanco = dados.descritores;
+    descritoresBanco = dados.descritores;*/
 
     preencherSelect("disciplina",
         [...new Set(banco.map(q=>q.DISCIPLINA))]

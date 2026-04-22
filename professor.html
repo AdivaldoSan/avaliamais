@@ -466,163 +466,114 @@ async function buscarQuestoesJaUsadasPorTurma(turmasSelecionadas){
 
 
 // ================= GERAR QUIZ =================
-
 async function gerarQuiz(){
 
     const btn = document.getElementById("btnGerarQuiz");
+
     btn.classList.add("btn-loading");
     btn.disabled = true;
 
-    const erroTurma =
-        document.getElementById("erroTurma");
+    try {
 
-    erroTurma.innerText = "";
+        const erroTurma = document.getElementById("erroTurma");
+        erroTurma.innerText = "";
 
-    const turmasSelecionadas =
-        [...document.querySelectorAll(".chkTurma:checked")]
-        .map(cb=>cb.value);
+        const turmasSelecionadas =
+            [...document.querySelectorAll(".chkTurma:checked")]
+            .map(cb=>cb.value);
 
-    if(turmasSelecionadas.length === 0){
-        erroTurma.innerText =
-            "Selecione ao menos uma turma para continuar.";
+        if(turmasSelecionadas.length === 0){
+            erroTurma.innerText = "Selecione ao menos uma turma.";
+            return;
+        }
+
+        const qtd = parseInt(document.getElementById("quantidade").value);
+
+        if(!qtd || qtd <= 0){
+            alert("Informe uma quantidade válida.");
+            return;
+        }
+
+        if(!modoGeracao){
+            alert("Selecione o modo de geração.");
+            return;
+        }
+
+        const nome = document.getElementById("nomeQuiz").value.trim();
+
+        if(!nome){
+            document.getElementById("erroNome").innerText = "Informe um nome.";
+            return;
+        }
+
+        let valores = (modoGeracao === "ASSUNTO")
+            ? [...document.querySelectorAll("#listaAssuntos .selected")].map(el=>el.dataset.value)
+            : [...document.querySelectorAll("#listaDescritores .selected")].map(el=>el.dataset.value);
+
+        const resposta = await gerarQuestoesAPI({
+            disciplina: disciplina.value,
+            nivel: nivel.value,
+            modo: modoGeracao,
+            valores: valores,
+            qtd: qtd + 5
+        });
+
+        if(!resposta || resposta.length <= 1){
+            alert("Nenhuma questão encontrada.");
+            return;
+        }
+
+        const cab = resposta[0];
+        const filtradas = resposta.slice(1).map(l => {
+            let obj = {};
+            cab.forEach((c,i)=> obj[c] = l[i]);
+            return obj;
+        });
+
+        const usadas =
+            await buscarQuestoesJaUsadasPorTurma(turmasSelecionadas);
+
+        const ineditas =
+            filtradas.filter(q => !usadas.includes(q.ID));
+
+        const areaReuso = document.getElementById("areaReutilizacao");
+        const infoIneditas = document.getElementById("infoIneditas");
+
+        if(ineditas.length >= qtd){
+            areaReuso.style.display = "none";
+
+            embaralhar(ineditas);
+            finalizarPreview(ineditas.slice(0, qtd), turmasSelecionadas, nome);
+            return;
+        }
+
+        // 👇 CASO NÃO TENHA SUFICIENTE
+        areaReuso.style.display = "block";
+
+        infoIneditas.innerText =
+            `Restam apenas ${ineditas.length} questão(ões) inédita(s).`;
+
+        const permitir =
+            document.getElementById("permitirReutilizar").checked;
+
+        if(!permitir){
+            return;
+        }
+
+        embaralhar(filtradas);
+        finalizarPreview(filtradas.slice(0, qtd), turmasSelecionadas, nome);
+
+    } catch (e) {
+
+        console.error("Erro gerarQuiz:", e);
+        alert("Erro ao gerar o simulado. Tente novamente.");
+
+    } finally {
 
         btn.classList.remove("btn-loading");
         btn.disabled = false;
-        return;
     }
-
-    const qtd =
-        parseInt(document.getElementById("quantidade").value);
-
-    if(!qtd || qtd <= 0){
-        alert("Informe uma quantidade válida de questões.");
-
-        btn.classList.remove("btn-loading");
-        btn.disabled = false;
-        return;
-    }
-
-    if(!modoGeracao){
-        alert("Selecione o modo de geração (Assunto ou Descritor).");
-
-        btn.classList.remove("btn-loading");
-        btn.disabled = false;
-        return;
-    }
-
-    const nomeInput =
-        document.getElementById("nomeQuiz");
-
-    const erroNome =
-        document.getElementById("erroNome");
-
-    erroNome.innerText = "";
-
-    const nome = nomeInput.value.trim();
-
-    if(!nome){
-        erroNome.innerText =
-            "Informe um nome para a aplicação.";
-
-        btn.classList.remove("btn-loading");
-        btn.disabled = false;
-        return;
-    }
-
-    const assuntos =
-        [...document.querySelectorAll("#listaAssuntos .selected")]
-        .map(el=>el.dataset.value);
-
-    const descritores =
-        [...document.querySelectorAll("#listaDescritores .selected")]
-        .map(el=>el.dataset.value);
-
- let valores = [];
-
-if(modoGeracao === "ASSUNTO"){
-    valores = assuntos;
-}else{
-    valores = descritores;
 }
-
-const resposta = await gerarQuestoesAPI({
-    disciplina: disciplina.value,
-    nivel: nivel.value,
-    modo: modoGeracao,
-    valores: valores,
-    qtd: qtd * 3 // margem para reutilização
-});
-
-if(!resposta || resposta.length <= 1){
-    alert("Nenhuma questão encontrada.");
-    btn.classList.remove("btn-loading");
-    btn.disabled = false;
-    return;
-}
-
-// converter igual antes
-const cab = resposta[0];
-const filtradas = resposta.slice(1).map(l => {
-    let obj = {};
-    cab.forEach((c,i)=> obj[c] = l[i]);
-    return obj;
-});
-
-    if(filtradas.length===0){
-        alert("Nenhuma questão encontrada.");
-
-        btn.classList.remove("btn-loading");
-        btn.disabled = false;
-        return;
-    }
-
-    const usadas =
-        await buscarQuestoesJaUsadasPorTurma(turmasSelecionadas);
-
-    const ineditas =
-        filtradas.filter(q => !usadas.includes(q.ID));
-
-    const areaReuso =
-        document.getElementById("areaReutilizacao");
-
-    const infoIneditas =
-        document.getElementById("infoIneditas");
-
-    if(ineditas.length >= qtd){
-
-        areaReuso.style.display = "none";
-        embaralhar(ineditas);
-
-        const selecionadas =
-            ineditas.slice(0, qtd);
-
-        finalizarPreview(selecionadas, turmasSelecionadas, nome);
-        return;
-    }
-
-    areaReuso.style.display = "block";
-
-    infoIneditas.innerText =
-        `Restam apenas ${ineditas.length} questão(ões) inédita(s) para essas turmas.`;
-
-    const permitir =
-        document.getElementById("permitirReutilizar").checked;
-
-    if(!permitir){
-
-        btn.classList.remove("btn-loading");
-        btn.disabled = false;
-        return;
-    }
-
-    embaralhar(filtradas);
-
-    const selecionadas =
-        filtradas.slice(0, qtd);
-
-    finalizarPreview(selecionadas, turmasSelecionadas, nome);
-}
-
 
 // ================= FINALIZAR =================
 
@@ -887,15 +838,28 @@ async function gerarQuestoesAPI(params){
     "&valores=" + encodeURIComponent(JSON.stringify(params.valores)) +
     "&qtd=" + params.qtd;
 
-  const resp = await fetch(url);
-  const dados = await resp.json();
+  try {
 
-  if(dados.erro){
-    alert("Erro: " + dados.erro);
-    return null;
+    const resp = await fetch(url);
+
+    if(!resp.ok){
+      throw new Error("erro_servidor");
+    }
+
+    const dados = await resp.json();
+
+    if(dados.erro){
+      throw new Error(dados.erro);
+    }
+
+    return dados;
+
+  } catch (e) {
+
+    console.error("Erro API:", e);
+
+    return null; // só retorna null, não mostra nada
   }
-
-  return dados;
 }
 //===============================================    
 </script>

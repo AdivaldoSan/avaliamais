@@ -509,19 +509,36 @@ async function gerarQuiz(){
         [...document.querySelectorAll("#listaDescritores .selected")]
         .map(el=>el.dataset.value);
 
-    const filtradas = banco.filter(q=>{
+ let valores = [];
 
-        if(q.DISCIPLINA !== disciplina.value) return false;
-        if(q.NIVEL_ENSINO !== nivel.value) return false;
+if(modoGeracao === "ASSUNTO"){
+    valores = assuntos;
+}else{
+    valores = descritores;
+}
 
-        if(modoGeracao==="ASSUNTO")
-            return assuntos.includes(q.ASSUNTO);
+const resposta = await gerarQuestoesAPI({
+    disciplina: disciplina.value,
+    nivel: nivel.value,
+    modo: modoGeracao,
+    valores: valores,
+    qtd: qtd * 3 // margem para reutilização
+});
 
-        if(modoGeracao==="DESCRITOR")
-            return descritores.includes(q.DESCRITOR);
+if(!resposta || resposta.length <= 1){
+    alert("Nenhuma questão encontrada.");
+    btn.classList.remove("btn-loading");
+    btn.disabled = false;
+    return;
+}
 
-        return false;
-    });
+// converter igual antes
+const cab = resposta[0];
+const filtradas = resposta.slice(1).map(l => {
+    let obj = {};
+    cab.forEach((c,i)=> obj[c] = l[i]);
+    return obj;
+});
 
     if(filtradas.length===0){
         alert("Nenhuma questão encontrada.");

@@ -1,2 +1,2 @@
 window.API_URL =
-"https://script.google.com/macros/s/AKfycbyaJTZpNtQ2Aw-eH2qvzx1WYpVSpICfVvADDw1Ye-sCUAet8aGrqGbtjqWCU8c2JuPYCw/exec";
+"https://script.google.com/macros/s/AKfycbxk0lRxLVI6dPcodl9nY_KokNJ5rbRU8UEfaGJ0hyWLrajl77WHUtP_FAtt6b5vODV0sA/exec";

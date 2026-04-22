@@ -260,7 +260,7 @@ function atualizarNiveis(){
    const niveis = mapaNiveis[disciplina.value] || [];
     preencherSelect("nivel", niveis);
     
-        preencherSelect("nivel", niveis);
+    
     }
 // ================= RESET =================
 function resetarFluxo(){
@@ -284,7 +284,7 @@ function resetarFluxo(){
 
     //mantém seleção persistente (NÃO limpa array)
 
-    carregarTurmas();
+    //carregarTurmas();
 
     if(disciplina.value && nivel.value){
         etapaTurmas.style.display = "block";

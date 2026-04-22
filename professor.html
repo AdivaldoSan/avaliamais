@@ -111,7 +111,7 @@ function iniciarPagina(){
                         <div class="multi-header">Nenhum selecionado ▼</div>
                         <div class="multi-list" id="listaAssuntos"></div>
                     </div>
-                    <div id="infoAssunto" class="consolidacao"></div>
+                    
                 </div>
 
                 <div class="form-group" id="blocoDescritor" style="display:none;">
@@ -668,7 +668,6 @@ function listaAssuntosHTML(lista){
         item.addEventListener("click", function(){
             this.classList.toggle("selected");
             atualizarHeader("msAssunto");
-            atualizarInfoAssunto();
             verificarEtapaFinal();
         });
 
@@ -766,53 +765,7 @@ function fecharMultiSelect(){
         .forEach(ms=>ms.classList.remove("open"));
 }
 
-// ================= CONSOLIDAÇÃO =================
-
-function atualizarInfoAssunto(){
-
-    const bloco = document.getElementById("infoAssunto");
-    bloco.innerHTML = "";
-
-    const assuntos =
-        [...document.querySelectorAll("#listaAssuntos .selected")]
-        .map(el=>el.dataset.value);
-
-    if(assuntos.length === 0){
-        bloco.style.display = "none";
-        return;
-    }
-
-    let html = "";
-
-    assuntos.forEach(a=>{
-
-        const descrs =
-            [...new Set(
-                banco.filter(q =>
-                    q.ASSUNTO === a &&
-                    q.NIVEL_ENSINO === nivel.value
-                ).map(q=>q.DESCRITOR)
-            )];
-
-        html += `<div class="info-bloco">
-                    <div class="info-titulo">${a}</div>`;
-
-        descrs.forEach(d=>{
-            html += `
-                <div class="info-item">
-                    <span class="descritor-codigo">${d}</span>
-                    <span class="descritor-texto">
-                        ${mapaDescritores[d] || ""}
-                    </span>
-                </div>`;
-        });
-
-        html += `</div>`;
-    });
-
-    bloco.innerHTML = html;
-    bloco.style.display = "block";
-}
+// =================================
 
 function atualizarInfoDescritor(){
 

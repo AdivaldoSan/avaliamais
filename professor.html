@@ -850,14 +850,39 @@ async function carregarTurmas(){
         div.appendChild(label);
     });
 }
-
+//===============================================
 function embaralhar(a){
     for(let i=a.length-1;i>0;i--){
         let j=Math.floor(Math.random()*(i+1));
         [a[i],a[j]]=[a[j],a[i]];
     }
 }
+//===============================================
+async function gerarQuestoesAPI(params){
 
+  const token = localStorage.getItem("TOKEN");
+
+  const url =
+    API +
+    "?tipo=gerarQuestoes" +
+    "&token=" + token +
+    "&disciplina=" + encodeURIComponent(params.disciplina) +
+    "&nivel=" + encodeURIComponent(params.nivel) +
+    "&modo=" + params.modo +
+    "&valores=" + encodeURIComponent(JSON.stringify(params.valores)) +
+    "&qtd=" + params.qtd;
+
+  const resp = await fetch(url);
+  const dados = await resp.json();
+
+  if(dados.erro){
+    alert("Erro: " + dados.erro);
+    return null;
+  }
+
+  return dados;
+}
+//===============================================    
 </script>
 
 </body>

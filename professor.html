@@ -268,7 +268,32 @@ async function iniciar(){
     configurarMultiSelect("msDescritor");
     document.addEventListener("click", fecharMultiSelect);
 
-    renderTurmas(dados.turmas);
+    //renderTurmas(dados.turmas);
+}
+//
+function renderTurmas(lista){
+
+    const div = document.getElementById("listaTurmas");
+    div.innerHTML = "";
+
+    if(!Array.isArray(lista) || lista.length === 0){
+        div.innerHTML = "Nenhuma turma encontrada.";
+        return;
+    }
+
+    lista.forEach(nomeTurma => {
+
+        const label = document.createElement("label");
+
+        label.innerHTML = `
+            <input type="checkbox"
+                   value="${nomeTurma}"
+                   class="chkTurma">
+            <span>${nomeTurma}</span>
+        `;
+
+        div.appendChild(label);
+    });
 }
 //=========================================
 function atualizarNiveis(){

@@ -34,8 +34,12 @@ async function carregarBancoCompleto(){
     try {
 
         const [respQuestoes, respDescritores] = await Promise.all([
-            fetch(API + "?tipo=questoes&token=" + token),
-            fetch(API + "?tipo=descritores&token=" + token)
+            fetch(API + "?tipo=questoes&token=" + token, {
+                method: "GET"
+            }),
+            fetch(API + "?tipo=descritores&token=" + token, {
+                method: "GET"
+            })
         ]);
 
         const q = await respQuestoes.json();
@@ -69,7 +73,9 @@ async function carregarBancoCompleto(){
 // ===============================
 async function fetchProtegido(url, options = {}){
 
-    const resp = await fetch(url, options);
+    const resp = await fetch(url, {
+        method: "GET"
+    });
     const dados = await resp.json();
 
     if(dados.erro === "nao_autorizado"){

@@ -133,11 +133,8 @@ function isMobile(){
 //===================================================
 function abrirScanner(){
 
-    const base = window.location.pathname.split("/")[1];
-    const prefix = base ? `/${base}` : "";
-
     if(isMobile()){
-        window.location.href = prefix + "/scanner.html";
+        window.location.href = "/scanner.html";
         return;
     }
 

@@ -1,11 +1,13 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html>
 <head>
 <meta charset="UTF-8">
-<title>Avalia+ | Gerador de Provas</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Avalia+ | Gerar Prova</title>
 
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="styles_professor.css">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
 </head>
 
 <body>
@@ -15,77 +17,52 @@
 <script src="./js/layout.js"></script>
 
 <script>
+
+//========================
 function normalizarImagem(url){
+    if(!url) return "";
 
-  if(!url) return "";
-
-  url = url.trim();
-
-  if(url.includes("drive.google.com")){
-
-    const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
-
-    if(match && match[1]){
-      return `https://lh3.googleusercontent.com/d/${match[1]}`;
+    let match = url.match(/\/d\/(.*?)\//);
+    if(match){
+        return `https://lh3.googleusercontent.com/d/${match[1]}`;
     }
 
-    // fallback se já estiver em formato antigo
-    if(url.includes("uc?export=view")){
-      const idMatch = url.match(/id=([a-zA-Z0-9_-]+)/);
-      if(idMatch && idMatch[1]){
-        return `https://lh3.googleusercontent.com/d/${idMatch[1]}`;
-      }
+    match = url.match(/id=([^&]+)/);
+    if(match){
+        return `https://lh3.googleusercontent.com/d/${match[1]}`;
     }
-  }
 
-  return url;
+    return url;
 }
 
-    
-let banco = [];
-let descritoresBanco = [];
-let mapaDescritores = {};
+//========================
 let modoGeracao = null;
 
-// 🔥 ESTADO GLOBAL (ESSENCIAL)
-let questoesSelecionadas = [];
-let turmasSelecionadas = [];
-
-
-// ================= INICIAR =================
+//========================
 function iniciarPagina(){
 
     criarLayout();
 
     document.getElementById("conteudo").innerHTML = `
-        <h2>🧾 Gerador de Provas</h2>
+        <h2 style="margin-bottom:20px;">🧾 Gerar Prova</h2>
 
-     <div class="card form-card prova-card">
-
-    <!-- ================= TOPO ================= -->
-    <div class="topo-prova">
-
-        <!-- COLUNA ESQUERDA -->
-        <div class="topo-esquerda">
+        <div class="card form-card">
 
             <div class="form-group">
                 <label>Disciplina</label>
-                
+
                 <div id="loadingBoxDisciplina" class="loading-box">
                     <div id="loadingTextoDisciplina" class="loading-text">
-                        Iniciando...
+                        Carregando...
                     </div>
                 </div>
 
-<select id="disciplina" style="display:none;"></select>
-                
+                <select id="disciplina" style="display:none;"></select>
             </div>
 
             <div class="form-group" id="blocoNivel" style="display:none;">
                 <label>Nível</label>
-                <select id="nivel">
-                    <option value="">Selecione a disciplina</option>
-                </select>
+                <select id="nivel"></select>
             </div>
 
             <div id="etapaTurmas" style="display:none;">
@@ -95,84 +72,53 @@ function iniciarPagina(){
                 </div>
             </div>
 
-        </div>
-
-        <!-- COLUNA DIREITA -->
-        <div class="topo-direita">
-
-            <!-- MODO -->
             <div id="etapaModo" style="display:none;">
                 <div class="form-group">
                     <label>Modo</label>
 
                     <div class="modo-geracao">
-                        <label>
-                            <input type="radio" name="modo" value="ASSUNTO">
-                            Assunto
-                        </label>
-
-                        <label>
-                            <input type="radio" name="modo" value="DESCRITOR">
-                            Descritor
-                        </label>
+                        <label><input type="radio" name="modo" value="ASSUNTO"> Assunto</label>
+                        <label><input type="radio" name="modo" value="DESCRITOR"> Descritor</label>
                     </div>
                 </div>
             </div>
 
-            <!-- FILTRO -->
             <div id="etapaFiltro" style="display:none;">
 
-                <div class="form-group" id="blocoAssunto">
-                    <label>Assunto:</label>
+                <div id="loadingFiltros" class="loading-box" style="display:none;">
+                    <div class="loading-text">Carregando filtros...</div>
+                </div>
+
+                <div id="blocoAssunto">
                     <div class="multi-select" id="msAssunto">
                         <div class="multi-header">Nenhum selecionado ▼</div>
                         <div class="multi-list" id="listaAssuntos"></div>
                     </div>
                 </div>
 
-                <div class="form-group" id="blocoDescritor" style="display:none;">
-                    <label>Descritor:</label>
+                <div id="blocoDescritor" style="display:none;">
                     <div class="multi-select" id="msDescritor">
                         <div class="multi-header">Nenhum selecionado ▼</div>
                         <div class="multi-list" id="listaDescritores"></div>
                     </div>
                 </div>
 
-                <button class="btn-primary" onclick="mostrarQuestoes()">
-                    Buscar questões
-                </button>
-
             </div>
 
-        </div>
+            <div id="etapaFinal" style="display:none;">
+                <div class="form-group">
+                    <label>Quantidade</label>
+                    <input type="number" id="quantidade" value="10">
+                </div>
 
-    </div> <!-- 🔥 FECHAMENTO CORRETO DO TOPO -->
-
-    <!-- SEPARADOR -->
-    <hr style="margin:20px 0;">
-
-    <!-- ================= LAYOUT DAS QUESTÕES ================= -->
-    <div class="layout-prova">
-
-        <!-- LISTA DE QUESTÕES -->
-        <div id="areaQuestoes" class="col-questoes"></div>
-
-        <!-- SELECIONADAS -->
-        <div id="preview" class="col-preview" style="display:none;">
-
-            <div id="previewLista"></div>
-
-            <div id="previewAcao" style="margin-top:15px; display:none;">
-                <button class="btn-primary" onclick="gerarProva()">
+                <button class="btn-primary"
+                    id="btnGerar"
+                    onclick="gerarProva()">
                     Gerar Prova
                 </button>
             </div>
 
         </div>
-
-    </div>
-
-</div>
     `;
 
     iniciar();
@@ -180,121 +126,89 @@ function iniciarPagina(){
 
 window.onload = iniciarPagina;
 
-
-// ================= INIT =================
+//========================
 async function iniciar(){
 
-    const textos = [
-    "Conectando ao servidor...",
-    "Carregando banco de questões...",
-    "Organizando disciplinas...",
-    "Finalizando..."
-    ];
-    
-    const elTexto = document.getElementById("loadingTextoDisciplina");
-    
-    elTexto.innerText = textos[1];
-    
-    const dados = await carregarBancoCompleto();
-    
-    elTexto.innerText = textos[2];
+    const token = localStorage.getItem("TOKEN");
 
-    banco = dados.questoes.filter(q =>
-        String(q.ATIVO).trim().toUpperCase() === "SIM"
+    const dados = await fetchProtegido(
+        API + "?tipo=dadosIniciais&token=" + token
     );
 
-    descritoresBanco = dados.descritores;
+    if(!dados) return;
 
-    preencherSelect("disciplina",
-        [...new Set(banco.map(q=>q.DISCIPLINA))]
-    );
+    preencherSelect("disciplina", dados.disciplinas);
+    window.mapaNiveis = dados.niveisPorDisciplina;
+    renderTurmas(dados.turmas);
 
-     elTexto.innerText = textos[3];
+    document.getElementById("loadingBoxDisciplina").style.display = "none";
+    document.getElementById("disciplina").style.display = "block";
 
-   setTimeout(() => {
-        document.getElementById("loadingBoxDisciplina").style.display = "none";
-        document.getElementById("disciplina").style.display = "block";
-    }, 300);
-
-    document.getElementById("disciplina")
-    .addEventListener("change", () => {
+    disciplina.addEventListener("change", ()=>{
         resetarFluxo();
         atualizarNiveis();
     });
-  
-    document.getElementById("nivel").addEventListener("change", resetarFluxo);
+
+    nivel.addEventListener("change", resetarFluxo);
 
     document.querySelectorAll("input[name='modo']")
-        .forEach(r=>{
-            r.addEventListener("change", ()=>{
-                modoGeracao = document.querySelector("input[name='modo']:checked").value;
-                mostrarFiltro();
-            });
+    .forEach(r=>{
+        r.addEventListener("change", e=>{
+            modoGeracao = e.target.value;
+            mostrarFiltro();
         });
+    });
+
+    document.addEventListener("change", function(e){
+        if(e.target.classList.contains("chkTurma")){
+            const turmas =
+                document.querySelectorAll(".chkTurma:checked");
+
+            etapaModo.style.display =
+                turmas.length ? "block" : "none";
+        }
+    });
 
     configurarMultiSelect("msAssunto");
     configurarMultiSelect("msDescritor");
     document.addEventListener("click", fecharMultiSelect);
-
-    await carregarTurmas();
 }
 
-//==========================================
+//========================
 function atualizarNiveis(){
-
-    const selNivel = document.getElementById("nivel");
-    const blocoNivel = document.getElementById("blocoNivel");
-
-    selNivel.innerHTML = `<option value="">Carregando...</option>`;
+    const lista = window.mapaNiveis[disciplina.value] || [];
     blocoNivel.style.display = "block";
-
-    const niveis = [...new Set(
-        banco
-            .filter(q => q.DISCIPLINA === disciplina.value)
-            .map(q => (q.NIVEL_ENSINO || "").trim())
-    )];
-
-    preencherSelect("nivel", niveis);
+    preencherSelect("nivel", lista);
 }
-// ================= RESET =================
+
+//========================
 function resetarFluxo(){
-
-    modoGeracao = null;
-
-    document.querySelectorAll("input[name='modo']")
-        .forEach(r=>r.checked=false);
-
-    etapaModo.style.display = "none";
     etapaFiltro.style.display = "none";
-    
-
-    areaQuestoes.innerHTML = "";
-    document.getElementById("previewLista").innerHTML = "";
-    document.getElementById("previewAcao").style.display = "none";
-    if(!disciplina.value){
-        document.getElementById("blocoNivel").style.display = "none";
-    }
-    
-
-    //mantém seleção persistente (NÃO limpa array)
-
-    carregarTurmas();
-
-    if(disciplina.value && nivel.value){
-        etapaTurmas.style.display = "block";
-    }else{
-        etapaTurmas.style.display = "none";
-    }
+    etapaFinal.style.display = "none";
 }
 
-
-
-// ================= FILTRO =================
-function mostrarFiltro(){
+//========================
+async function mostrarFiltro(){
 
     etapaFiltro.style.display = "block";
+    loadingFiltros.style.display = "block";
 
-    atualizarFiltros();
+    const token = localStorage.getItem("TOKEN");
+
+    const url =
+        API +
+        "?tipo=listarFiltros" +
+        "&token=" + token +
+        "&disciplina=" + encodeURIComponent(disciplina.value) +
+        "&nivel=" + encodeURIComponent(nivel.value);
+
+    const resp = await fetch(url);
+    const dados = await resp.json();
+
+    listaAssuntosHTML(dados.assuntos || []);
+    listaDescritoresHTML(dados.descritores || []);
+
+    loadingFiltros.style.display = "none";
 
     if(modoGeracao === "ASSUNTO"){
         blocoAssunto.style.display = "block";
@@ -303,447 +217,125 @@ function mostrarFiltro(){
         blocoAssunto.style.display = "none";
         blocoDescritor.style.display = "block";
     }
+
+    etapaFinal.style.display = "block";
 }
 
+//========================
+async function gerarProva(){
 
-// ================= LISTAS =================
-function atualizarFiltros(){
+    const btn = document.getElementById("btnGerar");
 
-    const filtrado = banco.filter(q =>
-        q.DISCIPLINA === disciplina.value &&
-        q.NIVEL_ENSINO === nivel.value
-    );
+    btn.disabled = true;
+    btn.innerText = "Gerando...";
 
-    const assuntos =
-        [...new Set(filtrado.map(q=>q.ASSUNTO))];
+    try{
 
-    const descritores =
-        [...new Set(filtrado.map(q=>q.DESCRITOR))]
-        .sort((a,b)=>
-            parseInt(a.replace(/\D/g,'')) -
-            parseInt(b.replace(/\D/g,''))
-        );
+        const selecionados =
+            modoGeracao === "ASSUNTO"
+            ? [...document.querySelectorAll("#listaAssuntos .selected")].map(el=>el.dataset.value)
+            : [...document.querySelectorAll("#listaDescritores .selected")].map(el=>el.dataset.value);
 
-    // AQUI ESTÁ O QUE FALTAVA
-    mapaDescritores = {};
+        const qtd = parseInt(document.getElementById("quantidade").value);
 
-    descritoresBanco.forEach(d=>{
-
-        let nivelPlanilha = d.NIVEL;
-
-        if(nivelPlanilha === "ENSINO MÉDIO") nivelPlanilha = "EM";
-        if(nivelPlanilha === "ENSINO FUNDAMENTAL 1") nivelPlanilha = "EF1";
-        if(nivelPlanilha === "ENSINO FUNDAMENTAL 2") nivelPlanilha = "EF2";
-
-        if(
-            d.DISCIPLINA === disciplina.value &&
-            nivelPlanilha === nivel.value
-        ){
-            mapaDescritores[d.CODIGO] = d.DESCRICAO;
-        }
-    });
-
-    listaAssuntosHTML(assuntos);
-    listaDescritoresHTML(descritores);
-}
-
-
-// ================= QUESTÕES =================
-function mostrarQuestoes(){
-
-    const selecionados =
-        modoGeracao === "ASSUNTO"
-        ? [...document.querySelectorAll("#listaAssuntos .selected")].map(el=>el.dataset.value)
-        : [...document.querySelectorAll("#listaDescritores .selected")].map(el=>el.dataset.value);
-
-    const filtradas = banco.filter(q => {
-
-        if(q.DISCIPLINA !== disciplina.value) return false;
-        if(q.NIVEL_ENSINO !== nivel.value) return false;
-
-        if(modoGeracao === "ASSUNTO")
-            return selecionados.includes(q.ASSUNTO);
-
-        if(modoGeracao === "DESCRITOR")
-            return selecionados.includes(q.DESCRITOR);
-
-        return false;
-    });
-
-    areaQuestoes.innerHTML = "";
-
-   filtradas.forEach(q => {
-
-    const jaSelecionada =
-        questoesSelecionadas.some(x => x.ID === q.ID);
-
-    // NOVO
-    const bloqueado =
-        !jaSelecionada && questoesSelecionadas.length >= 15;
-
-    const div = document.createElement("div");
-    div.className = "preview-questao";
-
-    div.innerHTML = `
-        <label>
-            <input type="checkbox"
-                   ${jaSelecionada ? "checked" : ""}
-                   class="${bloqueado ? 'checkbox-bloqueado' : ''}"
-                   onclick="handleClickQuestao(event, '${q.ID}')">
-            <strong>${q.ENUNCIADO}</strong>
-        </label>
-
-              ${(() => {
-                  const img = normalizarImagem(q.IMG);
-              
-                  if(!img) return "";
-              
-                  return `
-                      <div style="margin:10px 0; text-align:left;">
-                      <img src="${img}"
-                      loading="lazy"
-                 style="max-width:165px; max-height:120px; width:auto; height:auto;"
-                 
-        </div>
-    `;
-})()}
-            <div style="margin-top:10px;">
-                A) ${q.ALT_A}<br>
-                B) ${q.ALT_B}<br>
-                C) ${q.ALT_C}<br>
-                D) ${q.ALT_D}
-            </div>
-        `;
-
-        areaQuestoes.appendChild(div);
-    });
-}
-//============================================
-function handleClickQuestao(e, id){
-
-    const existe = questoesSelecionadas
-        .find(item => item.ID === id);
-
-    // se já selecionada → pode remover normal
-    if(existe){
-        toggleQuestao(id);
-        return;
-    }
-
-    // se atingiu limite → bloqueia e avisa
-    if(questoesSelecionadas.length >= 15){
-        e.preventDefault(); // 🔥 impede marcar
-        mostrarAvisoLimite();
-        return;
-    }
-
-    // normal
-    toggleQuestao(id);
-}
-
-// ================= SELEÇÃO =================
-function toggleQuestao(id){
-
-    const q = banco.find(x => x.ID === id);
-
-    const existe = questoesSelecionadas
-        .find(item => item.ID === id);
-
-    if(existe){
-        questoesSelecionadas =
-            questoesSelecionadas.filter(x => x.ID !== id);
-    }else{
-
-         if(questoesSelecionadas.length >= 15){
-            mostrarAvisoLimite();
-            return;
-        }
-        questoesSelecionadas.push({
-            ...q,
-            PESO: 1
+        const resposta = await gerarQuestoesAPI({
+            disciplina: disciplina.value,
+            nivel: nivel.value,
+            modo: modoGeracao,
+            valores: selecionados,
+            qtd: qtd
         });
-    }
 
-    atualizarPreview();
-}
+        if(!resposta) throw new Error("Erro API");
 
+        const cab = resposta[0];
 
-// ================= PREVIEW =================
-function atualizarPreview(){
+        const questoes = resposta.slice(1).map(l => {
+            let obj = {};
+            cab.forEach((c,i)=> obj[c] = l[i]);
+            return obj;
+        });
 
-    const lista = document.getElementById("previewLista");
-    const acao = document.getElementById("previewAcao");
-
-    const total = questoesSelecionadas
-    .reduce((soma, q) => soma + (parseFloat(q.PESO) || 0), 0);
-    const qtd = questoesSelecionadas.length;
-    const textoQtd = qtd === 1
-        ? "1 questão selecionada"
-        : `${qtd} questões selecionadas`;
-        
-    lista.innerHTML = `
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-            <h3>${textoQtd}</h3>
-            <div style="font-weight:bold; color:#2563EB;">
-                Peso total: ${total.toFixed(1)}
-            </div>
-        </div>
-    `;
-
-    questoesSelecionadas.forEach((q,i)=>{
-
-        function alt(letra, texto){
-            const correta = (letra === String(q.GABARITO).trim().toUpperCase());
-
-            return `
-                <div class="alt-preview ${correta ? "alt-correta" : ""}">
-                    <strong>${letra})</strong> ${texto}
-                </div>
-            `;
-        }
-
-        const div = document.createElement("div");
-        div.className = "preview-questao";
-
-        div.innerHTML = `
-            <div style="display:flex; justify-content:space-between;">
-
-                <strong>${i+1}) ${q.ENUNCIADO}</strong>
-
-                <span style="cursor:pointer; color:red; font-weight:bold;"
-                      onclick="removerQuestao('${q.ID}')">
-                    ✕
-                </span>
-
-            </div>
-
-            ${(() => {
-                const img = normalizarImagem(q.IMG);
-                return img ? `
-                    <div style="margin:10px 0; text-align:left;">
-                        <img src="${img}"
-                             style="max-width:220px; max-height:160px; width:auto; height:auto;"
-                             
-                    </div>
-                ` : "";
-            })()}
-
-            <div style="margin-top:10px;">
-                ${alt("A", q.ALT_A)}
-                ${alt("B", q.ALT_B)}
-                ${alt("C", q.ALT_C)}
-                ${alt("D", q.ALT_D)}
-            </div>
-
-            <div style="margin-top:10px;">
-                Peso:
-                <input type="number"
-                       value="${q.PESO}"
-                       step="0.1"
-                       min="0.1"
-                       max="10"
-                       onchange="alterarPeso('${q.ID}', this.value)">
-            </div>
-        `;
-
-        lista.appendChild(div);
-    });
-
-    // 🔥 CONTROLE DO BOTÃO
-    const previewBox = document.getElementById("preview");
-    
-    if(questoesSelecionadas.length > 0){
-        previewBox.style.display = "block";
-        acao.style.display = "block";
-    }else{
-        previewBox.style.display = "none";
-        acao.style.display = "none";
-    }
-}
-
-
-// ================= REMOVER =================
-function removerQuestao(id){
-
-    questoesSelecionadas =
-        questoesSelecionadas.filter(q => q.ID !== id);
-
-    atualizarPreview();
-}
-
-
-// ================= PESO =================
-function alterarPeso(id, valor){
-
-    const q = questoesSelecionadas.find(x => x.ID === id);
-
-    if(q){
-    q.PESO = parseFloat(valor) || 1;
-    atualizarPreview(); // 🔥 atualiza total em tempo real
-    }
-}
-
-// ================= GERAR =================
-function gerarProva(){
-  if(questoesSelecionadas.length > 15){
-      mostrarAvisoLimite();
-      return;
-  }
-  // limpa qualquer prova anterior antes de criar nova
-  localStorage.removeItem("provaGerada");
-
-    const turmas =
-        [...document.querySelectorAll(".chkTurma:checked")]
-        .map(el=>el.value);
-
-          localStorage.setItem("provaGerada", JSON.stringify({
-          id: "PRV_" + Date.now().toString().slice(-6),
-        
-          disciplina: document.getElementById("disciplina").value,
-        
-          nivel: document.getElementById("nivel").value,
-        
-          turmas: turmas,
-        
-          questoes: questoesSelecionadas.map(q => ({
-            ID: q.ID,
-            ENUNCIADO: q.ENUNCIADO,
-            ALT_A: q.ALT_A,
-            ALT_B: q.ALT_B,
-            ALT_C: q.ALT_C,
-            ALT_D: q.ALT_D,
-            IMAGEM: normalizarImagem(q.IMG),
-            GABARITO: (
-                          q.GABARITO ||
-                          q.RESPOSTA ||
-                          q.CORRETA ||
-                          q.GAB ||
-                          ""
-                        ).toString().trim().toUpperCase(),
-            PESO: q.PESO
-          }))
+        localStorage.setItem("provaGerada", JSON.stringify({
+            id: "PRV_" + Date.now(),
+            disciplina: disciplina.value,
+            nivel: nivel.value,
+            questoes: questoes
         }));
 
-    window.location.href = "impressao.html"
-    
-}
-//===========================================
-  function mostrarAvisoLimite(){
+        window.location.href = "/impressao.html";
 
-    let aviso = document.getElementById("avisoLimite");
-
-    if(!aviso){
-        aviso = document.createElement("div");
-        aviso.id = "avisoLimite";
-        aviso.className = "tooltip-aviso";
-        document.body.appendChild(aviso);
+    }catch(e){
+        alert("Erro ao gerar prova.");
+    }finally{
+        btn.disabled = false;
+        btn.innerText = "Gerar Prova";
     }
-
-    aviso.innerText = "Máximo de 15 questões (limitação do leitor QR).";
-
-    aviso.style.opacity = "1";
-
-    setTimeout(() => {
-        aviso.style.opacity = "0";
-    }, 2500);
 }
 
-// ================= TURMAS =================
-async function carregarTurmas(){
+//========================
+function listaAssuntosHTML(lista){
+    const div = document.getElementById("listaAssuntos");
+    div.innerHTML="";
+    lista.forEach(nome=>{
+        const item = document.createElement("div");
+        item.className="multi-item";
+        item.dataset.value = nome;
+        item.innerText = nome;
+        item.onclick = ()=> item.classList.toggle("selected");
+        div.appendChild(item);
+    });
+}
 
+//========================
+function listaDescritoresHTML(lista){
+    const div = document.getElementById("listaDescritores");
+    div.innerHTML="";
+    lista.forEach(cod=>{
+        const item = document.createElement("div");
+        item.className="multi-item";
+        item.dataset.value = cod;
+        item.innerText = cod;
+        item.onclick = ()=> item.classList.toggle("selected");
+        div.appendChild(item);
+    });
+}
+
+//========================
+function preencherSelect(id, lista){
+    const sel = document.getElementById(id);
+    sel.innerHTML = "<option value=''>Selecione</option>";
+    lista.forEach(v=>{
+        let op=document.createElement("option");
+        op.value=v;
+        op.textContent=v;
+        sel.appendChild(op);
+    });
+}
+
+//========================
+function renderTurmas(lista){
     const div = document.getElementById("listaTurmas");
-    if(!div) return;
-
-    const token = localStorage.getItem("TOKEN");
-
-    const linhas =
-        await fetchProtegido(API+"?tipo=turmas&token="+token);
-
-    if(!linhas || !Array.isArray(linhas)){
-        div.innerHTML = "Erro ao carregar turmas";
-        return;
-    }
-
     div.innerHTML = "";
-
-    if(linhas.length <= 1){
-        div.innerHTML = "Nenhuma turma encontrada";
-        return;
-    }
-
-    linhas.slice(1).forEach(l=>{
-
-        const nome = l[2];
-
+    lista.forEach(nome=>{
         const label = document.createElement("label");
-
-        label.innerHTML=`
-         <input type="checkbox"
-              value="${nome}"
-              class="chkTurma"
-              ${turmasSelecionadas.includes(nome) ? "checked" : ""}
-              onclick="toggleTurma(this)">
+        label.innerHTML = `
+            <input type="checkbox" class="chkTurma" value="${nome}">
             <span>${nome}</span>
         `;
-
         div.appendChild(label);
     });
 }
-//===============================
-function toggleTurma(el){
 
-    const nome = el.value;
-
-    if(el.checked){
-        if(!turmasSelecionadas.includes(nome)){
-            turmasSelecionadas.push(nome);
-        }
-    }else{
-        turmasSelecionadas =
-            turmasSelecionadas.filter(t => t !== nome);
-    }
-
-    if(turmasSelecionadas.length > 0){
-        etapaModo.style.display = "block";
-    }else{
-        etapaModo.style.display = "none";
-        etapaFiltro.style.display = "none";
-    }
-}
-
-// ================= AUX =================
-function preencherSelect(id, lista){
-
-    const sel = document.getElementById(id);
-
-    if(!sel) return;
-
-    sel.innerHTML = "<option value=''>Selecione</option>";
-
-    lista.forEach(v=>{
-        let op = document.createElement("option");
-        op.value = v;
-        op.textContent = v;
-        sel.appendChild(op);
-    });
-}    
-
-// ================= MULTI SELECT =================
+//========================
 function configurarMultiSelect(id){
-
     const el = document.getElementById(id);
-    if(!el) return;
-
     const header = el.querySelector(".multi-header");
 
-    header.addEventListener("click", function(e){
+    header.onclick = (e)=>{
         e.stopPropagation();
-        document.querySelectorAll(".multi-select")
-            .forEach(ms=>{
-                if(ms!==el) ms.classList.remove("open");
-            });
         el.classList.toggle("open");
-    });
+    };
 }
 
 function fecharMultiSelect(){
@@ -751,72 +343,34 @@ function fecharMultiSelect(){
         .forEach(ms=>ms.classList.remove("open"));
 }
 
+//========================
+async function gerarQuestoesAPI(params){
 
-// ================= LISTAS HTML =================
-function listaAssuntosHTML(lista){
+  const token = localStorage.getItem("TOKEN");
 
-    const div = document.getElementById("listaAssuntos");
-    div.innerHTML="";
+  const url =
+    API +
+    "?tipo=gerarQuestoes" +
+    "&token=" + token +
+    "&disciplina=" + encodeURIComponent(params.disciplina) +
+    "&nivel=" + encodeURIComponent(params.nivel) +
+    "&modo=" + params.modo +
+    "&valores=" + encodeURIComponent(JSON.stringify(params.valores)) +
+    "&qtd=" + params.qtd;
 
-    lista.forEach(nome=>{
+  try {
+    const resp = await fetch(url);
 
-        const item = document.createElement("div");
-        item.className="multi-item";
-        item.dataset.value = nome;
-        item.innerText = nome;
+    if(!resp.ok) throw new Error();
 
-        item.addEventListener("click", function(){
-            this.classList.toggle("selected");
-            atualizarHeader("msAssunto");
-        });
+    const dados = await resp.json();
 
-        div.appendChild(item);
-    });
-}
-//========================================
-function listaDescritoresHTML(lista){
+    return dados;
 
-    const div = document.getElementById("listaDescritores");
-    div.innerHTML="";
-
-    lista.forEach(cod=>{
-
-        const item = document.createElement("div");
-        item.className="multi-item";
-        item.dataset.value = cod;
-
-        item.innerHTML = `
-            <span class="descritor-codigo">${cod}</span>
-            <span class="descritor-texto">
-                ${mapaDescritores[cod] || ""}
-            </span>
-        `;
-
-        item.addEventListener("click", function(){
-            this.classList.toggle("selected");
-            atualizarHeader("msDescritor");
-        });
-
-        div.appendChild(item);
-    });
-}
-//=====================================================
-function atualizarHeader(id){
-
-    const selecionados =
-        document.querySelectorAll("#"+id+" .selected");
-
-    const header =
-        document.querySelector("#"+id+" .multi-header");
-
-    if(!header) return;
-
-    if(selecionados.length === 0){
-        header.innerText="Nenhum selecionado ▼";
-    }else{
-        header.innerText=
-            selecionados.length + " selecionado(s) ▼";
-    }
+  } catch (e) {
+    console.error(e);
+    return null;
+  }
 }
 
 </script>

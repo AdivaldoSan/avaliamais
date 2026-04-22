@@ -197,7 +197,19 @@ async function iniciar(){
    /* preencherSelect("disciplina",
         [...new Set(banco.map(q=>q.DISCIPLINA))]
     );*/
-     preencherSelect("disciplina", ["Matemática"]);
+
+    
+     const token = localStorage.getItem("TOKEN");
+
+        const lista = await fetchProtegido(
+            API + "?tipo=listarDisciplinas&token=" + token
+        );
+        
+        if(!lista) return;
+        
+        preencherSelect("disciplina", lista);
+        
+            
     // ETAPA FINAL
     elTexto.innerText = textos[3];
 

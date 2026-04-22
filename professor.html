@@ -190,10 +190,10 @@ async function iniciar(){
 
     descritoresBanco = dados.descritores;*/
 
-    preencherSelect("disciplina",
+   /* preencherSelect("disciplina",
         [...new Set(banco.map(q=>q.DISCIPLINA))]
-    );
-
+    );*/
+     preencherSelect("disciplina", ["Matemática"]);
     // ETAPA FINAL
     elTexto.innerText = textos[3];
 
@@ -253,21 +253,9 @@ function atualizarNiveis(){
     const selNivel = document.getElementById("nivel");
     const blocoNivel = document.getElementById("blocoNivel");
 
-    selNivel.innerHTML = `<option value="">Carregando...</option>`;
     blocoNivel.style.display = "block";
 
-    const niveis = [...new Set(
-        banco
-            .filter(q => q.DISCIPLINA === disciplina.value)
-            .map(q => (q.NIVEL_ENSINO || "").trim())
-    )];
-
-    if(niveis.length === 0){
-        selNivel.innerHTML = `<option value="">Nenhum nível disponível</option>`;
-        return;
-    }
-
-    preencherSelect("nivel", niveis);
+    preencherSelect("nivel", ["EM"]);
 }
 
 // ================= RESET =================
@@ -321,7 +309,7 @@ function mostrarFiltro(){
     etapaFiltro.style.display = "block";
     etapaFinal.style.display = "none";
 
-    atualizarFiltros();
+   // atualizarFiltros();
     limparSelecoes();
     limparConsolidacoes();
 

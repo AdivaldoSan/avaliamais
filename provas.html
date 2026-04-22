@@ -218,11 +218,7 @@ async function iniciar(){
 
   
 
-    preencherSelect("disciplina",
-        [...new Set(banco.map(q=>q.DISCIPLINA))]
-    );
-
-     elTexto.innerText = textos[3];
+    elTexto.innerText = textos[3];
 
    setTimeout(() => {
         document.getElementById("loadingBoxDisciplina").style.display = "none";
@@ -249,7 +245,7 @@ async function iniciar(){
     configurarMultiSelect("msDescritor");
     document.addEventListener("click", fecharMultiSelect);
 
-    await carregarTurmas();
+    
 }
 
 //==========================================
@@ -366,6 +362,7 @@ async function mostrarQuestoes(){
         return obj;
     });
 
+    questoesCarregadas = filtradas;
     // 🔥 LIMPA
     areaQuestoes.innerHTML = "";
 

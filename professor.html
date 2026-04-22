@@ -304,12 +304,12 @@ function limparConsolidacoes(){
 
 // ================= FILTRO =================
 
-function mostrarFiltro(){
+async function mostrarFiltro()
 
     etapaFiltro.style.display = "block";
     etapaFinal.style.display = "none";
 
-   // atualizarFiltros();
+    await atualizarFiltros();
     limparSelecoes();
     limparConsolidacoes();
 
@@ -325,45 +325,29 @@ function mostrarFiltro(){
 
 // ================= FILTROS =================
 
-function atualizarFiltros(){
+async function atualizarFiltros(){
 
-    const filtrado = banco.filter(q =>
-        q.DISCIPLINA === disciplina.value &&
-        q.NIVEL_ENSINO === nivel.value
-    );
+    const token = localStorage.getItem("TOKEN");
 
-    const listaAssuntos =
-        [...new Set(filtrado.map(q=>q.ASSUNTO))];
+    const url =
+        API +
+        "?tipo=listarFiltros" +
+        "&token=" + token +
+        "&disciplina=" + encodeURIComponent(disciplina.value) +
+        "&nivel=" + encodeURIComponent(nivel.value);
 
-    const listaDescritores =
-        [...new Set(filtrado.map(q=>q.DESCRITOR))]
+    const resp = await fetch(url);
+    const dados = await resp.json();
+
+    const listaAssuntos = dados.assuntos || [];
+
+    const listaDescritores = (dados.descritores || [])
         .sort((a,b)=>
             parseInt(a.replace(/\D/g,'')) -
             parseInt(b.replace(/\D/g,''))
         );
 
-    mapaDescritores = {};
-
-    descritoresBanco.forEach(d=>{
-
-        let nivelPlanilha = d.NIVEL;
-
-        if(nivelPlanilha === "ENSINO MÉDIO")
-            nivelPlanilha = "EM";
-
-        if(nivelPlanilha === "ENSINO FUNDAMENTAL 1")
-            nivelPlanilha = "EF1";
-
-        if(nivelPlanilha === "ENSINO FUNDAMENTAL 2")
-            nivelPlanilha = "EF2";
-
-        if(
-            d.DISCIPLINA === disciplina.value &&
-            nivelPlanilha === nivel.value
-        ){
-            mapaDescritores[d.CODIGO] = d.DESCRICAO;
-        }
-    });
+    mapaDescritores = dados.mapaDescritores || {};
 
     listaAssuntosHTML(listaAssuntos);
     listaDescritoresHTML(listaDescritores);
@@ -861,6 +845,23 @@ function embaralhar(a){
         let j=Math.floor(Math.random()*(i+1));
         [a[i],a[j]]=[a[j],a[i]];
     }
+}
+//===============================================
+async function carregarFiltrosAPI(){
+
+  const token = localStorage.getItem("TOKEN");
+
+  const url =
+    API +
+    "?tipo=listarFiltros" +
+    "&token=" + token +
+    "&disciplina=" + encodeURIComponent(disciplina.value) +
+    "&nivel=" + encodeURIComponent(nivel.value);
+
+  const resp = await fetch(url);
+  const dados = await resp.json();
+
+  return dados;
 }
 //===============================================
 async function gerarQuestoesAPI(params){

@@ -125,10 +125,7 @@ function iniciarPagina(){
 
             <!-- FILTRO -->
             <div id="etapaFiltro" style="display:none;">
-                <div id="loadingFiltros" class="loading-box" style="display:none;">
-                    <div class="loading-text">Carregando filtros...</div>
-                </div>
-
+                
                 <div class="form-group" id="blocoAssunto">
                     <label>Assunto:</label>
                     <div class="multi-select" id="msAssunto">
@@ -327,9 +324,7 @@ async function atualizarFiltros(){
         header.innerText = "Carregando...";
     }
 
-    const loading = document.getElementById("loadingFiltros");
-    loading.style.display = "block";
-
+    
     try{
 
         const token = localStorage.getItem("TOKEN");
@@ -361,7 +356,7 @@ async function atualizarFiltros(){
     }catch(e){
         console.error(e);
     }finally{
-        loading.style.display = "none";
+        
     }
 }
 // ================= QUESTÕES =================

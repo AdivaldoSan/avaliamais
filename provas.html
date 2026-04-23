@@ -125,6 +125,9 @@ function iniciarPagina(){
 
             <!-- FILTRO -->
             <div id="etapaFiltro" style="display:none;">
+                <div id="loadingFiltros" class="loading-box" style="display:none;">
+                    <div class="loading-text">Carregando filtros...</div>
+                </div>
 
                 <div class="form-group" id="blocoAssunto">
                     <label>Assunto:</label>
@@ -142,7 +145,7 @@ function iniciarPagina(){
                     </div>
                 </div>
 
-                <button class="btn-primary" onclick="mostrarQuestoes()">
+                <button class="btn-primary" id="btnBuscar" onclick="mostrarQuestoes()">
                     Buscar questões
                 </button>
 
@@ -314,104 +317,150 @@ function mostrarFiltro(){
 
 // ================= LISTAS =================
 async function atualizarFiltros(){
+    const header = document.querySelector(
+        modoGeracao === "ASSUNTO"
+        ? "#msAssunto .multi-header"
+        : "#msDescritor .multi-header"
+    );
+    
+    if(header){
+        header.innerText = "Carregando...";
+    }
 
-    const token = localStorage.getItem("TOKEN");
+    const loading = document.getElementById("loadingFiltros");
+    loading.style.display = "block";
 
-    const url =
-        API +
-        "?tipo=listarFiltros" +
-        "&token=" + token +
-        "&disciplina=" + encodeURIComponent(disciplina.value) +
-        "&nivel=" + encodeURIComponent(nivel.value);
+    try{
 
-    const resp = await fetch(url);
-    const dados = await resp.json();
+        const token = localStorage.getItem("TOKEN");
 
-    mapaDescritores = dados.mapaDescritores || {};
+        const url =
+            API +
+            "?tipo=listarFiltros" +
+            "&token=" + token +
+            "&disciplina=" + encodeURIComponent(disciplina.value) +
+            "&nivel=" + encodeURIComponent(nivel.value);
 
-    listaAssuntosHTML(dados.assuntos || []);
-    listaDescritoresHTML(dados.descritores || []);
+        const resp = await fetch(url);
+        const dados = await resp.json();
+
+        mapaDescritores = dados.mapaDescritores || {};
+
+        listaAssuntosHTML(dados.assuntos || []);
+        listaDescritoresHTML(dados.descritores || []);
+         if(modoGeracao === "ASSUNTO"){
+              atualizarHeader("msAssunto");
+          }else{
+              atualizarHeader("msDescritor");
+          }
+        
+
+    }catch(e){
+        console.error(e);
+    }finally{
+        loading.style.display = "none";
+    }
 }
 // ================= QUESTÕES =================
 async function mostrarQuestoes(){
 
-    const selecionados =
-        modoGeracao === "ASSUNTO"
-        ? [...document.querySelectorAll("#listaAssuntos .selected")].map(el=>el.dataset.value)
-        : [...document.querySelectorAll("#listaDescritores .selected")].map(el=>el.dataset.value);
+    const btn = document.getElementById("btnBuscar");
 
-    // 🔥 AGORA BUSCA NA API (ANTES ERA banco.filter)
-    const resposta = await gerarQuestoesAPI({
-        disciplina: disciplina.value,
-        nivel: nivel.value,
-        modo: modoGeracao,
-        valores: selecionados,
-        qtd: 50
-    });
+    btn.disabled = true;
+    btn.innerHTML = `<div class="loader"></div>`;
 
-    if(!resposta || resposta.length <= 1){
-        areaQuestoes.innerHTML = "Nenhuma questão encontrada.";
-        return;
+    // melhora UX (limpa e mostra feedback)
+    areaQuestoes.innerHTML = `
+        <div class="loading-text">Buscando questões...</div>
+    `;
+
+    try{
+
+        const selecionados =
+            modoGeracao === "ASSUNTO"
+            ? [...document.querySelectorAll("#listaAssuntos .selected")].map(el=>el.dataset.value)
+            : [...document.querySelectorAll("#listaDescritores .selected")].map(el=>el.dataset.value);
+
+        const resposta = await gerarQuestoesAPI({
+            disciplina: disciplina.value,
+            nivel: nivel.value,
+            modo: modoGeracao,
+            valores: selecionados,
+            qtd: 50
+        });
+
+        if(!resposta || resposta.length <= 1){
+            areaQuestoes.innerHTML = "Nenhuma questão encontrada.";
+            return;
+        }
+
+        const cab = resposta[0];
+
+        const filtradas = resposta.slice(1).map(l => {
+            let obj = {};
+            cab.forEach((c,i)=> obj[c] = l[i]);
+            return obj;
+        });
+
+        questoesCarregadas = filtradas;
+
+        // limpa antes de renderizar
+        areaQuestoes.innerHTML = "";
+
+        filtradas.forEach(q => {
+
+            const jaSelecionada =
+                questoesSelecionadas.some(x => x.ID === q.ID);
+
+            const bloqueado =
+                !jaSelecionada && questoesSelecionadas.length >= 15;
+
+            const div = document.createElement("div");
+            div.className = "preview-questao";
+
+            div.innerHTML = `
+                <label>
+                    <input type="checkbox"
+                           ${jaSelecionada ? "checked" : ""}
+                           class="${bloqueado ? 'checkbox-bloqueado' : ''}"
+                           onclick="handleClickQuestao(event, '${q.ID}')">
+                    <strong>${q.ENUNCIADO}</strong>
+                </label>
+
+                ${(() => {
+                    const img = normalizarImagem(q.IMG);
+
+                    if(!img) return "";
+
+                    return `
+                        <div style="margin:10px 0; text-align:left;">
+                            <img src="${img}"
+                                 loading="lazy"
+                                 style="max-width:165px; max-height:120px; width:auto; height:auto;">
+                        </div>
+                    `;
+                })()}
+
+                <div style="margin-top:10px;">
+                    A) ${q.ALT_A}<br>
+                    B) ${q.ALT_B}<br>
+                    C) ${q.ALT_C}<br>
+                    D) ${q.ALT_D}
+                </div>
+            `;
+
+            areaQuestoes.appendChild(div);
+        });
+
+    }catch(e){
+        console.error(e);
+        areaQuestoes.innerHTML = "Erro ao carregar questões.";
+    }finally{
+        btn.disabled = false;
+        btn.innerText = "Buscar questões";
     }
-
-    const cab = resposta[0];
-
-    const filtradas = resposta.slice(1).map(l => {
-        let obj = {};
-        cab.forEach((c,i)=> obj[c] = l[i]);
-        return obj;
-    });
-
-    questoesCarregadas = filtradas;
-    // 🔥 LIMPA
-    areaQuestoes.innerHTML = "";
-
-    // 🔥 AQUI MANTÉM SUA LÓGICA ORIGINAL
-    filtradas.forEach(q => {
-
-        const jaSelecionada =
-            questoesSelecionadas.some(x => x.ID === q.ID);
-
-        const bloqueado =
-            !jaSelecionada && questoesSelecionadas.length >= 15;
-
-        const div = document.createElement("div");
-        div.className = "preview-questao";
-
-        div.innerHTML = `
-            <label>
-                <input type="checkbox"
-                       ${jaSelecionada ? "checked" : ""}
-                       class="${bloqueado ? 'checkbox-bloqueado' : ''}"
-                       onclick="handleClickQuestao(event, '${q.ID}')">
-                <strong>${q.ENUNCIADO}</strong>
-            </label>
-
-            ${(() => {
-                const img = normalizarImagem(q.IMG);
-
-                if(!img) return "";
-
-                return `
-                    <div style="margin:10px 0; text-align:left;">
-                        <img src="${img}"
-                             loading="lazy"
-                             style="max-width:165px; max-height:120px; width:auto; height:auto;">
-                    </div>
-                `;
-            })()}
-
-            <div style="margin-top:10px;">
-                A) ${q.ALT_A}<br>
-                B) ${q.ALT_B}<br>
-                C) ${q.ALT_C}<br>
-                D) ${q.ALT_D}
-            </div>
-        `;
-
-        areaQuestoes.appendChild(div);
-    });
 }
+
 //==========================================
 function renderQuestoes(){
 

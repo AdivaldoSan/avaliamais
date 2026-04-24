@@ -265,27 +265,37 @@ function atualizarNiveis(){
 // ================= RESET =================
 function resetarFluxo(){
 
+    // ===== RESET LÓGICO =====
     modoGeracao = null;
+    questoesCarregadas = [];
+    questoesSelecionadas = [];
 
+    // ===== RESET RADIO =====
     document.querySelectorAll("input[name='modo']")
         .forEach(r=>r.checked=false);
 
+    // ===== LIMPA MULTI SELECT =====
+    document.querySelectorAll(".multi-item")
+        .forEach(el=>el.classList.remove("selected"));
+
+    atualizarHeader("msAssunto");
+    atualizarHeader("msDescritor");
+
+    // ===== LIMPA UI =====
     etapaModo.style.display = "none";
     etapaFiltro.style.display = "none";
-    
 
     areaQuestoes.innerHTML = "";
     document.getElementById("previewLista").innerHTML = "";
     document.getElementById("previewAcao").style.display = "none";
+    document.getElementById("preview").style.display = "none";
+
+    // ===== CONTROLE NÍVEL =====
     if(!disciplina.value){
         document.getElementById("blocoNivel").style.display = "none";
     }
-    
 
-    //mantém seleção persistente (NÃO limpa array)
-
-    //carregarTurmas();
-
+    // ===== CONTROLE TURMAS =====
     if(disciplina.value && nivel.value){
         etapaTurmas.style.display = "block";
     }else{

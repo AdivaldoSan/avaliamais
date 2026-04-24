@@ -304,9 +304,8 @@ function resetarFluxo(nivelReset){
         // LIMPA VALORES
         document.getElementById("nivel").innerHTML = `<option value="">Selecione</option>`;
         turmasSelecionadas = [];
-
-        const divTurmas = document.getElementById("listaTurmas");
-        if(divTurmas) divTurmas.innerHTML = "";
+        document.querySelectorAll(".chkTurma")
+            .forEach(cb => cb.checked = false);
 
     }
 
@@ -316,10 +315,9 @@ function resetarFluxo(nivelReset){
         document.getElementById("etapaTurmas").style.display = "none";
 
         turmasSelecionadas = [];
-
-        const divTurmas = document.getElementById("listaTurmas");
-        if(divTurmas) divTurmas.innerHTML = "";
-
+          document.querySelectorAll(".chkTurma")
+            .forEach(cb => cb.checked = false);
+        
     }
 
 }

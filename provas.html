@@ -227,11 +227,13 @@ async function iniciar(){
 
     document.getElementById("disciplina")
     .addEventListener("change", () => {
-        resetarFluxo();
+        resetarFluxo("disciplina");
         atualizarNiveis();
     });
   
-    document.getElementById("nivel").addEventListener("change", resetarFluxo);
+    document.getElementById("nivel").addEventListener("change", () => {
+        resetarFluxo("nivel");
+    });
 
     document.querySelectorAll("input[name='modo']")
         .forEach(r=>{
@@ -263,48 +265,60 @@ function atualizarNiveis(){
     
     }
 // ================= RESET =================
-function resetarFluxo(){
+function resetarFluxo(nivelReset){
 
-    // ===== RESET LÓGICO =====
+    // ===== SEMPRE LIMPA =====
     modoGeracao = null;
     questoesCarregadas = [];
     questoesSelecionadas = [];
 
-    // ===== RESET RADIO =====
     document.querySelectorAll("input[name='modo']")
         .forEach(r=>r.checked=false);
 
-    // ===== LIMPA MULTI SELECT =====
     document.querySelectorAll(".multi-item")
         .forEach(el=>el.classList.remove("selected"));
 
     atualizarHeader("msAssunto");
     atualizarHeader("msDescritor");
 
-    // ===== LIMPA UI =====
-    etapaModo.style.display = "none";
-    etapaFiltro.style.display = "none";
-
     areaQuestoes.innerHTML = "";
     document.getElementById("previewLista").innerHTML = "";
     document.getElementById("previewAcao").style.display = "none";
     document.getElementById("preview").style.display = "none";
 
-    // ===== CONTROLE NÍVEL =====
-    if(!disciplina.value){
+    etapaModo.style.display = "none";
+    etapaFiltro.style.display = "none";
+
+    // ===== RESET POR NÍVEL =====
+
+    if(nivelReset === "disciplina"){
+
+        // ESCONDE TUDO
         document.getElementById("blocoNivel").style.display = "none";
+        document.getElementById("etapaTurmas").style.display = "none";
+
+        // LIMPA VALORES
+        document.getElementById("nivel").innerHTML = `<option value="">Selecione</option>`;
+        turmasSelecionadas = [];
+
+        const divTurmas = document.getElementById("listaTurmas");
+        if(divTurmas) divTurmas.innerHTML = "";
+
     }
 
-    // ===== CONTROLE TURMAS =====
-    if(disciplina.value && nivel.value){
-        etapaTurmas.style.display = "block";
-    }else{
-        etapaTurmas.style.display = "none";
+    else if(nivelReset === "nivel"){
+
+        // ESCONDE ABAIXO
+        document.getElementById("etapaTurmas").style.display = "none";
+
+        turmasSelecionadas = [];
+
+        const divTurmas = document.getElementById("listaTurmas");
+        if(divTurmas) divTurmas.innerHTML = "";
+
     }
+
 }
-
-
-
 // ================= FILTRO =================
 function mostrarFiltro(){
 

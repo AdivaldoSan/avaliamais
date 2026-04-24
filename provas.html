@@ -231,7 +231,7 @@ async function iniciar(){
         atualizarNiveis();
     });
   
-    document.getElementById("nivel").addEventListener("change", () => {
+    document.getElementById("nivel").addEventListener("change", async () => {
         resetarFluxo("nivel");
     
         // MOSTRA TURMAS

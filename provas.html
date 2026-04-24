@@ -233,6 +233,9 @@ async function iniciar(){
   
     document.getElementById("nivel").addEventListener("change", () => {
         resetarFluxo("nivel");
+    
+        // MOSTRA TURMAS
+        document.getElementById("etapaTurmas").style.display = "block";
     });
 
     document.querySelectorAll("input[name='modo']")

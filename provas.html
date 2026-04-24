@@ -236,6 +236,7 @@ async function iniciar(){
     
         // MOSTRA TURMAS
         document.getElementById("etapaTurmas").style.display = "block";
+        await carregarTurmas();
     });
 
     document.querySelectorAll("input[name='modo']")

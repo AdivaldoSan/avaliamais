@@ -448,3 +448,11 @@ body.menu-fechado .preview{
 .questao.quebravel .img-container {
   break-inside: auto;
 }
+
+.questoes-flow {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+.instrucoes {
+  margin-bottom: 6px; /* reduz variação */
+}

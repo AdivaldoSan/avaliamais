@@ -1,0 +1,1128 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Impressão - Avalia+</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+	
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="styles_impressao.css">
+
+</head>
+
+<body>
+
+<script src="./js/config.js"></script>
+<script src="js/conexao.js"></script>
+	
+<div class="topbar">
+  <div class="topbar-left">
+	<button id="btnMenu">☰</button>
+    <span class="topbar-title">Gerar Prova</span>
+  </div>
+
+  <div class="topbar-right">
+    <img src="favicon.svg" alt="Logo" class="logo">
+  </div>
+</div>
+
+	
+<div class="layout">
+
+  <!-- ===== PAINEL ===== -->
+  <div class="painel">
+
+    <h3>Configuração</h3>
+	<div id="msgErro" class="alerta" style="display:none;"></div>	
+
+	  
+	<label>Nome da Prova:</label>
+	<input id="nomeProva" placeholder="Ex: Simulado SAERO 1">
+
+    <label>Escola:</label>
+    <input id="escola" value="EEEFM Migrantes">
+
+    <label>Disciplina:</label>
+    <input id="disciplina" value="Matemática">
+
+    <label>Turma:</label>
+	<select id="turmaSelect"></select>
+	
+	<label>Quantidade:</label>
+    <input id="qtd" type="number" value="1" min="1" max="100">	
+	  
+	<label>Extras:</label>
+	<input id="extras" type="number" value="0" min="0" max="5">
+
+	<label>Instruções:</label>
+    <textarea id="instrucoes" rows="4" placeholder="Ex: Resolva as questões com atenção..."></textarea>  
+
+    <button onclick="gerarPreview()">Atualizar Preview</button>
+	  
+    <button id="btnPDF" onclick="gerarPDF()" style="display:none;">Gerar PDF</button>
+	<button onclick="novaProva()" style="background:#dc2626; color:white;">
+     Nova Prova
+    </button>
+
+	  <div id="recuperarPDF" style="   display:none;  margin-top:10px; font-size:14px; text-align:center;
+">
+		  <span>Erro ao gerar PDF. </span>
+		  <a href="#" onclick="gerarPDF(); return false;" style="color:#2563eb; text-decoration:underline;">
+		    Tentar novamente
+		  </a>
+	  </div>
+
+	 <div class="painel-footer">
+	  <button class="btn-voltar" onclick="history.back()">
+	    Voltar
+	  </button>
+	</div> 
+  </div>
+
+  <!-- ===== PREVIEW ===== -->
+  <div class="preview">
+    <div id="folhas">
+   
+   <div class="pagina mensagem-inicial">
+		<div class="msg-centro">
+		  Preencha os dados à esquerda e clique em "Atualizar Preview"
+		</div>
+  </div>
+</div>
+  </div>
+
+</div>
+
+
+<script>
+/*=======VARIÁVEIS=======*/
+window.pdfDisponivel = false
+	
+//======================================
+const btnMenu = document.getElementById("btnMenu")
+
+const btnPDF = document.getElementById("btnPDF")
+const btnPDFFixo = document.getElementById("btnPDFFixo")
+//==================================================
+function mostrarBotaoPDF(){
+
+  window.pdfDisponivel = true
+
+  btnPDF.style.display = "block"
+
+  const fechado = document.body.classList.contains("menu-fechado")
+
+  const btnPDFFixo = document.getElementById("btnPDFFixo")
+
+  if(btnPDFFixo){
+    btnPDFFixo.style.display = fechado ? "block" : "none"
+  }
+}
+//==============================================
+btnMenu.onclick = () => {
+
+  document.body.classList.toggle("menu-fechado")
+
+  const fechado = document.body.classList.contains("menu-fechado")
+
+  const btnPDFFixo = document.getElementById("btnPDFFixo")
+
+  if(btnPDFFixo){
+    btnPDFFixo.style.display = (fechado && window.pdfDisponivel) ? "block" : "none"
+  }
+}
+
+/*=========================*/	
+const prova = JSON.parse(localStorage.getItem("provaGerada"))
+// controle de travamento do nome
+if(!prova.nomeTravado){
+  prova.nomeTravado = false
+}
+
+function carregarPainel(){
+
+  if(!prova) return
+
+  document.getElementById("disciplina").value = prova.disciplina
+
+  const select = document.getElementById("turmaSelect")
+select.innerHTML = ""
+
+prova.turmas.forEach((t, i) => {
+
+  const option = document.createElement("option")
+  option.value = t
+  option.textContent = t
+
+  if(i === 0) option.selected = true
+
+  select.appendChild(option)
+})
+	// mantém nome travado ao recarregar
+  if(prova.nomeTravado){
+  document.getElementById("nomeProva").disabled = true
+}
+}	
+
+/* ================= CONFIG LAB (INALTERADO) ================= */
+
+const config = {
+  qrOffsetX: 166,
+  qrOffsetY: -29,
+  gabaritoOffsetX: 189,
+  gabaritoOffsetY: 0,
+  marcadorOffsetX: 343,
+  marcadorOffsetY: -4,
+  dy: 35,
+  topoLetras: -24
+}
+
+const qrSize = 160
+
+/* ================= GERAÇÃO DO CANVAS REAL ================= */
+
+function gerarCanvasReal(canvas, q, qrData){
+
+  //const q = 10
+
+  const ctx = canvas.getContext("2d")
+  ctx.translate(-100, 0)
+
+  canvas.width = 900
+  canvas.height = 300 + config.dy*q
+
+  ctx.fillStyle="white"
+  ctx.fillRect(0,0,canvas.width,canvas.height)
+
+  let inicioX = 400 + config.gabaritoOffsetX
+  let inicioY = 200 + config.gabaritoOffsetY
+
+  let dx = 40
+  let raio = 8
+
+  ctx.fillStyle="black"
+  ctx.font="12px Arial"
+  ctx.textAlign="center"
+  ctx.textBaseline="middle"
+
+  let letras=["A","B","C","D"]
+
+  for(let c=0;c<4;c++){
+    let x = inicioX + c*dx
+    ctx.fillText(letras[c], x, inicioY + config.topoLetras)
+  }
+
+  for(let i=0;i<q;i++){
+
+    let y = inicioY + i*config.dy
+
+    ctx.textAlign="right"
+    ctx.fillText((i+1)+"   ", inicioX-10, y+2)
+
+    ctx.textAlign="center"
+
+    for(let c=0;c<4;c++){
+      let x = inicioX + c*dx
+
+      ctx.beginPath()
+      ctx.setLineDash([2,2])
+      ctx.arc(x,y,raio,0,Math.PI*2)
+      ctx.stroke()
+      ctx.setLineDash([])
+    }
+  }
+
+  /* MARCADORES */
+
+  let marcador = 30
+
+  const TLx = 160 + config.marcadorOffsetX
+  const TRx = TLx + 250
+
+  ctx.fillRect(TLx, 90 + config.marcadorOffsetY, marcador, marcador)
+  ctx.fillRect(TRx, 90 + config.marcadorOffsetY, marcador, marcador)
+
+  let baseY = inicioY + config.dy*q + 40
+
+  ctx.fillRect(TLx, baseY + config.marcadorOffsetY, marcador, marcador)
+  ctx.fillRect(TRx, baseY + config.marcadorOffsetY, marcador, marcador)
+
+  /* QR */
+
+  const qrDiv = document.createElement("div")
+
+new QRCode(qrDiv,{
+  text: qrData,
+  width: qrSize,
+  height: qrSize
+})
+
+function renderQR(){
+
+  const qrCanvas = qrDiv.querySelector("canvas")
+
+  if(!qrCanvas){
+    requestAnimationFrame(renderQR)
+    return
+  }
+
+  const img = new Image()
+  img.src = qrCanvas.toDataURL()
+
+  img.onload = ()=>{
+
+    const topo = inicioY + config.topoLetras - 20
+    const base = inicioY + config.dy*q + 60
+    const centro = (topo + base)/2
+
+    ctx.drawImage(
+      img,
+      config.qrOffsetX,
+      centro - qrSize/2 + config.qrOffsetY,
+      qrSize,
+      qrSize
+    )
+  }
+}
+
+renderQR()
+}
+	
+function gerarImagemGabarito(imgEl, q, qrData){
+
+  const canvas = document.createElement("canvas")
+
+  // reutiliza sua função atual
+  gerarCanvasReal(canvas, q, qrData)
+
+  // espera o QR desenhar
+  setTimeout(() => {
+    imgEl.src = canvas.toDataURL("image/png")
+  }, 500)
+}
+
+	
+//========Gerar Versoes=======
+function gerarVersoes(questoes, qtdVersoes = 4){
+
+  const versoes = [];
+
+  for(let v = 1; v <= qtdVersoes; v++){
+
+    // embaralha ordem das questões
+    const questoesEmbaralhadas = [...questoes]
+      .sort(() => Math.random() - 0.5);
+
+    const questoesProcessadas = [];
+
+    questoesEmbaralhadas.forEach(q => {
+
+      const alternativas = [
+        { letra: "A", texto: q.ALT_A },
+        { letra: "B", texto: q.ALT_B },
+        { letra: "C", texto: q.ALT_C },
+        { letra: "D", texto: q.ALT_D }
+      ];
+
+      // identifica correta original
+      const corretaOriginal = String(q.GABARITO).trim().toUpperCase();
+
+      // marca correta
+      alternativas.forEach(alt => {
+        alt.correta = (alt.letra === corretaOriginal);
+      });
+
+      //  embaralha alternativas
+      const embaralhadas = [...alternativas]
+        .sort(() => Math.random() - 0.5);
+
+      // redefine letras (A,B,C,D)
+      const letras = ["A","B","C","D"];
+
+      embaralhadas.forEach((alt, i) => {
+        alt.novaLetra = letras[i];
+      });
+
+      // encontra nova correta
+      const novaCorreta = embaralhadas.find(a => a.correta).novaLetra;
+
+      questoesProcessadas.push({
+        ID: q.ID,
+        ENUNCIADO: q.ENUNCIADO,
+        IMAGEM: q.IMAGEM,
+        PESO: q.PESO,
+
+        alternativas: embaralhadas,
+        resposta: novaCorreta
+      });
+
+    });
+
+    // monta gabarito da versão
+    const gabarito = questoesProcessadas
+      .map(q => q.resposta)
+      .join("");
+
+	const ordemQuestoes = questoesProcessadas.map(q => q.ID);
+	const respostas = questoesProcessadas.map(q => q.resposta);
+	const pesos = questoesProcessadas.map(q => Number(q.PESO || 1));
+
+    versoes.push({
+	  v,
+	
+	  // visual
+	  questoes: questoesProcessadas,
+	
+	  // estrutura de correção
+	  ordemQuestoes,
+	  respostas,
+	  pesos,
+	  gabarito
+	});
+  }
+
+  return versoes;
+}
+
+/*===========CRIAR PAGINA COMPLETA==========*/
+function criarPaginaCompleta(escola, disciplina, turma, numero, instrucoesHTML){
+
+  const div = document.createElement("div")
+  div.className = "pagina"
+  div.dataset.folha = numero
+
+  div.innerHTML = `
+    <div class="cabecalho">
+      <div>
+        <strong>${escola}</strong><br>
+        ${disciplina}<br>
+        Turma: ${turma}
+      </div>
+
+      <div style="text-align:right">
+        Nº: ${numero}<br>
+        Nome: <span class="linha-nome"></span><br>
+		Data:____/____/_______
+      </div>
+    </div>
+
+    <div class="bloco-otico">
+      <div class="lado-esquerdo">
+        <img class="imgGabarito">
+      </div>
+
+      <div class="lado-direito">
+        <div class="box-nota">
+          <div>Nota</div>
+          <div class="campo-nota"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="linha-divisoria"></div>
+
+    ${instrucoesHTML}
+
+    <div class="questoes">
+      <div class="coluna col-esq"></div>
+      <div class="coluna col-dir"></div>
+    </div>
+	
+    <div class="linha-divisoria final"></div>
+	
+	<div class="paginacao">
+	  <span class="id-prova"></span>
+	  <span class="num-pagina"></span>
+	</div>
+	
+  `
+
+  return div
+}
+/*=========CRIAR PAGINA CONTINUA==========*/
+  function criarPaginaContinua(numero){
+	  
+  const div = document.createElement("div")
+  div.className = "pagina"
+  div.dataset.folha = numero
+
+  div.innerHTML = `
+    <div class="linha-divisoria"></div>
+    <div class="questoes">
+      <div class="coluna col-esq"></div>
+      <div class="coluna col-dir"></div>
+    </div>
+
+	<div class="linha-divisoria final"></div>
+
+	<div class="paginacao">
+	  <span class="id-prova"></span>
+	  <span class="num-pagina"></span>
+	</div>
+  `
+
+  return div
+}
+/*======Justificar  Colunas======*/
+function justificarColuna(col){
+
+  // só justifica se foi marcada como cheia
+  if(col.dataset.cheia !== "true") return
+
+  const itens = Array.from(col.children)
+
+  if(itens.length < 2) return
+
+  // evita distorção
+  if(itens.length <= 3) return
+
+  col.style.display = "flex"
+  col.style.flexDirection = "column"
+  col.style.justifyContent = "space-between"
+}
+
+/*==============*/	
+function esperarLayoutEstavel(){
+  return new Promise(resolve => {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        resolve()
+      })
+    })
+  })
+}
+/*==============================*/
+async function esperarImagensQuestoes(){
+
+  const imgs = document.querySelectorAll(".questao img")
+
+  await Promise.all([...imgs].map(img => {
+    return new Promise(resolve => {
+      if(img.complete) return resolve()
+      img.onload = resolve
+      img.onerror = resolve
+    })
+  }))
+}
+
+/*================PREPARAR QUESTOES====================*/
+async function prepararQuestoesParaLayout(questoes, larguraColuna){
+
+  const resultado = []
+
+  for(const q of questoes){
+
+    const temp = document.createElement("div")
+
+    temp.style.position = "absolute"
+    temp.style.visibility = "hidden"
+    temp.style.width = larguraColuna + "px"
+
+    const bloco = criarQuestaoHTML(q, 0)
+
+    temp.appendChild(bloco)
+    document.body.appendChild(temp)
+
+    //  esperar imagens (CRÍTICO)
+    const imgs = temp.querySelectorAll("img")
+
+    await Promise.all([...imgs].map(img => {
+      return new Promise(res => {
+        if(img.complete) res()
+        else img.onload = res
+      })
+    }))
+
+    const altura = temp.offsetHeight
+
+    document.body.removeChild(temp)
+
+    resultado.push({
+      ...q,
+      altura
+    })
+  }
+
+  return resultado
+}
+	
+/*==========MOTOR DE DISTRIBUIÇÃO DE QUESTOES==========*/
+function distribuirQuestoes(pagina, questoes, folhas){
+
+  let colEsq = pagina.querySelector(".col-esq")
+  let colDir = pagina.querySelector(".col-dir")
+
+  let alturaEsq = 0
+  let alturaDir = 0
+
+  const areaQuestoes = pagina.querySelector(".questoes")
+
+  // FORÇA RENDER
+  pagina.offsetHeight
+
+  // ================= CÁLCULO ÁREA ÚTIL =================
+  const cabecalho = pagina.querySelector(".cabecalho")
+  const blocoOtico = pagina.querySelector(".bloco-otico")
+  const instrucoes = pagina.querySelector(".instrucoes")
+  const linhaDivisoria = pagina.querySelector(".linha-divisoria")
+
+  let alturaOcupada = 0
+
+  if(cabecalho) alturaOcupada += cabecalho.offsetHeight
+  if(blocoOtico) alturaOcupada += blocoOtico.offsetHeight
+  if(linhaDivisoria) alturaOcupada += linhaDivisoria.offsetHeight
+  if(instrucoes) alturaOcupada += instrucoes.offsetHeight
+
+  const margemInferior = 50
+
+  const estilo = getComputedStyle(pagina)
+  const paddingTop = parseFloat(estilo.paddingTop)
+  const paddingBottom = parseFloat(estilo.paddingBottom)
+
+  const alturaPagina = pagina.clientHeight - paddingTop - paddingBottom
+  const alturaDisponivel = alturaPagina - alturaOcupada - margemInferior
+
+  // TRAVA VISUAL
+  areaQuestoes.style.height = alturaDisponivel + "px"
+  areaQuestoes.style.overflow = "hidden"
+
+  let limite = alturaDisponivel
+
+  console.log("Área disponível:", limite)
+
+  // ================= DISTRIBUIÇÃO =================
+  questoes.forEach((q, index)=>{
+
+    const altura = q.altura + 12
+
+    // ===== TENTA ESQUERDA =====
+    if(alturaEsq + altura <= limite){
+
+      const bloco = criarQuestaoHTML(q, index)
+      colEsq.appendChild(bloco)
+      alturaEsq += altura
+      return
+    }
+	// coluna esquerda encheu
+    colEsq.dataset.cheia = "true"  
+
+    // ===== TENTA DIREITA =====
+    if(alturaDir + altura <= limite){
+
+      const bloco = criarQuestaoHTML(q, index)
+      colDir.appendChild(bloco)
+      alturaDir += altura
+      return
+    }
+	// coluna direita encheu
+    colDir.dataset.cheia = "true"
+
+    // ===== NOVA PÁGINA =====
+    const nova = criarPaginaContinua(pagina.dataset.folha)
+    folhas.appendChild(nova)
+
+    nova.offsetHeight
+
+    colEsq = nova.querySelector(".col-esq")
+    colDir = nova.querySelector(".col-dir")
+
+    const areaNova = nova.querySelector(".questoes")
+
+    // cálculo REAL da nova página
+    const rectPagina = nova.getBoundingClientRect()
+    const rectQuestoes = areaNova.getBoundingClientRect()
+
+    const topoReal = rectQuestoes.top - rectPagina.top
+    const margemInferiorNova = 30
+
+    const alturaNova = nova.clientHeight - topoReal - margemInferiorNova
+
+    areaNova.style.height = alturaNova + "px"
+    areaNova.style.overflow = "hidden"
+
+    limite = alturaNova
+
+    alturaEsq = 0
+    alturaDir = 0
+
+    // INSERE NA NOVA PÁGINA
+    const bloco = criarQuestaoHTML(q, index)
+    colEsq.appendChild(bloco)
+    alturaEsq += altura
+  })
+}
+
+/*==============================================*/
+function esperarRenderCompleto(pagina){
+  return new Promise(resolve => {
+
+    const img = pagina.querySelector(".imgGabarito")
+
+    function check(){
+      const bloco = pagina.querySelector(".bloco-otico")
+
+      if(img && img.complete && bloco.offsetHeight > 100){
+        resolve()
+      }else{
+        requestAnimationFrame(check)
+      }
+    }
+
+    check()
+  })
+}
+
+/*==================================================*/
+function esperarImagem(img){
+  return new Promise(resolve => {
+    if(img.complete){
+      resolve()
+    }else{
+      img.onload = () => resolve()
+    }
+  })
+}
+/* ================= GERAR PREVIEW ================= */
+async function gerarPreview(){
+
+  const msgBox = document.getElementById("msgErro")
+
+  msgBox.style.display = "none"
+  msgBox.innerHTML = ""
+
+  const nomeProva = document.getElementById("nomeProva")
+  const escolaInput = document.getElementById("escola")
+  const qtdInput = document.getElementById("qtd")
+
+  let erros = []
+
+  if(!nomeProva.value.trim()){
+    erros.push("Nome da prova é obrigatório")
+  }
+
+  if(!escolaInput.value.trim()){
+    erros.push("Escola é obrigatória")
+  }
+
+  let qtd = parseInt(qtdInput.value)
+
+  if(isNaN(qtd) || qtd < 1){
+    qtd = 1
+  }
+
+  if(qtd > 100){
+    qtd = 100
+  }
+
+  qtdInput.value = qtd
+
+  if(erros.length > 0){
+    msgBox.innerHTML = erros.join("<br>")
+    msgBox.style.display = "block"
+    return
+  }
+
+  const escola = escolaInput.value
+  const disciplina = document.getElementById("disciplina").value
+  const turma = document.getElementById("turmaSelect").value
+
+  // ID fixo
+  if(!prova.id){
+    prova.id = "PRV_" + Date.now()
+  }
+
+  prova.nome = nomeProva.value
+
+  // mapa de turmas
+  if(!prova.mapaTurmas){
+    const turmasOrdenadas = [...prova.turmas].sort()
+    prova.mapaTurmas = {}
+
+    turmasOrdenadas.forEach((t, i)=>{
+      prova.mapaTurmas[t] = i + 1
+    })
+  }
+
+  const turmaCodigo = prova.mapaTurmas[turma]
+
+  //  gera versões só uma vez
+	if(!prova.versoes){
+	  prova.versoes = gerarVersoes(prova.questoes, 4)
+	  console.log("🆕 Versões geradas")
+	}else{
+	  console.log("♻️ Reutilizando versões existentes")
+	}
+
+  const extrasInput = document.getElementById("extras")
+  let extras = parseInt(extrasInput.value)
+
+  if(isNaN(extras) || extras < 0){
+    extras = 0
+  }
+
+  if(extras > 5){
+    extras = 5
+  }
+
+  extrasInput.value = extras
+
+  const total = qtd + extras
+
+  const folhas = document.getElementById("folhas")
+  folhas.innerHTML = ""
+
+  const textoInstrucoes = document.getElementById("instrucoes").value.trim()
+
+  let instrucoesHTML = ""
+
+  if(textoInstrucoes){
+    const linhas = textoInstrucoes.split("\n").filter(l => l.trim() !== "")
+
+    instrucoesHTML = `
+      <div class="instrucoes">
+        <strong>Instruções:</strong>
+        ${linhas.map(l => `<div>${l}</div>`).join("")}
+      </div>
+      <div class="linha-divisoria"></div>
+    `
+  }
+
+  // ================= LOOP DAS PROVAS =================
+  for(let i=1;i<=total;i++){
+
+    const versaoAtual = prova.versoes[(i-1) % prova.versoes.length]
+    const questoesVersao = versaoAtual.questoes
+
+    const pagina = criarPaginaCompleta(
+      escola,
+      disciplina,
+      turma,
+      i,
+      instrucoesHTML
+    )
+
+    folhas.appendChild(pagina)
+
+    // QR
+    const img = pagina.querySelector(".imgGabarito")
+    const qrData = `ID=${prova.id}|T=${turmaCodigo}|V=${versaoAtual.v}|F=${i}`
+
+    gerarImagemGabarito(img, questoesVersao.length, qrData)
+
+    // espera layout real
+    await esperarRenderCompleto(pagina)
+
+    pagina.offsetHeight
+
+    // largura real
+    const larguraColuna = pagina.querySelector(".col-esq").clientWidth
+
+    // mede questões
+    const questoesComAltura = await prepararQuestoesParaLayout(
+      questoesVersao,
+      larguraColuna
+    )
+
+    // distribuição
+    distribuirQuestoes(pagina, questoesComAltura, folhas)
+
+    // ================= PAGINAÇÃO CORRETA =================
+    const paginasDaFolha = Array.from(folhas.children)
+      .filter(p => p.dataset.folha == i)
+
+    const totalPaginas = paginasDaFolha.length
+
+    paginasDaFolha.forEach((pag, index) => {
+
+      const idEl = pag.querySelector(".id-prova")
+      const pagEl = pag.querySelector(".num-pagina")
+
+      if(idEl){
+        idEl.textContent = `${prova.id}.${i}`
+      }
+
+      if(pagEl){
+        pagEl.textContent = `Página ${index + 1} de ${totalPaginas}`
+      }
+    })
+  }
+
+	// garante layout + imagens
+	await esperarLayoutEstavel()
+	await esperarImagensQuestoes()
+	// força reflow real após imagens
+    document.body.offsetHeight
+	
+	// JUSTIFICAÇÃO CORRETA
+	const todasPaginas = Array.from(document.querySelectorAll(".pagina"))
+	
+	todasPaginas.forEach(p => {
+	
+	  const colEsq = p.querySelector(".col-esq")
+	  const colDir = p.querySelector(".col-dir")
+	
+	  if(colEsq) justificarColuna(colEsq)
+	  if(colDir) justificarColuna(colDir)
+	
+	})
+  localStorage.setItem("provaGerada", JSON.stringify(prova))
+	
+  //document.getElementById("btnPDF").style.display = "block"
+   mostrarBotaoPDF()
+}
+
+  /*=====Criar Questoes no  HTML =====*/
+function criarQuestaoHTML(q, i){
+
+  const div = document.createElement("div")
+  div.className = "questao"
+
+  const temImagem = q.IMAGEM && q.IMAGEM.trim() !== ""
+
+  div.innerHTML = `
+    <div class="enunciado">
+      <strong>Q${i+1} - Peso ${Number(q.PESO || 1).toFixed(1)}</strong> - ${q.ENUNCIADO}
+    </div>
+
+    ${temImagem ? `
+      <div class="img-container">
+        <img src="${q.IMAGEM}">
+      </div>
+    ` : ""}
+
+    <div class="alternativas">
+      ${q.alternativas.map(a => `
+        <div>${a.novaLetra}) ${a.texto}</div>
+      `).join("")}
+    </div>
+  `
+
+  return div
+}	
+
+/* ===== RESIZE IMAGEM ===== */
+
+function ativarResize(){
+
+  document.querySelectorAll(".resizer").forEach(resizer => {
+
+    const img = resizer.previousElementSibling
+
+    let startX, startWidth
+
+    // ===== MOUSE =====
+    resizer.onmousedown = (e)=>{
+      startX = e.clientX
+      startWidth = img.offsetWidth
+
+      document.onmousemove = (e)=>{
+        let newWidth = startWidth + (e.clientX - startX)
+        if(newWidth > 80 && newWidth < 400){
+          img.style.width = newWidth + "px"
+        }
+      }
+
+      document.onmouseup = ()=>{
+        document.onmousemove = null
+      }
+    }
+
+    // ===== TOUCH (CELULAR) =====
+    resizer.ontouchstart = (e)=>{
+      startX = e.touches[0].clientX
+      startWidth = img.offsetWidth
+
+      document.ontouchmove = (e)=>{
+        let newWidth = startWidth + (e.touches[0].clientX - startX)
+        if(newWidth > 80 && newWidth < 400){
+          img.style.width = newWidth + "px"
+        }
+      }
+
+      document.ontouchend = ()=>{
+        document.ontouchmove = null
+      }
+    }
+
+  })
+}
+
+//============================================
+async function gerarPDF(){
+
+  const areaRecuperar = document.getElementById("recuperarPDF")
+  if(areaRecuperar) areaRecuperar.style.display = "none"
+
+  const btn = document.getElementById("btnPDF")
+
+  // captura resizers uma vez só
+  const resizers = document.querySelectorAll(".resizer")
+
+  try{
+    // esconder resizers
+    resizers.forEach(r => r.style.display = "none")
+
+    // remove páginas vazias
+    document.querySelectorAll(".pagina").forEach(p => {
+      if(p.innerText.trim().length < 10){
+        p.remove()
+      }
+    })
+
+    btn.disabled = true
+    btn.innerText = "Gerando PDF..."
+
+    const { jsPDF } = window.jspdf
+    const paginas = document.querySelectorAll(".pagina")
+
+    if(paginas.length === 0){
+      alert("Nada para gerar")
+      return
+    }
+
+    const pdf = new jsPDF("p", "mm", "a4")
+
+    for(let i = 0; i < paginas.length; i++){
+
+      btn.innerText = `Gerando ${i+1}/${paginas.length}...`
+
+      const el = paginas[i]
+
+      const canvas = await html2canvas(el, {
+        scale: 2,
+        useCORS: true
+      })
+
+      const imgData = canvas.toDataURL("image/jpeg", 0.8)
+
+      const imgWidth = 210
+      let imgHeight = (canvas.height * imgWidth) / canvas.width
+
+      if(i > 0){
+        const isBlank = paginas[i].innerText.trim().length < 10
+        if(!isBlank){
+          pdf.addPage()
+        }else{
+          continue
+        }
+      }
+
+      pdf.addImage(imgData, "JPEG", 0, 0, imgWidth, imgHeight)
+    }
+
+    btn.innerText = "Finalizando..."
+
+    await new Promise(r => setTimeout(r, 300))
+
+    // nome do arquivo
+    const nomeProva = prova.nome || "Prova"
+    const turma = document.getElementById("turmaSelect").value || "Turma"
+
+    function limpar(str){
+      return str.replace(/[\\/:*?"<>|]/g, "").trim()
+    }
+
+    const nomeArquivo = `${limpar(nomeProva)} - ${limpar(turma)}.pdf`
+
+    pdf.save(nomeArquivo)
+
+    // ===== SALVAR NO BD =====
+    try{
+
+      const turmaSelecionada = document.getElementById("turmaSelect").value
+      const qtdQuestoes = prova.versoes[0].questoes.length
+
+      await fetchProtegido(API, {
+        method: "POST",
+        body: JSON.stringify({
+          tipo: "aplicacao",
+          token: localStorage.getItem("TOKEN"),
+          id: prova.id,
+          nome: prova.nome,
+          qtd: qtdQuestoes,
+          turmas: [turmaSelecionada],
+          questoes: !prova.versoesSalvas ? {
+            versoes: prova.versoes
+          } : undefined
+        })
+      })
+
+      if(!prova.versoesSalvas){
+        prova.versoesSalvas = true
+        localStorage.setItem("provaGerada", JSON.stringify(prova))
+      }
+
+    }catch(e){
+      console.error("Erro ao salvar impressão:", e)
+    }
+
+    // trava nome
+    if(!prova.nomeTravado){
+      document.getElementById("nomeProva").disabled = true
+      prova.nomeTravado = true
+      localStorage.setItem("provaGerada", JSON.stringify(prova))
+    }
+
+  }catch(e){
+
+    console.error("ERRO PDF:", e)
+    alert("Erro ao gerar PDF")
+
+    if(areaRecuperar){
+      areaRecuperar.style.display = "block"
+    }
+
+  }finally{
+
+    // RESTAURA SEMPRE (mesmo com erro)
+    resizers.forEach(r => r.style.display = "block")
+
+    btn.disabled = false
+    btn.innerText = "Gerar PDF"
+  }
+}
+//============================================
+function novaProva(){
+
+  if(confirm("Deseja iniciar uma nova prova?")){
+    localStorage.removeItem("provaGerada")
+    window.location.href = "provas.html"
+  }
+}	
+/*============================*/	
+window.onload = () => {
+
+  carregarPainel()
+
+  document.getElementById("turmaSelect").addEventListener("change", () => {
+
+    const btnPDFFixo = document.getElementById("btnPDFFixo")
+
+    // esconde botão lateral
+    document.getElementById("btnPDF").style.display = "none"
+
+    // RESET GLOBAL CORRETO
+    window.pdfDisponivel = false
+
+    // esconde botão fixo
+    if(btnPDFFixo){
+      btnPDFFixo.style.display = "none"
+    }
+
+    console.log("PDF resetado após troca de turma")
+  })
+
+}
+
+</script>
+	
+<button id="btnPDFFixo" onclick="gerarPDF()">
+  Gerar PDF
+</button>
+	
+</body>
+</html>

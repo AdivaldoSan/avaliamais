@@ -663,10 +663,16 @@ async function gerarPreview(){
     // espera layout real
     await esperarRenderCompleto(pagina)
 	  await new Promise(r => setTimeout(r, 0))
+	  
     await esperarLayoutEstavel()
      pagina.offsetHeight
 	//======================================
-	  		
+	  	const flow = pagina.querySelector(".questoes-flow")
+
+		const alturaDisponivel =
+		  pagina.clientHeight - flow.offsetTop - 60
+		
+		flow.style.height = alturaDisponivel + "px"	
 	//======================================
      let paginaAtual = pagina
 	let container = paginaAtual.querySelector(".questoes-flow")
@@ -684,7 +690,9 @@ async function gerarPreview(){
 	  // força layout recalcular
 	  paginaAtual.offsetHeight
 	
-	  const estourou = paginaAtual.scrollHeight > paginaAtual.clientHeight
+	  const flow = container
+
+    const estourou = flow.scrollHeight > flow.clientHeight
 
 
 		
@@ -693,10 +701,17 @@ async function gerarPreview(){
 	  container.removeChild(bloco)
 	
 	  const nova = criarPaginaContinua(i)
-	  folhas.appendChild(nova)
-	
-	  paginaAtual = nova
-	  container = nova.querySelector(".questoes-flow")
+folhas.appendChild(nova)
+
+const flowNovo = nova.querySelector(".questoes-flow")
+
+const alturaDisponivelNova =
+  nova.clientHeight - flowNovo.offsetTop - 60
+
+flowNovo.style.height = alturaDisponivelNova + "px"
+
+paginaAtual = nova
+container = flowNovo
 	
 	  container.appendChild(bloco)
 	

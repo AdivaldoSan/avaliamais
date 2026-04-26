@@ -419,3 +419,13 @@ body.menu-fechado .preview{
 
   display: none;
 }
+/*============FLUXO CONTINUO (QUESTOES)=============*/
+.questoes-flow {
+  column-count: 2;
+  column-gap: 24px;
+}
+
+.questao {
+  break-inside: avoid;
+  margin-bottom: 14px;
+}

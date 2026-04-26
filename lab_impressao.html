@@ -427,10 +427,7 @@ function criarPaginaCompleta(escola, disciplina, turma, numero, instrucoesHTML){
 
     ${instrucoesHTML}
 
-    <div class="questoes">
-      <div class="coluna col-esq"></div>
-      <div class="coluna col-dir"></div>
-    </div>
+   <div class="questoes-flow"></div>
 	
     <div class="linha-divisoria final"></div>
 	
@@ -452,10 +449,8 @@ function criarPaginaCompleta(escola, disciplina, turma, numero, instrucoesHTML){
 
   div.innerHTML = `
     <div class="linha-divisoria"></div>
-    <div class="questoes">
-      <div class="coluna col-esq"></div>
-      <div class="coluna col-dir"></div>
-    </div>
+	
+    <div class="questoes-flow"></div>
 
 	<div class="linha-divisoria final"></div>
 
@@ -467,25 +462,10 @@ function criarPaginaCompleta(escola, disciplina, turma, numero, instrucoesHTML){
 
   return div
 }
-/*======Justificar  Colunas======*/
-function justificarColuna(col){
+/*========================================*/
 
-  // só justifica se foi marcada como cheia
-  if(col.dataset.cheia !== "true") return
 
-  const itens = Array.from(col.children)
-
-  if(itens.length < 2) return
-
-  // evita distorção
-  if(itens.length <= 3) return
-
-  col.style.display = "flex"
-  col.style.flexDirection = "column"
-  col.style.justifyContent = "space-between"
-}
-
-/*==============*/	
+/*========================================*/	
 function esperarLayoutEstavel(){
   return new Promise(resolve => {
     requestAnimationFrame(() => {
@@ -495,7 +475,7 @@ function esperarLayoutEstavel(){
     })
   })
 }
-/*==============================*/
+/*======================================*/
 async function esperarImagensQuestoes(){
 
   const imgs = document.querySelectorAll(".questao img")
@@ -509,152 +489,9 @@ async function esperarImagensQuestoes(){
   }))
 }
 
-/*================PREPARAR QUESTOES====================*/
-async function prepararQuestoesParaLayout(questoes, larguraColuna){
+/*=============================================*/
 
-  const resultado = []
-
-  for(const q of questoes){
-
-    const temp = document.createElement("div")
-
-    temp.style.position = "absolute"
-    temp.style.visibility = "hidden"
-    temp.style.width = larguraColuna + "px"
-
-    const bloco = criarQuestaoHTML(q, 0)
-
-    temp.appendChild(bloco)
-    document.body.appendChild(temp)
-
-    //  esperar imagens (CRÍTICO)
-    const imgs = temp.querySelectorAll("img")
-
-    await Promise.all([...imgs].map(img => {
-      return new Promise(res => {
-        if(img.complete) res()
-        else img.onload = res
-      })
-    }))
-
-    const altura = temp.offsetHeight
-
-    document.body.removeChild(temp)
-
-    resultado.push({
-      ...q,
-      altura
-    })
-  }
-
-  return resultado
-}
-	
-/*==========MOTOR DE DISTRIBUIÇÃO DE QUESTOES==========*/
-function distribuirQuestoes(pagina, questoes, folhas){
-
-  let colEsq = pagina.querySelector(".col-esq")
-  let colDir = pagina.querySelector(".col-dir")
-
-  let alturaEsq = 0
-  let alturaDir = 0
-
-  const areaQuestoes = pagina.querySelector(".questoes")
-
-  // FORÇA RENDER
-  pagina.offsetHeight
-
-  // ================= CÁLCULO ÁREA ÚTIL =================
-  const cabecalho = pagina.querySelector(".cabecalho")
-  const blocoOtico = pagina.querySelector(".bloco-otico")
-  const instrucoes = pagina.querySelector(".instrucoes")
-  const linhaDivisoria = pagina.querySelector(".linha-divisoria")
-
-  let alturaOcupada = 0
-
-  if(cabecalho) alturaOcupada += cabecalho.offsetHeight
-  if(blocoOtico) alturaOcupada += blocoOtico.offsetHeight
-  if(linhaDivisoria) alturaOcupada += linhaDivisoria.offsetHeight
-  if(instrucoes) alturaOcupada += instrucoes.offsetHeight
-
-  const margemInferior = 50
-
-  const estilo = getComputedStyle(pagina)
-  const paddingTop = parseFloat(estilo.paddingTop)
-  const paddingBottom = parseFloat(estilo.paddingBottom)
-
-  const alturaPagina = pagina.clientHeight - paddingTop - paddingBottom
-  const alturaDisponivel = alturaPagina - alturaOcupada - margemInferior
-
-  // TRAVA VISUAL
-  areaQuestoes.style.height = alturaDisponivel + "px"
-  areaQuestoes.style.overflow = "hidden"
-
-  let limite = alturaDisponivel
-
-  console.log("Área disponível:", limite)
-
-  // ================= DISTRIBUIÇÃO =================
-  questoes.forEach((q, index)=>{
-
-    const altura = q.altura + 12
-
-    // ===== TENTA ESQUERDA =====
-    if(alturaEsq + altura <= limite){
-
-      const bloco = criarQuestaoHTML(q, index)
-      colEsq.appendChild(bloco)
-      alturaEsq += altura
-      return
-    }
-	// coluna esquerda encheu
-    colEsq.dataset.cheia = "true"  
-
-    // ===== TENTA DIREITA =====
-    if(alturaDir + altura <= limite){
-
-      const bloco = criarQuestaoHTML(q, index)
-      colDir.appendChild(bloco)
-      alturaDir += altura
-      return
-    }
-	// coluna direita encheu
-    colDir.dataset.cheia = "true"
-
-    // ===== NOVA PÁGINA =====
-    const nova = criarPaginaContinua(pagina.dataset.folha)
-    folhas.appendChild(nova)
-
-    nova.offsetHeight
-
-    colEsq = nova.querySelector(".col-esq")
-    colDir = nova.querySelector(".col-dir")
-
-    const areaNova = nova.querySelector(".questoes")
-
-    // cálculo REAL da nova página
-    const rectPagina = nova.getBoundingClientRect()
-    const rectQuestoes = areaNova.getBoundingClientRect()
-
-    const topoReal = rectQuestoes.top - rectPagina.top
-    const margemInferiorNova = 30
-
-    const alturaNova = nova.clientHeight - topoReal - margemInferiorNova
-
-    areaNova.style.height = alturaNova + "px"
-    areaNova.style.overflow = "hidden"
-
-    limite = alturaNova
-
-    alturaEsq = 0
-    alturaDir = 0
-
-    // INSERE NA NOVA PÁGINA
-    const bloco = criarQuestaoHTML(q, index)
-    colEsq.appendChild(bloco)
-    alturaEsq += altura
-  })
-}
+//===============================================
 
 /*==============================================*/
 function esperarRenderCompleto(pagina){
@@ -816,20 +653,47 @@ async function gerarPreview(){
     // espera layout real
     await esperarRenderCompleto(pagina)
 
+	//======================================
+	  const area = pagina.querySelector(".questoes-flow")
+
+		const cabecalho = pagina.querySelector(".cabecalho")
+		const blocoOtico = pagina.querySelector(".bloco-otico")
+		const instrucoes = pagina.querySelector(".instrucoes")
+		const divisorias	 = pagina.querySelectorAll(".linha-divisoria")
+		
+		let ocupado = 0
+		
+		if(cabecalho) ocupado += cabecalho.offsetHeight
+		if(blocoOtico) ocupado += blocoOtico.offsetHeight
+		if(instrucoes) ocupado += instrucoes.offsetHeight
+		
+		divisorias.forEach(d => ocupado += d.offsetHeight)
+		
+		const estilo = getComputedStyle(pagina)
+		const paddingTop = parseFloat(estilo.paddingTop)
+		const paddingBottom = parseFloat(estilo.paddingBottom)
+		
+		const alturaPagina = pagina.clientHeight - paddingTop - paddingBottom
+		
+		// margem maior pra evitar rodapé
+		const margemRodape = 120
+		
+		const alturaDisponivel = alturaPagina - ocupado - margemRodape
+		
+		area.style.height = alturaDisponivel + "px"
+		area.style.overflow = "hidden"
+	//======================================
+
+	const container = pagina.querySelector(".questoes-flow")
+
+	questoesVersao.forEach((q, index) => {
+	  const bloco = criarQuestaoHTML(q, index)
+	  container.appendChild(bloco)
+	})
+
     pagina.offsetHeight
 
-    // largura real
-    const larguraColuna = pagina.querySelector(".col-esq").clientWidth
-
-    // mede questões
-    const questoesComAltura = await prepararQuestoesParaLayout(
-      questoesVersao,
-      larguraColuna
-    )
-
-    // distribuição
-    distribuirQuestoes(pagina, questoesComAltura, folhas)
-
+    
     // ================= PAGINAÇÃO CORRETA =================
     const paginasDaFolha = Array.from(folhas.children)
       .filter(p => p.dataset.folha == i)
@@ -862,12 +726,8 @@ async function gerarPreview(){
 	
 	todasPaginas.forEach(p => {
 	
-	  const colEsq = p.querySelector(".col-esq")
-	  const colDir = p.querySelector(".col-dir")
-	
-	  if(colEsq) justificarColuna(colEsq)
-	  if(colDir) justificarColuna(colDir)
-	
+	 
+	  
 	})
   localStorage.setItem("provaGerada", JSON.stringify(prova))
 	

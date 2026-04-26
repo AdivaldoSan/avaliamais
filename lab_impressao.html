@@ -662,17 +662,11 @@ async function gerarPreview(){
 
     // espera layout real
     await esperarRenderCompleto(pagina)
-	  await new Promise(r => setTimeout(r, 0))
 	  
     await esperarLayoutEstavel()
      pagina.offsetHeight
 	//======================================
-	  	const flow = pagina.querySelector(".questoes-flow")
-
-		const alturaDisponivel =
-		  pagina.clientHeight - flow.offsetTop - 60
-		
-		flow.style.height = alturaDisponivel + "px"	
+	  		
 	//======================================
      let paginaAtual = pagina
 	let container = paginaAtual.querySelector(".questoes-flow")
@@ -690,28 +684,17 @@ async function gerarPreview(){
 	  // força layout recalcular
 	  paginaAtual.offsetHeight
 	
-	  const flow = container
-
-    const estourou = flow.scrollHeight > flow.clientHeight
-
-
-		
+	  const estourou = paginaAtual.scrollHeight > paginaAtual.clientHeight
+	
 	  if (estourou) {
 	
 	  container.removeChild(bloco)
 	
 	  const nova = criarPaginaContinua(i)
-folhas.appendChild(nova)
-
-const flowNovo = nova.querySelector(".questoes-flow")
-
-const alturaDisponivelNova =
-  nova.clientHeight - flowNovo.offsetTop - 60
-
-flowNovo.style.height = alturaDisponivelNova + "px"
-
-paginaAtual = nova
-container = flowNovo
+	  folhas.appendChild(nova)
+	
+	  paginaAtual = nova
+	  container = nova.querySelector(".questoes-flow")
 	
 	  container.appendChild(bloco)
 	
@@ -720,8 +703,7 @@ container = flowNovo
 	
 	  // VERIFICA SE AINDA ESTÁ ESTOURANDO
 	  const aindaEstoura = paginaAtual.scrollHeight > paginaAtual.clientHeight
-	  //const aindaEstoura = container.scrollHeight > container.clientHeight
-		  
+	
 	  if (aindaEstoura) {
 	    console.warn("Questão maior que a página:", q.ID)
 	  }

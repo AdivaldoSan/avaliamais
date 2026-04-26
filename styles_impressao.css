@@ -429,3 +429,16 @@ body.menu-fechado .preview{
   break-inside: avoid;
   margin-bottom: 14px;
 }
+
+.questao.quebravel {
+  break-inside: auto;
+}
+
+.questao.quebravel .enunciado {
+  break-inside: auto;
+}
+
+.img-container,
+.alternativas {
+  break-inside: avoid;
+}

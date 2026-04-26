@@ -426,7 +426,7 @@ body.menu-fechado .preview{
 }
 
 .questao {
-  break-inside: avoid;
+  break-inside: auto;
   margin-bottom: 14px;
 }
 

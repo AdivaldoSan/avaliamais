@@ -701,7 +701,7 @@ const margemRodape = 60
 const ultimo = container.lastElementChild
 
 const alturaConteudo = ultimo
-  ? (ultimo.getBoundingClientRect().bottom - rectPagina.top - topoContainer)
+  ? (ultimo.getBoundingClientRect().bottom - rectPagina.top - topoContainerFixo)
   : 0
 
   if(alturaConteudo > limite){
@@ -730,9 +730,9 @@ const alturaConteudo = ultimo
 
   const ultimoNovo = container.lastElementChild
 
-	const alturaConteudoNovo = ultimoNovo
-	  ? (ultimoNovo.getBoundingClientRect().bottom - rectPagina.top - topoContainer)
-	  : 0
+  const alturaConteudoNovo = ultimoNovo
+  ? (ultimoNovo.getBoundingClientRect().bottom - rectPagina.top - topoContainerFixo)
+  : 0
 
   if(alturaConteudoNovo > limite){
 

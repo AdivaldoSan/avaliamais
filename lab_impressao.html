@@ -654,36 +654,7 @@ async function gerarPreview(){
     await esperarRenderCompleto(pagina)
 
 	//======================================
-	  const area = pagina.querySelector(".questoes-flow")
-
-		const cabecalho = pagina.querySelector(".cabecalho")
-		const blocoOtico = pagina.querySelector(".bloco-otico")
-		const instrucoes = pagina.querySelector(".instrucoes")
-		const divisorias	 = pagina.querySelectorAll(".linha-divisoria")
-		
-		let ocupado = 0
-		
-		if(cabecalho) ocupado += cabecalho.offsetHeight
-		if(blocoOtico) ocupado += blocoOtico.offsetHeight
-		if(instrucoes) ocupado += instrucoes.offsetHeight
-		
-		divisorias.forEach(d => ocupado += d.offsetHeight)
-		
-		const estilo = getComputedStyle(pagina)
-		const paddingTop = parseFloat(estilo.paddingTop)
-		const paddingBottom = parseFloat(estilo.paddingBottom)
-		
-		const alturaPagina = pagina.clientHeight - paddingTop - paddingBottom
-		
-		// margem maior pra evitar rodapé
-		const margemRodape = 120
-		const margemSeguranca = 20
-		
-		const limite = alturaPagina - topoContainer - margemRodape - margemSeguranca
-		
-		const alturaDisponivel = alturaPagina - ocupado - margemRodape
-		
-		
+	  		
 	//======================================
 
 let paginaAtual = pagina
@@ -708,6 +679,9 @@ const alturaPagina = paginaAtual.clientHeight
 
 // margem de segurança pro rodapé
 const margemRodape = 120
+ const margemSeguranca = 20
+
+  const limite = alturaPagina - topoContainer - margemRodape - margemSeguranca
 
 const limite = alturaPagina - topoContainer - margemRodape
 

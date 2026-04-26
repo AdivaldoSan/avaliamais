@@ -666,78 +666,25 @@ async function gerarPreview(){
 	//======================================
 	  		
 	//======================================
-
-let paginaAtual = pagina
+     let paginaAtual = pagina
 let container = paginaAtual.querySelector(".questoes-flow")
 
-// CALCULA UMA VEZ SÓ (FIXO)
-const rectPagina = paginaAtual.getBoundingClientRect()
-const rectContainer = container.getBoundingClientRect()
-
-const topoContainerFixo = rectContainer.top - rectPagina.top
-const alturaPagina = paginaAtual.clientHeight
-
-for(let index = 0; index < questoesVersao.length; index++){
+for (let index = 0; index < questoesVersao.length; index++) {
 
   const q = questoesVersao[index]
   const bloco = criarQuestaoHTML(q, index)
 
   container.appendChild(bloco)
-	
+
   await esperarImagemBloco(bloco)
 
-  // força cálculo real
+  // força layout recalcular
   paginaAtual.offsetHeight
 
-//
+  const estourou = paginaAtual.scrollHeight > paginaAtual.clientHeight
 
-// margem de segurança pro rodapé
-const margemRodape = 60
- const margemSeguranca = 10
+  if (estourou) {
 
-  const limite = alturaPagina - topoContainerFixo - margemRodape - margemSeguranca
-
-
-const ultimo = container.lastElementChild
-
-const alturaConteudo = ultimo
-  ? (ultimo.getBoundingClientRect().bottom - rectPagina.top - topoContainerFixo)
-  : 0
-
-  if(alturaConteudo > limite){
-	const alturaBloco = bloco.getBoundingClientRect().height
-	const temImagem = !!q.IMAGEM
-
-	if(temImagem && alturaBloco > limite){
-	  container.removeChild(bloco)
-	
-	  const nova = criarPaginaContinua(i)
-	  folhas.appendChild(nova)
-	
-	  paginaAtual = nova
-	  container = nova.querySelector(".questoes-flow")
-	
-	  container.appendChild(bloco)
-	
-	  continue
-	}
-	
-
-  // tenta quebrar a questão ao invés de mover
-  bloco.classList.add("quebravel")
-
-  paginaAtual.offsetHeight
-
-  const ultimoNovo = container.lastElementChild
-
-  const alturaConteudoNovo = ultimoNovo
-  ? (ultimoNovo.getBoundingClientRect().bottom - rectPagina.top - topoContainerFixo)
-  : 0
-
-  if(alturaConteudoNovo > limite){
-
-    // ainda não cabe → manda pra próxima página
-    bloco.classList.remove("quebravel")
     container.removeChild(bloco)
 
     const nova = criarPaginaContinua(i)
@@ -747,10 +694,9 @@ const alturaConteudo = ultimo
     container = nova.querySelector(".questoes-flow")
 
     container.appendChild(bloco)
-
   }
 }
-}
+	
     pagina.offsetHeight
 
     

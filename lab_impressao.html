@@ -719,8 +719,8 @@ container = flowNovo
 	  paginaAtual.offsetHeight
 	
 	  // VERIFICA SE AINDA ESTÁ ESTOURANDO
-	  //const aindaEstoura = paginaAtual.scrollHeight > paginaAtual.clientHeight
-	  const aindaEstoura = container.scrollHeight > container.clientHeight
+	  const aindaEstoura = paginaAtual.scrollHeight > paginaAtual.clientHeight
+	  //const aindaEstoura = container.scrollHeight > container.clientHeight
 		  
 	  if (aindaEstoura) {
 	    console.warn("Questão maior que a página:", q.ID)

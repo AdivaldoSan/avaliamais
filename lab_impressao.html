@@ -688,18 +688,27 @@ const alturaConteudo = container.scrollHeight
 
   if(alturaConteudo > limite){
 
-    // remove da página atual
+  // tenta quebrar a questão ao invés de mover
+  bloco.classList.add("quebravel")
+
+  paginaAtual.offsetHeight
+
+  const alturaConteudoNovo = container.scrollHeight
+
+  if(alturaConteudoNovo > limite){
+
+    // ainda não cabe → manda pra próxima página
+    bloco.classList.remove("quebravel")
     container.removeChild(bloco)
 
-    // cria nova página
     const nova = criarPaginaContinua(i)
     folhas.appendChild(nova)
 
     paginaAtual = nova
     container = nova.querySelector(".questoes-flow")
 
-    // adiciona na nova
     container.appendChild(bloco)
+
   }
 }
 

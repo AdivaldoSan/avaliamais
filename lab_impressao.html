@@ -677,6 +677,9 @@ async function gerarPreview(){
 		
 		// margem maior pra evitar rodapé
 		const margemRodape = 120
+		const margemSeguranca = 20
+		
+		const limite = alturaPagina - topoContainer - margemRodape - margemSeguranca
 		
 		const alturaDisponivel = alturaPagina - ocupado - margemRodape
 		

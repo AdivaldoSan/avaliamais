@@ -653,7 +653,6 @@ async function gerarPreview(){
     )
 
     folhas.appendChild(pagina)
-	
 
     // QR
     const img = pagina.querySelector(".imgGabarito")
@@ -666,17 +665,11 @@ async function gerarPreview(){
 	  
     await esperarLayoutEstavel()
      pagina.offsetHeight
-	const containerInicial = pagina.querySelector(".questoes-flow")
-
-	const alturaDisponivel =
-	 pagina.clientHeight - containerInicial.offsetTop - 60
-	
-	containerInicial.style.height = alturaDisponivel + "px"
 	//======================================
 	  		
 	//======================================
-    let paginaAtual = pagina
-    let container = containerInicial
+     let paginaAtual = pagina
+	let container = paginaAtual.querySelector(".questoes-flow")
 	
 	for (let index = 0; index < questoesVersao.length; index++) {
 	
@@ -691,10 +684,7 @@ async function gerarPreview(){
 	  // força layout recalcular
 	  paginaAtual.offsetHeight
 	
-	  const limite = container.clientHeight
-		const usado = container.scrollHeight
-		
-		const estourou = usado > limite
+	  const estourou = paginaAtual.scrollHeight > paginaAtual.clientHeight
 	
 	  if (estourou) {
 	
@@ -703,29 +693,16 @@ async function gerarPreview(){
 	  const nova = criarPaginaContinua(i)
 	  folhas.appendChild(nova)
 	
+	  paginaAtual = nova
+	  container = nova.querySelector(".questoes-flow")
 	
-
-// 1. pega container da nova página
-const containerNovo = nova.querySelector(".questoes-flow")
-
-// 2. define altura ANTES de usar
-const alturaDisponivelNova =
-  nova.clientHeight - containerNovo.offsetTop - 60
-
-containerNovo.style.height = alturaDisponivelNova + "px"
-
-// 3. agora sim ativa nova página
-paginaAtual = nova
-container = containerNovo
-
-// 4. só agora adiciona bloco
-container.appendChild(bloco)
-		  
+	  container.appendChild(bloco)
+	
 	  // FORÇA NOVO CÁLCULO NA NOVA PÁGINA
 	  paginaAtual.offsetHeight
 	
 	  // VERIFICA SE AINDA ESTÁ ESTOURANDO
-	  const aindaEstoura = container.scrollHeight > container.clientHeight
+	  const aindaEstoura = paginaAtual.scrollHeight > paginaAtual.clientHeight
 	
 	  if (aindaEstoura) {
 	    console.warn("Questão maior que a página:", q.ID)

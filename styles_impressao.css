@@ -419,40 +419,58 @@ body.menu-fechado .preview{
 
   display: none;
 }
-/*============FLUXO CONTINUO (QUESTOES)=============*/
+/*============ FLUXO CONTÍNUO (VERSÃO FINAL LIMPA) ============*/
+
 .questoes-flow {
   column-count: 2;
   column-gap: 24px;
+  margin-top: 0;
+  padding-top: 0;
 }
 
+/* bloco da questão */
 .questao {
   break-inside: auto;
   margin-bottom: 14px;
+  font-size: 12px;
 }
 
-.questao.quebravel {
+/* enunciado pode quebrar */
+.enunciado {
   break-inside: auto;
 }
 
-.questao.quebravel .enunciado {
-  break-inside: auto;
+/* imagem NÃO quebra */
+.img-container {
+  break-inside: avoid;
+  display: flex;
+  justify-content: center;
+  margin: 10px 0;
 }
 
-.img-container,
+/* protege imagem de estourar layout */
+.img-container img {
+  max-width: 100%;
+  height: auto;
+  max-height: 260px;
+}
+
+/* alternativas NÃO quebram */
 .alternativas {
   break-inside: avoid;
 }
 
-
-/* quando precisa quebrar */
-.questao.quebravel .img-container {
-  break-inside: auto;
+.alternativas div {
+  break-inside: avoid;
+  margin-left: 10px;
 }
 
-.questoes-flow {
-  margin-top: 0 !important;
-  padding-top: 0 !important;
+/* ajustes finos da primeira página */
+.bloco-otico {
+  margin-bottom: 10px;
 }
+
 .instrucoes {
-  margin-bottom: 6px; /* reduz variação */
+  margin-bottom: 8px;
+  line-height: 1.4;
 }

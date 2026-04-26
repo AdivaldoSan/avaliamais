@@ -703,17 +703,24 @@ async function gerarPreview(){
 	  const nova = criarPaginaContinua(i)
 	  folhas.appendChild(nova)
 	
-	  paginaAtual = nova
-	  container = nova.querySelector(".questoes-flow")
-	
-	  container.appendChild(bloco)
-		
-	  const containerNovo = nova.querySelector(".questoes-flow")
-	
-	const alturaDisponivelNova =
-	  nova.clientHeight - containerNovo.offsetTop - 60
-	
-	containerNovo.style.height = alturaDisponivelNova + "px"
+	  const nova = criarPaginaContinua(i)
+folhas.appendChild(nova)
+
+// 1. pega container da nova página
+const containerNovo = nova.querySelector(".questoes-flow")
+
+// 2. define altura ANTES de usar
+const alturaDisponivelNova =
+  nova.clientHeight - containerNovo.offsetTop - 60
+
+containerNovo.style.height = alturaDisponivelNova + "px"
+
+// 3. agora sim ativa nova página
+paginaAtual = nova
+container = containerNovo
+
+// 4. só agora adiciona bloco
+container.appendChild(bloco)
 		  
 	  // FORÇA NOVO CÁLCULO NA NOVA PÁGINA
 	  paginaAtual.offsetHeight

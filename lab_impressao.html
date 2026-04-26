@@ -696,11 +696,19 @@ for(let index = 0; index < questoesVersao.length; index++){
   // força cálculo real
   paginaAtual.offsetHeight
 
-  const alturaPagina = paginaAtual.clientHeight
-  const alturaConteudo = container.scrollHeight
+const rectPagina = paginaAtual.getBoundingClientRect()
+const rectContainer = container.getBoundingClientRect()
 
-  // margem de segurança
-  const limite = alturaPagina - 120
+const topoContainer = rectContainer.top - rectPagina.top
+
+const alturaPagina = paginaAtual.clientHeight
+
+// margem de segurança pro rodapé
+const margemRodape = 120
+
+const limite = alturaPagina - topoContainer - margemRodape
+
+const alturaConteudo = container.scrollHeight
 
   if(alturaConteudo > limite){
 

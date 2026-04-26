@@ -442,3 +442,9 @@ body.menu-fechado .preview{
 .alternativas {
   break-inside: avoid;
 }
+
+
+/* quando precisa quebrar */
+.questao.quebravel .img-container {
+  break-inside: auto;
+}

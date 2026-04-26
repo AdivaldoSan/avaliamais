@@ -670,6 +670,13 @@ async function gerarPreview(){
 let paginaAtual = pagina
 let container = paginaAtual.querySelector(".questoes-flow")
 
+// CALCULA UMA VEZ SÓ (FIXO)
+const rectPagina = paginaAtual.getBoundingClientRect()
+const rectContainer = container.getBoundingClientRect()
+
+const topoContainerFixo = rectContainer.top - rectPagina.top
+const alturaPagina = paginaAtual.clientHeight
+
 for(let index = 0; index < questoesVersao.length; index++){
 
   const q = questoesVersao[index]
@@ -682,18 +689,13 @@ for(let index = 0; index < questoesVersao.length; index++){
   // força cálculo real
   paginaAtual.offsetHeight
 
-const rectPagina = paginaAtual.getBoundingClientRect()
-const rectContainer = container.getBoundingClientRect()
-
-const topoContainer = rectContainer.top - rectPagina.top
-
-const alturaPagina = paginaAtual.clientHeight
+//
 
 // margem de segurança pro rodapé
 const margemRodape = 60
  const margemSeguranca = 10
 
-  const limite = alturaPagina - topoContainer - margemRodape - margemSeguranca
+  const limite = alturaPagina - topoContainerFixo - margemRodape - margemSeguranca
 
 
 const ultimo = container.lastElementChild

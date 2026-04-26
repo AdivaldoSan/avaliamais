@@ -662,7 +662,7 @@ async function gerarPreview(){
 
     // espera layout real
     await esperarRenderCompleto(pagina)
-	  
+	  await new Promise(r => setTimeout(r, 0))
     await esperarLayoutEstavel()
      pagina.offsetHeight
 	//======================================

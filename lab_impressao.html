@@ -685,16 +685,26 @@ for (let index = 0; index < questoesVersao.length; index++) {
 
   if (estourou) {
 
-    container.removeChild(bloco)
+  container.removeChild(bloco)
 
-    const nova = criarPaginaContinua(i)
-    folhas.appendChild(nova)
+  const nova = criarPaginaContinua(i)
+  folhas.appendChild(nova)
 
-    paginaAtual = nova
-    container = nova.querySelector(".questoes-flow")
+  paginaAtual = nova
+  container = nova.querySelector(".questoes-flow")
 
-    container.appendChild(bloco)
+  container.appendChild(bloco)
+
+  // FORÇA NOVO CÁLCULO NA NOVA PÁGINA
+  paginaAtual.offsetHeight
+
+  // VERIFICA SE AINDA ESTÁ ESTOURANDO
+  const aindaEstoura = paginaAtual.scrollHeight > paginaAtual.clientHeight
+
+  if (aindaEstoura) {
+    console.warn("Questão maior que a página:", q.ID)
   }
+}
 }
 	
     pagina.offsetHeight

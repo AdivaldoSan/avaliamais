@@ -684,8 +684,15 @@ async function gerarPreview(){
 	  // força layout recalcular
 	  paginaAtual.offsetHeight
 	
-	  const estourou = paginaAtual.scrollHeight > paginaAtual.clientHeight
-	
+	  //const estourou = paginaAtual.scrollHeight > paginaAtual.clientHeight
+//   
+		const margemRodape = 60
+
+	  const estourou =
+	  paginaAtual.scrollHeight > (paginaAtual.clientHeight - margemRodape)
+//
+
+		
 	  if (estourou) {
 	
 	  container.removeChild(bloco)

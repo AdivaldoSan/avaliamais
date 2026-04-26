@@ -707,7 +707,14 @@ async function gerarPreview(){
 	  container = nova.querySelector(".questoes-flow")
 	
 	  container.appendChild(bloco)
+		
+	  const containerNovo = nova.querySelector(".questoes-flow")
 	
+	const alturaDisponivelNova =
+	  nova.clientHeight - containerNovo.offsetTop - 60
+	
+	containerNovo.style.height = alturaDisponivelNova + "px"
+		  
 	  // FORÇA NOVO CÁLCULO NA NOVA PÁGINA
 	  paginaAtual.offsetHeight
 	

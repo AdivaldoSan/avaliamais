@@ -691,6 +691,22 @@ const alturaConteudo = ultimo
   : 0
 
   if(alturaConteudo > limite){
+	const alturaBloco = bloco.getBoundingClientRect().height
+	
+	if(alturaBloco > limite){
+	  // questão é grande demais → manda direto pra próxima página
+	  container.removeChild(bloco)
+	
+	  const nova = criarPaginaContinua(i)
+	  folhas.appendChild(nova)
+	
+	  paginaAtual = nova
+	  container = nova.querySelector(".questoes-flow")
+	
+	  container.appendChild(bloco)
+	
+	  continue
+	}
 
   // tenta quebrar a questão ao invés de mover
   bloco.classList.add("quebravel")

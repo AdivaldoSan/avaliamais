@@ -704,9 +704,9 @@ const alturaConteudo = ultimo
 
   if(alturaConteudo > limite){
 	const alturaBloco = bloco.getBoundingClientRect().height
-	
-	if(alturaBloco > limite){
-	  // questão é grande demais → manda direto pra próxima página
+	const temImagem = !!q.IMAGEM
+
+	if(temImagem && alturaBloco > limite){
 	  container.removeChild(bloco)
 	
 	  const nova = criarPaginaContinua(i)
@@ -719,6 +719,7 @@ const alturaConteudo = ultimo
 	
 	  continue
 	}
+	
 
   // tenta quebrar a questão ao invés de mover
   bloco.classList.add("quebravel")

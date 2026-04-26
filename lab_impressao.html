@@ -662,50 +662,53 @@ async function gerarPreview(){
 
     // espera layout real
     await esperarRenderCompleto(pagina)
-
+	  
+    await esperarLayoutEstavel()
+     pagina.offsetHeight
 	//======================================
 	  		
 	//======================================
      let paginaAtual = pagina
-let container = paginaAtual.querySelector(".questoes-flow")
-
-for (let index = 0; index < questoesVersao.length; index++) {
-
-  const q = questoesVersao[index]
-  const bloco = criarQuestaoHTML(q, index)
-
-  container.appendChild(bloco)
-
-  await esperarImagemBloco(bloco)
-
-  // força layout recalcular
-  paginaAtual.offsetHeight
-
-  const estourou = paginaAtual.scrollHeight > paginaAtual.clientHeight
-
-  if (estourou) {
-
-  container.removeChild(bloco)
-
-  const nova = criarPaginaContinua(i)
-  folhas.appendChild(nova)
-
-  paginaAtual = nova
-  container = nova.querySelector(".questoes-flow")
-
-  container.appendChild(bloco)
-
-  // FORÇA NOVO CÁLCULO NA NOVA PÁGINA
-  paginaAtual.offsetHeight
-
-  // VERIFICA SE AINDA ESTÁ ESTOURANDO
-  const aindaEstoura = paginaAtual.scrollHeight > paginaAtual.clientHeight
-
-  if (aindaEstoura) {
-    console.warn("Questão maior que a página:", q.ID)
-  }
-}
-}
+	let container = paginaAtual.querySelector(".questoes-flow")
+	
+	for (let index = 0; index < questoesVersao.length; index++) {
+	
+	  const q = questoesVersao[index]
+	  const bloco = criarQuestaoHTML(q, index)
+	
+	  container.appendChild(bloco)
+	
+	  await esperarImagemBloco(bloco)
+	  await esperarLayoutEstavel()
+	
+	  // força layout recalcular
+	  paginaAtual.offsetHeight
+	
+	  const estourou = paginaAtual.scrollHeight > paginaAtual.clientHeight
+	
+	  if (estourou) {
+	
+	  container.removeChild(bloco)
+	
+	  const nova = criarPaginaContinua(i)
+	  folhas.appendChild(nova)
+	
+	  paginaAtual = nova
+	  container = nova.querySelector(".questoes-flow")
+	
+	  container.appendChild(bloco)
+	
+	  // FORÇA NOVO CÁLCULO NA NOVA PÁGINA
+	  paginaAtual.offsetHeight
+	
+	  // VERIFICA SE AINDA ESTÁ ESTOURANDO
+	  const aindaEstoura = paginaAtual.scrollHeight > paginaAtual.clientHeight
+	
+	  if (aindaEstoura) {
+	    console.warn("Questão maior que a página:", q.ID)
+	  }
+	}
+	}
 	
     pagina.offsetHeight
 

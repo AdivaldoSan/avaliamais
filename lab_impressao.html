@@ -653,6 +653,7 @@ async function gerarPreview(){
     )
 
     folhas.appendChild(pagina)
+	
 
     // QR
     const img = pagina.querySelector(".imgGabarito")
@@ -665,11 +666,17 @@ async function gerarPreview(){
 	  
     await esperarLayoutEstavel()
      pagina.offsetHeight
+	const containerInicial = pagina.querySelector(".questoes-flow")
+
+	const alturaDisponivel =
+	 pagina.clientHeight - containerInicial.offsetTop - 60
+	
+	containerInicial.style.height = alturaDisponivel + "px"
 	//======================================
 	  		
 	//======================================
-     let paginaAtual = pagina
-	let container = paginaAtual.querySelector(".questoes-flow")
+    let paginaAtual = pagina
+    let container = containerInicial
 	
 	for (let index = 0; index < questoesVersao.length; index++) {
 	
@@ -684,7 +691,10 @@ async function gerarPreview(){
 	  // força layout recalcular
 	  paginaAtual.offsetHeight
 	
-	  const estourou = paginaAtual.scrollHeight > paginaAtual.clientHeight
+	  const limite = container.clientHeight
+		const usado = container.scrollHeight
+		
+		const estourou = usado > limite
 	
 	  if (estourou) {
 	

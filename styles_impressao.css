@@ -208,8 +208,7 @@ body{
 .questoes{
   display:flex;
   gap:30px;
-  height: 100%;      /* ESSENCIAL */
-  max-height: 100%;  /* GARANTIA */
+  
 }
 
 .coluna{

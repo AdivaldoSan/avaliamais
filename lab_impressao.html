@@ -827,8 +827,12 @@ async function renderizarFluxo(pagina, questoes, folhas, folhaId){
 
   let limite = calcularAlturaDisponivel(pagina)
 
-  colEsq.style.height = limite + "px"
-  colDir.style.height = limite + "px"
+  const area = pagina.querySelector(".questoes")
+
+	area.style.height = limite + "px"
+	
+	colEsq.style.height = "100%"
+	colDir.style.height = "100%"
 
   let colunaAtual = colEsq
 

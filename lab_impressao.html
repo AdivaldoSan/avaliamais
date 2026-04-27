@@ -680,7 +680,10 @@ let col2 = paginaAtual.querySelector(".coluna-2")
 let colunaAtual = col1
 
 // calcula limite da página
-const limitePagina = paginaAtual.clientHeight
+const grid = paginaAtual.querySelector(".questoes-grid")
+
+const limitePagina =
+  paginaAtual.clientHeight - grid.offsetTop - 60
 
 for (let index = 0; index < questoesVersao.length; index++) {
 
@@ -706,9 +709,11 @@ for (let index = 0; index < questoesVersao.length; index++) {
       colunaAtual.appendChild(bloco)
 
       await esperarLayoutEstavel()
+		await new Promise(r => setTimeout(r, 0))
       paginaAtual.offsetHeight
 
-      const estourou2 = paginaAtual.scrollHeight > limitePagina
+      const usado = paginaAtual.scrollHeight
+      const estourou2 = usado > limitePagina
 
       if (!estourou2) continue
 

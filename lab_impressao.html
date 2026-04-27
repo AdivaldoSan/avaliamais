@@ -807,6 +807,7 @@ paragrafos.forEach((p, idx) => {
   const linha = document.createElement("div")
 
   if(idx === 0){
+	linha.classList.add("inicio-questao")
     linha.innerHTML = `
       <strong>Q${i+1} - Peso ${Number(q.PESO || 1).toFixed(1)}</strong> - ${p}
     `

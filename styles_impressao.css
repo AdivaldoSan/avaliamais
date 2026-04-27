@@ -221,8 +221,8 @@ body{
   left: 50%;
   transform: translateX(-50%);
 
-  width: 1px;
-  background: #000;
+  width: 0.5px;
+  background: #bbb;;
 
   pointer-events: none;
 }

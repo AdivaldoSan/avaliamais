@@ -912,7 +912,32 @@ async function renderizarFluxo(pagina, questoes, folhas, folhaId){
     pagina = nova
     colunaAtual = colEsq
 
-    continue // NÃO incrementa
+    // 🔴 TESTE ANTI-LOOP (INSERE AQUI)
+colunaAtual.appendChild(parte)
+
+await esperarLayoutEstavel()
+
+const linhaFinalTeste = pagina.querySelector(".linha-divisoria.final")
+
+const limiteTeste = linhaFinalTeste
+  ? linhaFinalTeste.getBoundingClientRect().top - 5
+  : colunaAtual.getBoundingClientRect().bottom
+
+const rectTeste = parte.getBoundingClientRect()
+
+if(rectTeste.bottom > limiteTeste){
+
+  console.warn("⚠️ BLOCO GRANDE DEMAIS - FORÇANDO")
+
+  // aceita mesmo assim e segue
+  j++
+  continue
+}
+
+// se coube, remove e deixa o fluxo normal reinserir
+colunaAtual.removeChild(parte)
+
+continue
   }
 
   j++

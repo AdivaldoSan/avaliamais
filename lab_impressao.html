@@ -672,53 +672,50 @@ async function gerarPreview(){
     await esperarLayoutEstavel()
      pagina.offsetHeight
 	//======================================
-	 let paginaAtual = pagina
+	 	let paginaAtual = pagina
 
 let col1 = paginaAtual.querySelector(".coluna-1")
 let col2 = paginaAtual.querySelector(".coluna-2")
 
 let colunaAtual = col1
 
-// calcula limite da página
-const grid = paginaAtual.querySelector(".questoes-grid")
-
-const limitePagina =
-  paginaAtual.clientHeight - grid.offsetTop - 60
-
 for (let index = 0; index < questoesVersao.length; index++) {
 
   const q = questoesVersao[index]
   const bloco = criarQuestaoHTML(q, index)
 
+  // 🔹 tenta inserir
   colunaAtual.appendChild(bloco)
 
   await esperarImagemBloco(bloco)
   await esperarLayoutEstavel()
-  paginaAtual.offsetHeight
 
- const estourou = colunaAtual.scrollHeight > limitePagina
-  if (estourou) {
+  // 🔹 recalcula limite SEMPRE
+  const gridAtual = paginaAtual.querySelector(".questoes-grid")
+  const limite =
+    paginaAtual.clientHeight - gridAtual.offsetTop - 60
+
+  // 🔹 estourou?
+  if (colunaAtual.scrollHeight > limite) {
 
     colunaAtual.removeChild(bloco)
 
-    // tenta segunda coluna
+    // 👉 tenta coluna 2
     if (colunaAtual === col1) {
 
       colunaAtual = col2
       colunaAtual.appendChild(bloco)
 
       await esperarLayoutEstavel()
-		await new Promise(r => setTimeout(r, 0))
-      paginaAtual.offsetHeight
 
-      const usado = paginaAtual.scrollHeight
-	  const estourou2 = colunaAtual.scrollHeight > limitePagina
-      if (!estourou2) continue
+      if (colunaAtual.scrollHeight <= limite) {
+        continue
+      }
 
       colunaAtual.removeChild(bloco)
     }
 
-    // nova página
+    // 👉 nova página
     const nova = criarPaginaContinua(i)
     folhas.appendChild(nova)
 
@@ -731,7 +728,7 @@ for (let index = 0; index < questoesVersao.length; index++) {
 
     colunaAtual.appendChild(bloco)
   }
-} 		
+}
 	//======================================
    
 	

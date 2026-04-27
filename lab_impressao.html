@@ -794,15 +794,14 @@ function criarPartesQuestao(q, i){
   const partes = []
 
   // ENUNCIADO
- const enunciado = document.createElement("div")
-	enunciado.className = "enunciado"
-	
-	enunciado.innerHTML = `
-	  <strong>Q${i+1} - Peso ${Number(q.PESO || 1).toFixed(1)}</strong> - ${q.ENUNCIADO}
-	`
-	
-	partes.push(enunciado)
-	})
+  const enunciado = document.createElement("div")
+  enunciado.className = "enunciado"
+
+  enunciado.innerHTML = `
+    <strong>Q${i+1} - Peso ${Number(q.PESO || 1).toFixed(1)}</strong> - ${q.ENUNCIADO}
+  `
+
+  partes.push(enunciado)
 
   // IMAGEM
   if(q.IMAGEM && q.IMAGEM.trim() !== ""){
@@ -816,7 +815,7 @@ function criarPartesQuestao(q, i){
     partes.push(imgBox)
   }
 
-  // ALTERNATIVAS (UMA POR VEZ)
+  // ALTERNATIVAS
   q.alternativas.forEach(a => {
     const alt = document.createElement("div")
     alt.className = "alternativa"

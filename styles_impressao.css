@@ -498,6 +498,6 @@ body.menu-fechado .preview{
 .loading-bar-fill {
   height: 100%;
   width: 0%;
-  background: #2563eb;
+  background: #22c55e;
   transition: width 0.2s ease;
 }

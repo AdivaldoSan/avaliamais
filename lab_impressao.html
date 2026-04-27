@@ -311,7 +311,7 @@ function calcularAlturaDisponivel(pagina){
 
   let ocupado = 0
 
-  // 📌 elementos da página 1
+  // topo (página 1)
   const cabecalho = pagina.querySelector(".cabecalho")
   const blocoOtico = pagina.querySelector(".bloco-otico")
   const instrucoes = pagina.querySelector(".instrucoes")
@@ -320,16 +320,20 @@ function calcularAlturaDisponivel(pagina){
   if(blocoOtico) ocupado += blocoOtico.offsetHeight
   if(instrucoes) ocupado += instrucoes.offsetHeight
 
-  // 📌 linhas (todas)
-  const linhas = pagina.querySelectorAll(".linha-divisoria")
-  linhas.forEach(l => ocupado += l.offsetHeight)
+  // linha superior
+  const linhaTopo = pagina.querySelector(".linha-divisoria")
+  if(linhaTopo) ocupado += linhaTopo.offsetHeight
 
-  // 📌 RODAPÉ FIXO (ESSENCIAL)
-  const rodape = pagina.querySelector(".rodape")
+  // linha inferior (final)
+  const linhaFinal = pagina.querySelector(".linha-divisoria.final")
+  if(linhaFinal) ocupado += linhaFinal.offsetHeight
+
+  // rodapé real
+  const rodape = pagina.querySelector(".paginacao")
   if(rodape) ocupado += rodape.offsetHeight
 
-  // 📌 margem de segurança
-  const margem = 20
+  // margem de segurança
+  const margem = 10
 
   return alturaPagina - ocupado - margem
 }

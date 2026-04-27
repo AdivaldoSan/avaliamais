@@ -850,7 +850,7 @@ async function renderizarFluxo(pagina, questoes, folhas, folhaId){
 
       await esperarLayoutEstavel()
 
-      const linhaFinal = paginaAtual.querySelector(".linha-divisoria.final")
+      const linhaFinal = pagina.querySelector(".linha-divisoria.final")
 
 		const limitePagina = linhaFinal
 		  ? linhaFinal.getBoundingClientRect().top - 5
@@ -870,11 +870,11 @@ async function renderizarFluxo(pagina, questoes, folhas, folhaId){
 
           await esperarLayoutEstavel()
 
-          const limiteDir = colunaAtual.offsetHeight
-
-          if(colunaAtual.scrollHeight <= limiteDir){
-            continue
-          }
+         const rectDir = parte.getBoundingClientRect()
+			
+			if(rectDir.bottom <= limitePagina){
+			  continue
+			}
 
           colunaAtual.removeChild(parte)
         }
@@ -891,8 +891,12 @@ async function renderizarFluxo(pagina, questoes, folhas, folhaId){
         colEsq = nova.querySelector(".col-esq")
         colDir = nova.querySelector(".col-dir")
 
-        colEsq.style.height = novoLimite + "px"
-        colDir.style.height = novoLimite + "px"
+        const areaNova = nova.querySelector(".questoes")
+
+		areaNova.style.height = novoLimite + "px"
+		
+		colEsq.style.height = "100%"
+		colDir.style.height = "100%"
 
         colunaAtual = colEsq
 

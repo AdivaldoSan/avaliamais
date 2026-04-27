@@ -437,3 +437,10 @@ body.menu-fechado .preview{
 .inicio-questao {
   margin-top: 12px;
 }
+
+.inicio-questao,
+.col-esq > div:not(.alternativa):not(.img-container),
+.col-dir > div:not(.alternativa):not(.img-container) {
+  text-align: justify;
+  hyphens: auto;
+}

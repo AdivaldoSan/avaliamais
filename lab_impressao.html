@@ -260,7 +260,7 @@ new QRCode(qrDiv,{
   width: qrSize,
   height: qrSize
 })
-
+//==============================================
 function renderQR(){
 
   const qrCanvas = qrDiv.querySelector("canvas")
@@ -304,8 +304,35 @@ function gerarImagemGabarito(imgEl, q, qrData){
     imgEl.src = canvas.toDataURL("image/png")
   }, 500)
 }
+//======================================================
+function calcularAlturaDisponivel(pagina){
 
-	
+  const alturaPagina = pagina.clientHeight
+
+  let ocupado = 0
+
+  // 📌 elementos da página 1
+  const cabecalho = pagina.querySelector(".cabecalho")
+  const blocoOtico = pagina.querySelector(".bloco-otico")
+  const instrucoes = pagina.querySelector(".instrucoes")
+
+  if(cabecalho) ocupado += cabecalho.offsetHeight
+  if(blocoOtico) ocupado += blocoOtico.offsetHeight
+  if(instrucoes) ocupado += instrucoes.offsetHeight
+
+  // 📌 linhas (todas)
+  const linhas = pagina.querySelectorAll(".linha-divisoria")
+  linhas.forEach(l => ocupado += l.offsetHeight)
+
+  // 📌 RODAPÉ FIXO (ESSENCIAL)
+  const rodape = pagina.querySelector(".rodape")
+  if(rodape) ocupado += rodape.offsetHeight
+
+  // 📌 margem de segurança
+  const margem = 20
+
+  return alturaPagina - ocupado - margem
+}
 //========Gerar Versoes=======
 function gerarVersoes(questoes, qtdVersoes = 4){
 
@@ -789,6 +816,10 @@ function criarPartesQuestao(q, i){
 }
 //=============================================
 async function renderizarFluxo(pagina, questoes, folhas, folhaId){
+  let limite = calcularAlturaDisponivel(pagina)
+
+	colEsq.style.height = limite + "px"
+	colDir.style.height = limite + "px"
 
   let colEsq = pagina.querySelector(".col-esq")
   let colDir = pagina.querySelector(".col-dir")
@@ -828,6 +859,15 @@ async function renderizarFluxo(pagina, questoes, folhas, folhaId){
 
         // nova página
         const nova = criarPaginaContinua(folhaId)
+		await esperarLayoutEstavel()
+		
+		limite = calcularAlturaDisponivel(nova)
+		
+		colEsq = nova.querySelector(".col-esq")
+		colDir = nova.querySelector(".col-dir")
+		
+		colEsq.style.height = limite + "px"
+		colDir.style.height = limite + "px" 
         folhas.appendChild(nova)
 
         await esperarLayoutEstavel()

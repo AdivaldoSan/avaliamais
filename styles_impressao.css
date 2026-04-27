@@ -224,6 +224,7 @@ body{
 
 .enunciado{
   margin-bottom:4px;
+  break-inside: auto;
 }
 
 .alternativas div{

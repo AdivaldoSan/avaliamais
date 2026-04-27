@@ -1082,7 +1082,9 @@ async function gerarPDF(){
   if(areaRecuperar) areaRecuperar.style.display = "none"
 
   const btn = document.getElementById("btnPDF")
-
+  travarBotoes()
+	mostrarBarra("Gerando PDF...")
+	await new Promise(r => requestAnimationFrame(r))
   // captura resizers uma vez só
   const resizers = document.querySelectorAll(".resizer")
 
@@ -1112,7 +1114,12 @@ async function gerarPDF(){
 
     for(let i = 0; i < paginas.length; i++){
 
-      btn.innerText = `Gerando ${i+1}/${paginas.length}...`
+      const perc = Math.round(((i+1) / paginas.length) * 100)
+
+		atualizarBarra(
+		  `PDF ${i+1}/${paginas.length} (${perc}%)`,
+		  perc
+		)
 
       const el = paginas[i]
 
@@ -1204,7 +1211,10 @@ async function gerarPDF(){
 
     // RESTAURA SEMPRE (mesmo com erro)
     resizers.forEach(r => r.style.display = "block")
-
+	  
+    removerBarra()
+    liberarBotoes()
+	  
     btn.disabled = false
     btn.innerText = "Gerar PDF"
   }

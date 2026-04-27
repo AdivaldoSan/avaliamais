@@ -166,7 +166,27 @@ prova.turmas.forEach((t, i) => {
   if(prova.nomeTravado){
   document.getElementById("nomeProva").disabled = true
 }
-}	
+}
+//============================================
+function travarBotoes(){
+
+  document.querySelectorAll(".painel button").forEach(btn => {
+    btn.disabled = true
+    btn.style.opacity = "0.6"
+    btn.style.cursor = "not-allowed"
+  })
+
+}
+//=============================================================
+function liberarBotoes(){
+
+  document.querySelectorAll(".painel button").forEach(btn => {
+    btn.disabled = false
+    btn.style.opacity = "1"
+    btn.style.cursor = "pointer"
+  })
+
+}
 
 /* ================= CONFIG LAB (INALTERADO) ================= */
 
@@ -611,7 +631,7 @@ function removerBarra(){
 }
 /* ================= GERAR PREVIEW ================= */
 async function gerarPreview(){
-
+ try{
   const msgBox = document.getElementById("msgErro")
 
   msgBox.style.display = "none"
@@ -697,6 +717,7 @@ async function gerarPreview(){
 
   const folhas = document.getElementById("folhas")
   folhas.innerHTML = ""
+  travarBotoes()
   mostrarBarra("Gerando provas...")
   await new Promise(r => requestAnimationFrame(r))
 
@@ -796,10 +817,13 @@ async function gerarPreview(){
 	})
   localStorage.setItem("provaGerada", JSON.stringify(prova))
 	
-  //document.getElementById("btnPDF").style.display = "block"
-   removerBarra()	
+  
    mostrarBotaoPDF()
-	
+   }finally{
+	removerBarra()
+   liberarBotoes()
+   
+}	
 }
 
 /*=====Criar Questoes no  HTML =====*/

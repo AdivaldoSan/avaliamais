@@ -471,7 +471,7 @@ body.menu-fechado .preview{
   width: 260px;
   padding: 12px;
 
-  background: white;
+  background: #f9fafb; /* leve contraste */
   border: 1px solid #ddd;
   border-radius: 8px;
 

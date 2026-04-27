@@ -326,7 +326,10 @@ function calcularAlturaDisponivel(pagina){
 
   // linha inferior (final)
   const linhaFinal = pagina.querySelector(".linha-divisoria.final")
-  if(linhaFinal) ocupado += linhaFinal.offsetHeight
+	
+  if(linhaFinal){
+  ocupado += (pagina.clientHeight - linhaFinal.offsetTop)
+}
 
   // rodapé real
   const rodape = pagina.querySelector(".paginacao")

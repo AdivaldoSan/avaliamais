@@ -794,14 +794,26 @@ function criarPartesQuestao(q, i){
   const partes = []
 
   // ENUNCIADO
-  const enunciado = document.createElement("div")
-  enunciado.className = "enunciado"
+const wrapper = document.createElement("div")
+wrapper.className = "enunciado"
 
-  enunciado.innerHTML = `
-    <strong>Q${i+1} - Peso ${Number(q.PESO || 1).toFixed(1)}</strong> - ${q.ENUNCIADO}
-  `
+// separa por parágrafos (quebra natural)
+const paragrafos = q.ENUNCIADO.split("\n")
 
-  partes.push(enunciado)
+paragrafos.forEach((p, idx) => {
+
+  const linha = document.createElement("div")
+
+  if(idx === 0){
+    linha.innerHTML = `
+      <strong>Q${i+1} - Peso ${Number(q.PESO || 1).toFixed(1)}</strong> - ${p}
+    `
+  }else{
+    linha.innerHTML = p
+  }
+
+  partes.push(linha)
+})
 
   // IMAGEM
   if(q.IMAGEM && q.IMAGEM.trim() !== ""){

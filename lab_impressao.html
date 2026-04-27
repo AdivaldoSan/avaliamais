@@ -850,9 +850,15 @@ async function renderizarFluxo(pagina, questoes, folhas, folhaId){
 
       await esperarLayoutEstavel()
 
-      const limiteAtual = colunaAtual.offsetHeight
+      const linhaFinal = paginaAtual.querySelector(".linha-divisoria.final")
 
-      if(colunaAtual.scrollHeight > limiteAtual){
+		const limitePagina = linhaFinal
+		  ? linhaFinal.getBoundingClientRect().top - 5
+		  : colunaAtual.getBoundingClientRect().top + colunaAtual.offsetHeight
+		
+		const rect = parte.getBoundingClientRect()
+		
+		if(rect.bottom > limitePagina){
 
         colunaAtual.removeChild(parte)
 

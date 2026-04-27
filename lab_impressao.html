@@ -843,68 +843,77 @@ async function renderizarFluxo(pagina, questoes, folhas, folhaId){
   for(let i = 0; i < questoes.length; i++){
 
     const partes = criarPartesQuestao(questoes[i], i)
+     for(let j = 0; j < partes.length; ){
 
-    for(const parte of partes){
+  const parte = partes[j]
 
+  colunaAtual.appendChild(parte)
+
+  await esperarLayoutEstavel()
+
+  const linhaFinal = pagina.querySelector(".linha-divisoria.final")
+
+  const limitePagina = linhaFinal
+    ? linhaFinal.getBoundingClientRect().top - 5
+    : colunaAtual.getBoundingClientRect().bottom
+
+  const rect = parte.getBoundingClientRect()
+
+  if(rect.bottom > limitePagina){
+
+    colunaAtual.removeChild(parte)
+
+    // tenta direita
+    if(colunaAtual === colEsq){
+
+      colunaAtual = colDir
       colunaAtual.appendChild(parte)
 
       await esperarLayoutEstavel()
 
-      const linhaFinal = pagina.querySelector(".linha-divisoria.final")
+      const linhaFinalDir = pagina.querySelector(".linha-divisoria.final")
 
-		const limitePagina = linhaFinal
-		  ? linhaFinal.getBoundingClientRect().top - 5
-		  : colunaAtual.getBoundingClientRect().top + colunaAtual.offsetHeight
-		
-		const rect = parte.getBoundingClientRect()
-		
-		if(rect.bottom > limitePagina){
+      const limiteDir = linhaFinalDir
+        ? linhaFinalDir.getBoundingClientRect().top - 5
+        : colunaAtual.getBoundingClientRect().bottom
 
-        colunaAtual.removeChild(parte)
+      const rectDir = parte.getBoundingClientRect()
 
-        // tenta coluna direita
-        if(colunaAtual === colEsq){
-
-          colunaAtual = colDir
-          colunaAtual.appendChild(parte)
-
-          await esperarLayoutEstavel()
-
-         const rectDir = parte.getBoundingClientRect()
-			
-			if(rectDir.bottom <= limitePagina){
-			  continue
-			}
-
-          colunaAtual.removeChild(parte)
-        }
-
-        // nova página
-        const nova = criarPaginaContinua(folhaId)
-        folhas.appendChild(nova) //  TEM QUE SER ANTES
-
-        await esperarLayoutEstavel()
-
-        // recalcula limite da nova página
-        let novoLimite = calcularAlturaDisponivel(nova)
-
-        colEsq = nova.querySelector(".col-esq")
-        colDir = nova.querySelector(".col-dir")
-
-        const areaNova = nova.querySelector(".questoes")
-
-		areaNova.style.height = novoLimite + "px"
-		
-		colEsq.style.height = "100%"
-		colDir.style.height = "100%"
-
-        colunaAtual = colEsq
-
-        colunaAtual.appendChild(parte)
-
-        await esperarLayoutEstavel()
+      if(rectDir.bottom <= limiteDir){
+        j++
+        continue
       }
+
+      colunaAtual.removeChild(parte)
     }
+
+    // nova página
+    const nova = criarPaginaContinua(folhaId)
+    folhas.appendChild(nova)
+
+    await esperarLayoutEstavel()
+
+    let novoLimite = calcularAlturaDisponivel(nova)
+
+    colEsq = nova.querySelector(".col-esq")
+    colDir = nova.querySelector(".col-dir")
+
+    const areaNova = nova.querySelector(".questoes")
+
+    areaNova.style.height = novoLimite + "px"
+
+    colEsq.style.height = "100%"
+    colDir.style.height = "100%"
+
+    pagina = nova
+    colunaAtual = colEsq
+
+    continue // NÃO incrementa
+  }
+
+  j++
+}
+    
   }
 }	
 /* ===== RESIZE IMAGEM ===== */

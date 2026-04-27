@@ -215,7 +215,6 @@ body{
 }
 
 .questao{
-  break-inside:avoid;
   margin-bottom:12px;
   font-size:12px;
 }
@@ -418,4 +417,11 @@ body.menu-fechado .preview{
   z-index: 9999;
 
   display: none;
+}
+/*======================Novo Fluxo de Questões*/
+.questao,
+.enunciado,
+.img-container,
+.alternativa {
+  break-inside: auto;
 }

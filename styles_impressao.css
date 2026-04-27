@@ -428,3 +428,7 @@ body.menu-fechado .preview{
 .alternativa {
   break-inside: auto;
 }
+.linha-enunciado {
+  font-size: 12px;
+  margin-bottom: 4px;
+}

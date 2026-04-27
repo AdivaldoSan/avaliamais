@@ -215,8 +215,8 @@ body{
   content: "";
   position: absolute;
 
-  top: 0;
-  bottom: 0;
+  top: 10px;
+  bottom: 50px;
 
   left: 50%;
   transform: translateX(-50%);

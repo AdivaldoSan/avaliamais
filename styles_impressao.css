@@ -419,53 +419,57 @@ body.menu-fechado .preview{
 
   display: none;
 }
-/*============ FLUXO CONTÍNUO (VERSÃO FINAL LIMPA) ============*/
+/*============ NOVO LAYOUT (2 COLUNAS CONTROLADAS) ============*/
 
-.questoes-flow {
-  column-count: 2;
-  column-gap: 24px;
+.questoes-grid {
+  display: flex;
+  gap: 24px;
   margin-top: 0;
   padding-top: 0;
+  height: 100%;
+}
+
+/* colunas reais */
+.coluna {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 /* bloco da questão */
 .questao {
-  break-inside: auto;
-  margin-bottom: 14px;
+  margin-bottom: 12px;
   font-size: 12px;
 }
 
-/* enunciado pode quebrar */
+/* enunciado */
 .enunciado {
-  break-inside: auto;
+  margin-bottom: 4px;
 }
 
-/* imagem NÃO quebra */
+/* imagem */
 .img-container {
-  break-inside: avoid;
   display: flex;
   justify-content: center;
   margin: 10px 0;
 }
 
-/* protege imagem de estourar layout */
 .img-container img {
   max-width: 100%;
   height: auto;
-  max-height: 260px;
+  max-height: 240px; /* leve ajuste pra encaixe melhor */
 }
 
-/* alternativas NÃO quebram */
+/* alternativas */
 .alternativas {
-  break-inside: avoid;
+  margin-top: 4px;
 }
 
 .alternativas div {
-  break-inside: avoid;
   margin-left: 10px;
 }
 
-/* ajustes finos da primeira página */
+/* ajustes finos topo */
 .bloco-otico {
   margin-bottom: 10px;
 }

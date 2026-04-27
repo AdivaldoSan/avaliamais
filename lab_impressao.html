@@ -518,6 +518,10 @@ function justificarColuna(col){
   col.style.flexDirection = "column"
   col.style.justifyContent = "space-between"
 }
+//===================================
+function esperarRender(){
+  return new Promise(resolve => requestAnimationFrame(resolve))
+}
 
 /*==============*/	
 function esperarLayoutEstavel(){
@@ -693,6 +697,8 @@ async function gerarPreview(){
 
   const folhas = document.getElementById("folhas")
   folhas.innerHTML = ""
+  mostrarBarra("Gerando provas...")
+  await new Promise(r => requestAnimationFrame(r))
 
   const textoInstrucoes = document.getElementById("instrucoes").value.trim()
 

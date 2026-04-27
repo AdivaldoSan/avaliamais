@@ -785,19 +785,54 @@ function criarQuestaoHTML(q, i){
   `
 
   return div
-}	
+}
+//==============================
+function quebrarTextoEmLinhas(texto){
+
+  const palavras = texto.split(" ")
+  const linhas = []
+  let linha = ""
+
+  palavras.forEach(p => {
+
+    const teste = linha + p + " "
+
+    if(teste.length > 80){ // ajuste fino depois
+      linhas.push(linha)
+      linha = p + " "
+    } else {
+      linha = teste
+    }
+
+  })
+
+  if(linha) linhas.push(linha)
+
+  return linhas
+}
 //==============================
 function criarPartesQuestao(q, i){
 
   const partes = []
 
   // ENUNCIADO
-  const enunciado = document.createElement("div")
-  enunciado.className = "questao enunciado"
-  enunciado.innerHTML = `
-    <strong>Q${i+1} - Peso ${Number(q.PESO || 1).toFixed(1)}</strong> - ${q.ENUNCIADO}
-  `
-  partes.push(enunciado)
+  const linhas = quebrarTextoEmLinhas(q.ENUNCIADO)
+
+linhas.forEach((l, idx) => {
+
+  const linhaDiv = document.createElement("div")
+  linhaDiv.className = "linha-enunciado"
+
+  if(idx === 0){
+    linhaDiv.innerHTML = `
+      <strong>Q${i+1} - Peso ${Number(q.PESO || 1).toFixed(1)}</strong> - ${l}
+    `
+  }else{
+    linhaDiv.innerHTML = l
+  }
+
+  partes.push(linhaDiv)
+})
 
   // IMAGEM
   if(q.IMAGEM && q.IMAGEM.trim() !== ""){

@@ -696,8 +696,7 @@ for (let index = 0; index < questoesVersao.length; index++) {
   await esperarLayoutEstavel()
   paginaAtual.offsetHeight
 
-  const estourou = paginaAtual.scrollHeight > limitePagina
-
+ const estourou = colunaAtual.scrollHeight > limitePagina
   if (estourou) {
 
     colunaAtual.removeChild(bloco)
@@ -713,8 +712,7 @@ for (let index = 0; index < questoesVersao.length; index++) {
       paginaAtual.offsetHeight
 
       const usado = paginaAtual.scrollHeight
-      const estourou2 = usado > limitePagina
-
+	  const estourou2 = colunaAtual.scrollHeight > limitePagina
       if (!estourou2) continue
 
       colunaAtual.removeChild(bloco)

@@ -208,10 +208,14 @@ body{
 .questoes{
   display:flex;
   gap:30px;
+  height: 100%;      /* ESSENCIAL */
+  max-height: 100%;  /* GARANTIA */
 }
 
 .coluna{
   flex:1;
+  height: 100%;       /* ESSENCIAL */
+  overflow: visible;  /* mantém detecção */
 }
 
 .questao{

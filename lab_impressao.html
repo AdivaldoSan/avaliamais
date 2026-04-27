@@ -509,152 +509,8 @@ async function esperarImagensQuestoes(){
   }))
 }
 
-/*================PREPARAR QUESTOES====================*/
-async function prepararQuestoesParaLayout(questoes, larguraColuna){
+/*==============================================*/
 
-  const resultado = []
-
-  for(const q of questoes){
-
-    const temp = document.createElement("div")
-
-    temp.style.position = "absolute"
-    temp.style.visibility = "hidden"
-    temp.style.width = larguraColuna + "px"
-
-    const bloco = criarQuestaoHTML(q, 0)
-
-    temp.appendChild(bloco)
-    document.body.appendChild(temp)
-
-    //  esperar imagens (CRÍTICO)
-    const imgs = temp.querySelectorAll("img")
-
-    await Promise.all([...imgs].map(img => {
-      return new Promise(res => {
-        if(img.complete) res()
-        else img.onload = res
-      })
-    }))
-
-    const altura = temp.offsetHeight
-
-    document.body.removeChild(temp)
-
-    resultado.push({
-      ...q,
-      altura
-    })
-  }
-
-  return resultado
-}
-	
-/*==========MOTOR DE DISTRIBUIÇÃO DE QUESTOES==========*/
-function distribuirQuestoes(pagina, questoes, folhas){
-
-  let colEsq = pagina.querySelector(".col-esq")
-  let colDir = pagina.querySelector(".col-dir")
-
-  let alturaEsq = 0
-  let alturaDir = 0
-
-  const areaQuestoes = pagina.querySelector(".questoes")
-
-  // FORÇA RENDER
-  pagina.offsetHeight
-
-  // ================= CÁLCULO ÁREA ÚTIL =================
-  const cabecalho = pagina.querySelector(".cabecalho")
-  const blocoOtico = pagina.querySelector(".bloco-otico")
-  const instrucoes = pagina.querySelector(".instrucoes")
-  const linhaDivisoria = pagina.querySelector(".linha-divisoria")
-
-  let alturaOcupada = 0
-
-  if(cabecalho) alturaOcupada += cabecalho.offsetHeight
-  if(blocoOtico) alturaOcupada += blocoOtico.offsetHeight
-  if(linhaDivisoria) alturaOcupada += linhaDivisoria.offsetHeight
-  if(instrucoes) alturaOcupada += instrucoes.offsetHeight
-
-  const margemInferior = 50
-
-  const estilo = getComputedStyle(pagina)
-  const paddingTop = parseFloat(estilo.paddingTop)
-  const paddingBottom = parseFloat(estilo.paddingBottom)
-
-  const alturaPagina = pagina.clientHeight - paddingTop - paddingBottom
-  const alturaDisponivel = alturaPagina - alturaOcupada - margemInferior
-
-  // TRAVA VISUAL
-  areaQuestoes.style.height = alturaDisponivel + "px"
-  areaQuestoes.style.overflow = "hidden"
-
-  let limite = alturaDisponivel
-
-  console.log("Área disponível:", limite)
-
-  // ================= DISTRIBUIÇÃO =================
-  questoes.forEach((q, index)=>{
-
-    const altura = q.altura + 12
-
-    // ===== TENTA ESQUERDA =====
-    if(alturaEsq + altura <= limite){
-
-      const bloco = criarQuestaoHTML(q, index)
-      colEsq.appendChild(bloco)
-      alturaEsq += altura
-      return
-    }
-	// coluna esquerda encheu
-    colEsq.dataset.cheia = "true"  
-
-    // ===== TENTA DIREITA =====
-    if(alturaDir + altura <= limite){
-
-      const bloco = criarQuestaoHTML(q, index)
-      colDir.appendChild(bloco)
-      alturaDir += altura
-      return
-    }
-	// coluna direita encheu
-    colDir.dataset.cheia = "true"
-
-    // ===== NOVA PÁGINA =====
-    const nova = criarPaginaContinua(pagina.dataset.folha)
-    folhas.appendChild(nova)
-
-    nova.offsetHeight
-
-    colEsq = nova.querySelector(".col-esq")
-    colDir = nova.querySelector(".col-dir")
-
-    const areaNova = nova.querySelector(".questoes")
-
-    // cálculo REAL da nova página
-    const rectPagina = nova.getBoundingClientRect()
-    const rectQuestoes = areaNova.getBoundingClientRect()
-
-    const topoReal = rectQuestoes.top - rectPagina.top
-    const margemInferiorNova = 30
-
-    const alturaNova = nova.clientHeight - topoReal - margemInferiorNova
-
-    areaNova.style.height = alturaNova + "px"
-    areaNova.style.overflow = "hidden"
-
-    limite = alturaNova
-
-    alturaEsq = 0
-    alturaDir = 0
-
-    // INSERE NA NOVA PÁGINA
-    const bloco = criarQuestaoHTML(q, index)
-    colEsq.appendChild(bloco)
-    alturaEsq += altura
-  })
-}
 
 /*==============================================*/
 function esperarRenderCompleto(pagina){
@@ -817,18 +673,11 @@ async function gerarPreview(){
     await esperarRenderCompleto(pagina)
 
     pagina.offsetHeight
-
+    await renderizarFluxo(pagina, questoesVersao, folhas, i)
+	  
     // largura real
     const larguraColuna = pagina.querySelector(".col-esq").clientWidth
 
-    // mede questões
-    const questoesComAltura = await prepararQuestoesParaLayout(
-      questoesVersao,
-      larguraColuna
-    )
-
-    // distribuição
-    distribuirQuestoes(pagina, questoesComAltura, folhas)
 
     // ================= PAGINAÇÃO CORRETA =================
     const paginasDaFolha = Array.from(folhas.children)
@@ -875,7 +724,7 @@ async function gerarPreview(){
    mostrarBotaoPDF()
 }
 
-  /*=====Criar Questoes no  HTML =====*/
+/*=====Criar Questoes no  HTML =====*/
 function criarQuestaoHTML(q, i){
 
   const div = document.createElement("div")
@@ -903,7 +752,97 @@ function criarQuestaoHTML(q, i){
 
   return div
 }	
+//==============================
+function criarPartesQuestao(q, i){
 
+  const partes = []
+
+  // ENUNCIADO
+  const enunciado = document.createElement("div")
+  enunciado.className = "questao enunciado"
+  enunciado.innerHTML = `
+    <strong>Q${i+1} - Peso ${Number(q.PESO || 1).toFixed(1)}</strong> - ${q.ENUNCIADO}
+  `
+  partes.push(enunciado)
+
+  // IMAGEM
+  if(q.IMAGEM && q.IMAGEM.trim() !== ""){
+    const imgBox = document.createElement("div")
+    imgBox.className = "img-container"
+
+    const img = document.createElement("img")
+    img.src = q.IMAGEM
+
+    imgBox.appendChild(img)
+    partes.push(imgBox)
+  }
+
+  // ALTERNATIVAS (UMA POR VEZ)
+  q.alternativas.forEach(a => {
+    const alt = document.createElement("div")
+    alt.className = "alternativa"
+    alt.innerHTML = `${a.novaLetra}) ${a.texto}`
+    partes.push(alt)
+  })
+
+  return partes
+}
+//=============================================
+async function renderizarFluxo(pagina, questoes, folhas, folhaId){
+
+  let colEsq = pagina.querySelector(".col-esq")
+  let colDir = pagina.querySelector(".col-dir")
+
+  let colunaAtual = colEsq
+
+  for(let i = 0; i < questoes.length; i++){
+
+    const partes = criarPartesQuestao(questoes[i], i)
+
+    for(const parte of partes){
+
+      colunaAtual.appendChild(parte)
+
+      await esperarLayoutEstavel()
+
+      const limite = colunaAtual.clientHeight
+
+      if(colunaAtual.scrollHeight > limite){
+
+        colunaAtual.removeChild(parte)
+
+        // tenta outra coluna
+        if(colunaAtual === colEsq){
+
+          colunaAtual = colDir
+          colunaAtual.appendChild(parte)
+
+          await esperarLayoutEstavel()
+
+          if(colunaAtual.scrollHeight <= limite){
+            continue
+          }
+
+          colunaAtual.removeChild(parte)
+        }
+
+        // nova página
+        const nova = criarPaginaContinua(folhaId)
+        folhas.appendChild(nova)
+
+        await esperarLayoutEstavel()
+
+        colEsq = nova.querySelector(".col-esq")
+        colDir = nova.querySelector(".col-dir")
+
+        colunaAtual = colEsq
+
+        colunaAtual.appendChild(parte)
+      }
+    }
+  }
+}
+	
 /* ===== RESIZE IMAGEM ===== */
 
 function ativarResize(){

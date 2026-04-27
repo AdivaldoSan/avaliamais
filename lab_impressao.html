@@ -816,16 +816,19 @@ function criarPartesQuestao(q, i){
 }
 //=============================================
 async function renderizarFluxo(pagina, questoes, folhas, folhaId){
-  let limite = calcularAlturaDisponivel(pagina)
 
-	colEsq.style.height = limite + "px"
-	colDir.style.height = limite + "px"
-
+  // ===== colunas iniciais =====
   let colEsq = pagina.querySelector(".col-esq")
   let colDir = pagina.querySelector(".col-dir")
 
+  let limite = calcularAlturaDisponivel(pagina)
+
+  colEsq.style.height = limite + "px"
+  colDir.style.height = limite + "px"
+
   let colunaAtual = colEsq
 
+  // ===== loop das questões =====
   for(let i = 0; i < questoes.length; i++){
 
     const partes = criarPartesQuestao(questoes[i], i)
@@ -836,13 +839,13 @@ async function renderizarFluxo(pagina, questoes, folhas, folhaId){
 
       await esperarLayoutEstavel()
 
-      const limite = colunaAtual.clientHeight
+      const limiteAtual = colunaAtual.offsetHeight
 
-      if(colunaAtual.scrollHeight > limite){
+      if(colunaAtual.scrollHeight > limiteAtual){
 
         colunaAtual.removeChild(parte)
 
-        // tenta outra coluna
+        // tenta coluna direita
         if(colunaAtual === colEsq){
 
           colunaAtual = colDir
@@ -850,7 +853,9 @@ async function renderizarFluxo(pagina, questoes, folhas, folhaId){
 
           await esperarLayoutEstavel()
 
-          if(colunaAtual.scrollHeight <= limite){
+          const limiteDir = colunaAtual.offsetHeight
+
+          if(colunaAtual.scrollHeight <= limiteDir){
             continue
           }
 
@@ -859,30 +864,28 @@ async function renderizarFluxo(pagina, questoes, folhas, folhaId){
 
         // nova página
         const nova = criarPaginaContinua(folhaId)
-		await esperarLayoutEstavel()
-		
-		limite = calcularAlturaDisponivel(nova)
-		
-		colEsq = nova.querySelector(".col-esq")
-		colDir = nova.querySelector(".col-dir")
-		
-		colEsq.style.height = limite + "px"
-		colDir.style.height = limite + "px" 
-        folhas.appendChild(nova)
+        folhas.appendChild(nova) //  TEM QUE SER ANTES
 
         await esperarLayoutEstavel()
+
+        // recalcula limite da nova página
+        let novoLimite = calcularAlturaDisponivel(nova)
 
         colEsq = nova.querySelector(".col-esq")
         colDir = nova.querySelector(".col-dir")
 
+        colEsq.style.height = novoLimite + "px"
+        colDir.style.height = novoLimite + "px"
+
         colunaAtual = colEsq
 
         colunaAtual.appendChild(parte)
+
+        await esperarLayoutEstavel()
       }
     }
   }
-}
-	
+}	
 /* ===== RESIZE IMAGEM ===== */
 
 function ativarResize(){

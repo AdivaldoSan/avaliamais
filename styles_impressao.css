@@ -208,8 +208,25 @@ body{
 .questoes{
   display:flex;
   gap:30px;
-  
+  position: relative;
 }
+
+.questoes::before {
+  content: "";
+  position: absolute;
+
+  top: 0;
+  bottom: 0;
+
+  left: 50%;
+  transform: translateX(-50%);
+
+  width: 1px;
+  background: #000;
+
+  pointer-events: none;
+}
+
 
 .coluna{
   flex:1;

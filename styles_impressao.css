@@ -459,7 +459,7 @@ body.menu-fechado .preview{
 .col-esq > div:not(.alternativa):not(.img-container),
 .col-dir > div:not(.alternativa):not(.img-container) {
   text-align: justify;
-  hyphens: auto;
+  hyphens: none;
 }
 /*===========BARRA LOADING=========*/
 .loading-bar-floating {

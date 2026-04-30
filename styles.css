@@ -1964,8 +1964,8 @@ label {
 }
 
 /* QUESTÕES */
-#modalResultados th:nth-child(n+3):nth-child(-n+20),
-#modalResultados td:nth-child(n+3):nth-child(-n+20){
+#modalResultados th:nth-child(n+3):nth-child(-n+22),
+#modalResultados td:nth-child(n+3):nth-child(-n+22){
     text-align:center;
     width:36px;
 }

@@ -1135,7 +1135,7 @@ function atualizarDadosSemRecriar(listaAlunos) {
 
         // Atualiza Totais
         const totalCols = linha.cells.length;
-        const temNota = aluno.nota !== undefined;
+        const temNota = idAplicacaoAtual.startsWith("PRV_");
         const idxAcertos = totalCols - (temNota ? 3 : 2);
         const idxPerc = totalCols - (temNota ? 2 : 1);
         const idxNota = totalCols - 1;

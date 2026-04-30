@@ -940,9 +940,8 @@ function montarAbasTurmas(dados){
 
     const resumo = gerarResumo(lista);
 
-    // 🔥 DETECTA SE TEM NOTA
-    const temNota = lista.some(a => a.nota !== undefined);
-
+    // DETECTA SE TEM NOTA
+   const temNota = idAplicacaoAtual.startsWith("PRV_");
     let html = `
     <div class="tabela-scroll">
     <table class="tabela">
@@ -1074,8 +1073,7 @@ function atualizarApenasValores(listaAlunos) {
 
             // Atualiza Acertos, % e Nota (últimas colunas)
             const totalColunas = linha.cells.length;
-            const temNota = aluno.nota !== undefined;
-            
+            const temNota = idAplicacaoAtual.startsWith("PRV_");            
             linha.cells[totalColunas - (temNota ? 3 : 2)].innerText = aluno.acertos;
             linha.cells[totalColunas - (temNota ? 2 : 1)].innerText = aluno.percentual + "%";
             if (temNota) {
@@ -1174,7 +1172,7 @@ function criarLinhaVazia(corpoTabela, numero, listaReferencia) {
     novaLinha.insertCell().innerText = "0%";  // %
 
     // Verifica se a tabela deve exibir a coluna de Nota
-    const temNotaGeral = listaReferencia.some(a => a.nota !== undefined);
+    const temNotaGeral = idAplicacaoAtual.startsWith("PRV_");
     if (temNotaGeral) {
         novaLinha.insertCell().innerText = "-";
     }
@@ -1227,7 +1225,7 @@ function exportarExcel(){
         lista.sort((a,b)=>a.numero - b.numero);
 
         const totalQuestoes = lista[0].questoes.length;
-        const temNota = lista.some(a => a.nota !== undefined);
+        const temNota = idAplicacaoAtual.startsWith("PRV_");
 
         const planilha = [];
 

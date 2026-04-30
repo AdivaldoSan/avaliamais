@@ -166,7 +166,27 @@ prova.turmas.forEach((t, i) => {
   if(prova.nomeTravado){
   document.getElementById("nomeProva").disabled = true
 }
-}	
+}
+//============================================
+function travarBotoes(){
+
+  document.querySelectorAll(".painel button").forEach(btn => {
+    btn.disabled = true
+    btn.style.opacity = "0.6"
+    btn.style.cursor = "not-allowed"
+  })
+
+}
+//=============================================================
+function liberarBotoes(){
+
+  document.querySelectorAll(".painel button").forEach(btn => {
+    btn.disabled = false
+    btn.style.opacity = "1"
+    btn.style.cursor = "pointer"
+  })
+
+}
 
 /* ================= CONFIG LAB (INALTERADO) ================= */
 
@@ -260,7 +280,7 @@ new QRCode(qrDiv,{
   width: qrSize,
   height: qrSize
 })
-
+//==============================================
 function renderQR(){
 
   const qrCanvas = qrDiv.querySelector("canvas")
@@ -304,8 +324,42 @@ function gerarImagemGabarito(imgEl, q, qrData){
     imgEl.src = canvas.toDataURL("image/png")
   }, 500)
 }
+//======================================================
+function calcularAlturaDisponivel(pagina){
 
+  const alturaPagina = pagina.clientHeight
+
+  let ocupado = 0
+
+  // topo (página 1)
+  const cabecalho = pagina.querySelector(".cabecalho")
+  const blocoOtico = pagina.querySelector(".bloco-otico")
+  const instrucoes = pagina.querySelector(".instrucoes")
+
+  if(cabecalho) ocupado += cabecalho.offsetHeight
+  if(blocoOtico) ocupado += blocoOtico.offsetHeight
+  if(instrucoes) ocupado += instrucoes.offsetHeight
+
+  // linha superior
+  const linhaTopo = pagina.querySelector(".linha-divisoria")
+  if(linhaTopo) ocupado += linhaTopo.offsetHeight
+
+  // linha inferior (final)
+  const linhaFinal = pagina.querySelector(".linha-divisoria.final")
 	
+  if(linhaFinal){
+	  ocupado += 45 // altura fixa real do rodapé + linha
+	}
+
+  // rodapé real
+  const rodape = pagina.querySelector(".paginacao")
+  if(rodape) ocupado += rodape.offsetHeight
+
+  // margem de segurança
+  const margem = 10
+
+  return alturaPagina - ocupado - margem
+}
 //========Gerar Versoes=======
 function gerarVersoes(questoes, qtdVersoes = 4){
 
@@ -484,6 +538,10 @@ function justificarColuna(col){
   col.style.flexDirection = "column"
   col.style.justifyContent = "space-between"
 }
+//===================================
+function esperarRender(){
+  return new Promise(resolve => requestAnimationFrame(resolve))
+}
 
 /*==============*/	
 function esperarLayoutEstavel(){
@@ -509,152 +567,8 @@ async function esperarImagensQuestoes(){
   }))
 }
 
-/*================PREPARAR QUESTOES====================*/
-async function prepararQuestoesParaLayout(questoes, larguraColuna){
+/*==============================================*/
 
-  const resultado = []
-
-  for(const q of questoes){
-
-    const temp = document.createElement("div")
-
-    temp.style.position = "absolute"
-    temp.style.visibility = "hidden"
-    temp.style.width = larguraColuna + "px"
-
-    const bloco = criarQuestaoHTML(q, 0)
-
-    temp.appendChild(bloco)
-    document.body.appendChild(temp)
-
-    //  esperar imagens (CRÍTICO)
-    const imgs = temp.querySelectorAll("img")
-
-    await Promise.all([...imgs].map(img => {
-      return new Promise(res => {
-        if(img.complete) res()
-        else img.onload = res
-      })
-    }))
-
-    const altura = temp.offsetHeight
-
-    document.body.removeChild(temp)
-
-    resultado.push({
-      ...q,
-      altura
-    })
-  }
-
-  return resultado
-}
-	
-/*==========MOTOR DE DISTRIBUIÇÃO DE QUESTOES==========*/
-function distribuirQuestoes(pagina, questoes, folhas){
-
-  let colEsq = pagina.querySelector(".col-esq")
-  let colDir = pagina.querySelector(".col-dir")
-
-  let alturaEsq = 0
-  let alturaDir = 0
-
-  const areaQuestoes = pagina.querySelector(".questoes")
-
-  // FORÇA RENDER
-  pagina.offsetHeight
-
-  // ================= CÁLCULO ÁREA ÚTIL =================
-  const cabecalho = pagina.querySelector(".cabecalho")
-  const blocoOtico = pagina.querySelector(".bloco-otico")
-  const instrucoes = pagina.querySelector(".instrucoes")
-  const linhaDivisoria = pagina.querySelector(".linha-divisoria")
-
-  let alturaOcupada = 0
-
-  if(cabecalho) alturaOcupada += cabecalho.offsetHeight
-  if(blocoOtico) alturaOcupada += blocoOtico.offsetHeight
-  if(linhaDivisoria) alturaOcupada += linhaDivisoria.offsetHeight
-  if(instrucoes) alturaOcupada += instrucoes.offsetHeight
-
-  const margemInferior = 50
-
-  const estilo = getComputedStyle(pagina)
-  const paddingTop = parseFloat(estilo.paddingTop)
-  const paddingBottom = parseFloat(estilo.paddingBottom)
-
-  const alturaPagina = pagina.clientHeight - paddingTop - paddingBottom
-  const alturaDisponivel = alturaPagina - alturaOcupada - margemInferior
-
-  // TRAVA VISUAL
-  areaQuestoes.style.height = alturaDisponivel + "px"
-  areaQuestoes.style.overflow = "hidden"
-
-  let limite = alturaDisponivel
-
-  console.log("Área disponível:", limite)
-
-  // ================= DISTRIBUIÇÃO =================
-  questoes.forEach((q, index)=>{
-
-    const altura = q.altura + 12
-
-    // ===== TENTA ESQUERDA =====
-    if(alturaEsq + altura <= limite){
-
-      const bloco = criarQuestaoHTML(q, index)
-      colEsq.appendChild(bloco)
-      alturaEsq += altura
-      return
-    }
-	// coluna esquerda encheu
-    colEsq.dataset.cheia = "true"  
-
-    // ===== TENTA DIREITA =====
-    if(alturaDir + altura <= limite){
-
-      const bloco = criarQuestaoHTML(q, index)
-      colDir.appendChild(bloco)
-      alturaDir += altura
-      return
-    }
-	// coluna direita encheu
-    colDir.dataset.cheia = "true"
-
-    // ===== NOVA PÁGINA =====
-    const nova = criarPaginaContinua(pagina.dataset.folha)
-    folhas.appendChild(nova)
-
-    nova.offsetHeight
-
-    colEsq = nova.querySelector(".col-esq")
-    colDir = nova.querySelector(".col-dir")
-
-    const areaNova = nova.querySelector(".questoes")
-
-    // cálculo REAL da nova página
-    const rectPagina = nova.getBoundingClientRect()
-    const rectQuestoes = areaNova.getBoundingClientRect()
-
-    const topoReal = rectQuestoes.top - rectPagina.top
-    const margemInferiorNova = 30
-
-    const alturaNova = nova.clientHeight - topoReal - margemInferiorNova
-
-    areaNova.style.height = alturaNova + "px"
-    areaNova.style.overflow = "hidden"
-
-    limite = alturaNova
-
-    alturaEsq = 0
-    alturaDir = 0
-
-    // INSERE NA NOVA PÁGINA
-    const bloco = criarQuestaoHTML(q, index)
-    colEsq.appendChild(bloco)
-    alturaEsq += altura
-  })
-}
 
 /*==============================================*/
 function esperarRenderCompleto(pagina){
@@ -686,9 +600,38 @@ function esperarImagem(img){
     }
   })
 }
+//====================================================
+function mostrarBarra(msg = "Gerando..."){
+  if(document.getElementById("loadingBar")) return
+
+  const div = document.createElement("div")
+  div.id = "loadingBar"
+  div.className = "loading-bar-floating"
+
+  div.innerHTML = `
+    <div id="loadingText">${msg}</div>
+    <div class="loading-bar-track">
+      <div id="loadingFill" class="loading-bar-fill"></div>
+    </div>
+  `
+
+  document.body.appendChild(div)
+}
+//======================================================
+function atualizarBarra(texto, perc){
+  const txt = document.getElementById("loadingText")
+  const fill = document.getElementById("loadingFill")
+
+  if(txt) txt.innerText = texto
+  if(fill) fill.style.width = perc + "%"
+}
+//=======================================================
+function removerBarra(){
+  document.getElementById("loadingBar")?.remove()
+}
 /* ================= GERAR PREVIEW ================= */
 async function gerarPreview(){
-
+ try{
   const msgBox = document.getElementById("msgErro")
 
   msgBox.style.display = "none"
@@ -774,6 +717,9 @@ async function gerarPreview(){
 
   const folhas = document.getElementById("folhas")
   folhas.innerHTML = ""
+  travarBotoes()
+  mostrarBarra("Gerando provas...")
+  await new Promise(r => requestAnimationFrame(r))
 
   const textoInstrucoes = document.getElementById("instrucoes").value.trim()
 
@@ -817,18 +763,18 @@ async function gerarPreview(){
     await esperarRenderCompleto(pagina)
 
     pagina.offsetHeight
+    await renderizarFluxo(pagina, questoesVersao, folhas, i)
 
+	const perc = Math.round((i / total) * 100)
+
+		atualizarBarra(
+		  `Gerando ${i}/${total} (${perc}%)`,
+		  perc
+		)  
+	  
     // largura real
     const larguraColuna = pagina.querySelector(".col-esq").clientWidth
 
-    // mede questões
-    const questoesComAltura = await prepararQuestoesParaLayout(
-      questoesVersao,
-      larguraColuna
-    )
-
-    // distribuição
-    distribuirQuestoes(pagina, questoesComAltura, folhas)
 
     // ================= PAGINAÇÃO CORRETA =================
     const paginasDaFolha = Array.from(folhas.children)
@@ -871,11 +817,16 @@ async function gerarPreview(){
 	})
   localStorage.setItem("provaGerada", JSON.stringify(prova))
 	
-  //document.getElementById("btnPDF").style.display = "block"
+  
    mostrarBotaoPDF()
+   }finally{
+	removerBarra()
+   liberarBotoes()
+   
+}	
 }
 
-  /*=====Criar Questoes no  HTML =====*/
+/*=====Criar Questoes no  HTML =====*/
 function criarQuestaoHTML(q, i){
 
   const div = document.createElement("div")
@@ -902,8 +853,181 @@ function criarQuestaoHTML(q, i){
   `
 
   return div
-}	
+}
+//==============================
 
+//==============================
+function criarPartesQuestao(q, i){
+
+  const partes = []
+
+  // ENUNCIADO
+const wrapper = document.createElement("div")
+wrapper.className = "enunciado"
+
+// separa por parágrafos (quebra natural)
+const paragrafos = q.ENUNCIADO
+  .replace(/\s+/g, " ")
+  .split(/(?<=[.!?])\s+/)
+
+paragrafos.forEach((p, idx) => {
+
+  const linha = document.createElement("div")
+
+  if(idx === 0){
+	linha.classList.add("inicio-questao")
+    linha.innerHTML = `
+      <strong>Q${i+1} - Peso ${Number(q.PESO || 1).toFixed(1)}</strong> - ${p}
+    `
+  }else{
+    linha.innerHTML = p
+  }
+
+  partes.push(linha)
+})
+
+  // IMAGEM
+  if(q.IMAGEM && q.IMAGEM.trim() !== ""){
+    const imgBox = document.createElement("div")
+    imgBox.className = "img-container"
+
+    const img = document.createElement("img")
+    img.src = q.IMAGEM
+
+    imgBox.appendChild(img)
+    partes.push(imgBox)
+  }
+
+  // ALTERNATIVAS
+  q.alternativas.forEach(a => {
+    const alt = document.createElement("div")
+    alt.className = "alternativa"
+    alt.innerHTML = `${a.novaLetra}) ${a.texto}`
+    partes.push(alt)
+  })
+
+  return partes
+}
+//=============================================
+async function renderizarFluxo(pagina, questoes, folhas, folhaId){
+
+  // ===== colunas iniciais =====
+  let colEsq = pagina.querySelector(".col-esq")
+  let colDir = pagina.querySelector(".col-dir")
+
+  let limite = calcularAlturaDisponivel(pagina)
+
+  const area = pagina.querySelector(".questoes")
+
+	area.style.height = limite + "px"
+	
+	colEsq.style.height = "100%"
+	colDir.style.height = "100%"
+
+  let colunaAtual = colEsq
+
+  // ===== loop das questões =====
+  for(let i = 0; i < questoes.length; i++){
+
+    const partes = criarPartesQuestao(questoes[i], i)
+     for(let j = 0; j < partes.length; ){
+
+  const parte = partes[j]
+
+  colunaAtual.appendChild(parte)
+
+  await esperarLayoutEstavel()
+
+  const linhaFinal = pagina.querySelector(".linha-divisoria.final")
+
+  const limitePagina = linhaFinal
+    ? linhaFinal.getBoundingClientRect().top - 5
+    : colunaAtual.getBoundingClientRect().bottom
+
+  const rect = parte.getBoundingClientRect()
+
+  if(rect.bottom > limitePagina){
+
+    colunaAtual.removeChild(parte)
+
+    // tenta direita
+    if(colunaAtual === colEsq){
+
+      colunaAtual = colDir
+      colunaAtual.appendChild(parte)
+
+      await esperarLayoutEstavel()
+
+      const linhaFinalDir = pagina.querySelector(".linha-divisoria.final")
+
+      const limiteDir = linhaFinalDir
+        ? linhaFinalDir.getBoundingClientRect().top - 5
+        : colunaAtual.getBoundingClientRect().bottom
+
+      const rectDir = parte.getBoundingClientRect()
+
+      if(rectDir.bottom <= limiteDir){
+        j++
+        continue
+      }
+
+      colunaAtual.removeChild(parte)
+    }
+
+    // nova página
+    const nova = criarPaginaContinua(folhaId)
+    folhas.appendChild(nova)
+
+    await esperarLayoutEstavel()
+
+    let novoLimite = calcularAlturaDisponivel(nova)
+
+    colEsq = nova.querySelector(".col-esq")
+    colDir = nova.querySelector(".col-dir")
+
+    const areaNova = nova.querySelector(".questoes")
+
+    areaNova.style.height = novoLimite + "px"
+
+    colEsq.style.height = "100%"
+    colDir.style.height = "100%"
+
+    pagina = nova
+    colunaAtual = colEsq
+
+    // 🔴 TESTE ANTI-LOOP (INSERE AQUI)
+colunaAtual.appendChild(parte)
+
+await esperarLayoutEstavel()
+
+const linhaFinalTeste = pagina.querySelector(".linha-divisoria.final")
+
+const limiteTeste = linhaFinalTeste
+  ? linhaFinalTeste.getBoundingClientRect().top - 5
+  : colunaAtual.getBoundingClientRect().bottom
+
+const rectTeste = parte.getBoundingClientRect()
+
+if(rectTeste.bottom > limiteTeste){
+
+  console.warn("⚠️ BLOCO GRANDE DEMAIS - FORÇANDO")
+
+  // aceita mesmo assim e segue
+  j++
+  continue
+}
+
+// se coube, remove e deixa o fluxo normal reinserir
+colunaAtual.removeChild(parte)
+
+continue
+  }
+
+  j++
+}
+    
+  }
+}	
 /* ===== RESIZE IMAGEM ===== */
 
 function ativarResize(){
@@ -958,7 +1082,9 @@ async function gerarPDF(){
   if(areaRecuperar) areaRecuperar.style.display = "none"
 
   const btn = document.getElementById("btnPDF")
-
+  travarBotoes()
+	mostrarBarra("Gerando PDF...")
+	await new Promise(r => requestAnimationFrame(r))
   // captura resizers uma vez só
   const resizers = document.querySelectorAll(".resizer")
 
@@ -988,7 +1114,12 @@ async function gerarPDF(){
 
     for(let i = 0; i < paginas.length; i++){
 
-      btn.innerText = `Gerando ${i+1}/${paginas.length}...`
+      const perc = Math.round(((i+1) / paginas.length) * 100)
+
+		atualizarBarra(
+		  `PDF ${i+1}/${paginas.length} (${perc}%)`,
+		  perc
+		)
 
       const el = paginas[i]
 
@@ -1080,7 +1211,10 @@ async function gerarPDF(){
 
     // RESTAURA SEMPRE (mesmo com erro)
     resizers.forEach(r => r.style.display = "block")
-
+	  
+    removerBarra()
+    liberarBotoes()
+	  
     btn.disabled = false
     btn.innerText = "Gerar PDF"
   }

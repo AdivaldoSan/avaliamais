@@ -10,11 +10,13 @@ body{font-family:Arial;background:#f5f5f5;padding:20px;}
 textarea{width:100%;padding:10px;border-radius:8px;border:1px solid #ccc;}
 .alt-box{display:flex;gap:8px;margin-bottom:8px;}
 .alt-box input[type="text"]{flex:1;}
-.preview-area{width:370px;margin:20px auto;}
+.preview-area{width:336px;margin:20px auto;}
 .preview-questao{background:#fff;padding:12px;border:1px solid #ddd;}
 .alt-preview{padding:6px;margin-bottom:5px;background:#f3f4f6;border-radius:6px;}
 .alerta{color:#b91c1c;font-weight:bold;margin-top:10px;}
 button{margin-top:10px;padding:10px 15px;cursor:pointer;}
+.inicio-questao{margin-bottom:10px;font-size:14px;}
+.alternativa{margin-bottom:5px;font-size:14px;}
 </style>
 </head>
 
@@ -59,7 +61,6 @@ button{margin-top:10px;padding:10px 15px;cursor:pointer;}
 <div id="areaPreview" style="display:none;">
 <h3>Visualização</h3>
 
-<input type="range" id="rangeImg" min="150" max="370" value="370">
 
 <div class="preview-area">
 <div id="previewQuestao" class="preview-questao"></div>
@@ -67,12 +68,12 @@ button{margin-top:10px;padding:10px 15px;cursor:pointer;}
 </div>
 
 <script>
-
+const LARGURA_PROVA = 336;
 let imgBase64 = "";
-let larguraAtual = 370;
+let larguraAtual = LARGURA_PROVA;
 let questaoAtual = null;
 let visualizou = false;
-
+let temImagem = false;
 // ===== IMAGEM =====
 document.getElementById("imgInput").addEventListener("change", e=>{
   const file = e.target.files[0];
@@ -87,8 +88,8 @@ document.getElementById("imgInput").addEventListener("change", e=>{
       const canvas = document.getElementById("canvasPreview");
       const ctx = canvas.getContext("2d");
 
-      const escala = 370 / img.width;
-      canvas.width = 370;
+      const escala = LARGURA_PROVA / img.width;
+      canvas.width = LARGURA_PROVA;
       canvas.height = img.height * escala;
 
       ctx.drawImage(img,0,0,canvas.width,canvas.height);
@@ -98,11 +99,13 @@ document.getElementById("imgInput").addEventListener("change", e=>{
       document.getElementById("alertaImg").style.display="block";
       document.getElementById("btnSalvar").disabled = true;
       visualizou = false;
+
+      temImagem = true;
+      
     };
 
     img.src = ev.target.result;
   };
-
   reader.readAsDataURL(file);
 });
 
@@ -149,7 +152,7 @@ function visualizar(){
 
   visualizou = true;
 
-  if(imgBase64){
+  if(temImagem){
     document.getElementById("btnSalvar").disabled = false;
   }
 }
@@ -159,25 +162,18 @@ function renderPreview(){
 
   const q = questaoAtual;
 
-  let html = `<p>${q.enunciado}</p>`;
+  let html = `<div class="inicio-questao">${q.enunciado}</div>`;
 
   if(q.imagem.base64){
     html += `<img id="imgPrev" src="${q.imagem.base64}" style="width:${q.imagem.largura}px">`;
   }
 
   for(let k in q.alternativas){
-    html += `<div class="alt-preview">${k}) ${q.alternativas[k]}</div>`;
+    html += `<div class="alternativa">${k}) ${q.alternativas[k]}</div>`;
   }
 
   previewQuestao.innerHTML = html;
 }
-
-// ===== RANGE =====
-document.getElementById("rangeImg").addEventListener("input", e=>{
-  larguraAtual = e.target.value;
-  const img = document.getElementById("imgPrev");
-  if(img) img.style.width = larguraAtual+"px";
-});
 
 // ===== SALVAR =====
 function salvar(){
@@ -185,7 +181,7 @@ function salvar(){
   const erro = validar();
   if(erro){ alert(erro); return; }
 
-  if(imgBase64 && !visualizou){
+  if(temImagem && !visualizou){
     alert("Visualize antes de salvar");
     return;
   }

@@ -4,474 +4,204 @@
 <meta charset="UTF-8">
 <title>LAB - Cadastro de Questões</title>
 
-<link rel="stylesheet" href="styles.css">
-<link rel="icon" href="favicon.svg" type="image/svg+xml">
-<link rel="alternate icon" href="favicon.ico">
-
 <style>
-
-/* ===== AJUSTES LAB ===== */
-
-.lab-card{
-  background:white;
-  padding:20px;
-  border-radius:12px;
-  max-width:900px;
-}
-
-textarea{
-  width:100%;
-  padding:10px;
-  border-radius:8px;
-  border:1px solid #ccc;
-  resize: vertical;
-  min-height: 80px;
-}
-
-.alt-box{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  margin-bottom:8px;
-  width:100%;
-}
-
-.alt-box input[type="radio"]{
-  flex: 0 0 auto; /* não cresce nem empurra */
-  margin:0;
-  cursor:pointer;
-}
-
-.alt-box span{
-  width:20px; /* A) B) alinhado */
-  font-weight:500;
-}
-
-.alt-box input[type="text"],
-.alt-box input{
-  flex:1; /* ocupa resto do espaço */
-  min-width:0; /* evita quebra estranha */
-}
-
-/* ===== MODAL ===== */
-
-.modal{
-  position:fixed;
-  inset:0;
-  display:none;
-  align-items:center;
-  justify-content:center;
-  background:rgba(0,0,0,0.7);
-  z-index:9999;
-}
-
-.modal-box{
-  background:white;
-  padding:20px;
-  border-radius:10px;
-  max-width:420px;
-  width:95%;
-}
-
-/* 🔥 largura real da questão */
-.preview-area{
-  width:370px; /* 🔥 AJUSTAR AQUI DEPOIS */
-  margin:auto;
-}
-
-/* ===== PREVIEW ===== */
-
-.preview-questao{
-  background:#fff;
-  padding:12px;
-  border:1px solid #ddd;
-  text-align: left;
-}
-
-.alt-preview{
-  padding:6px;
-  margin-bottom:5px;
-  background:#f3f4f6;
-  border-radius:6px;
-}
-
-.alt-correta{
-  background:#dcfce7;
-}
-  
-/* ===== IMAGEM ===== */
-
-#canvasPreview{
-  max-width:100%;
-  margin-top:10px;
-}
-
+body{font-family:Arial;background:#f5f5f5;padding:20px;}
+.lab-card{background:white;padding:20px;border-radius:12px;max-width:900px;}
+textarea{width:100%;padding:10px;border-radius:8px;border:1px solid #ccc;}
+.alt-box{display:flex;gap:8px;margin-bottom:8px;}
+.alt-box input[type="text"]{flex:1;}
+.preview-area{width:370px;margin:20px auto;}
+.preview-questao{background:#fff;padding:12px;border:1px solid #ddd;}
+.alt-preview{padding:6px;margin-bottom:5px;background:#f3f4f6;border-radius:6px;}
+.alerta{color:#b91c1c;font-weight:bold;margin-top:10px;}
+button{margin-top:10px;padding:10px 15px;cursor:pointer;}
 </style>
 </head>
 
 <body>
 
-<script src="./js/config.js"></script>
-<script src="js/conexao.js"></script>
-<script src="js/layout.js"></script>
-
-<script>
-
-// ===== INICIA LAYOUT =====
-criarLayout();
-
-// ===== INJETA CONTEÚDO =====
-document.getElementById("conteudo").innerHTML = `
-
 <div class="lab-card">
 
-<h2>Cadastro de Questão (LAB)</h2>
+<h2>Cadastro de Questão</h2>
 
-<div class="form-group">
 <label>Disciplina</label>
-<select id="disciplina">
-<option>MAT</option>
-<option>PORT</option>
-<option>BIO</option>
-</select>
-</div>
+<select id="disciplina"><option>MAT</option></select>
 
-<div class="form-group">
-<label>Nível</label>
-<select id="nivel">
-<option>EM</option>
-</select>
-</div>
-
-<div class="form-group">
-<label>Assunto</label>
-<select id="assunto">
-<option>Função</option>
-<option>Equação</option>
-<option>Gráfico</option>
-</select>
-</div>
-
-<div class="form-group">
 <label>Descritor</label>
-<select id="descritor"></select>
-</div>
+<select id="descritor">
+<option value="D14">D14</option>
+<option value="D20">D20</option>
+</select>
 
-<div class="form-group">
 <label>Enunciado</label>
 <textarea id="enunciado"></textarea>
-</div>
 
-<div class="form-group">
 <label>Imagem</label>
 <input type="file" id="imgInput">
 <canvas id="canvasPreview"></canvas>
-</div>
 
-<div class="form-group">
 <label>Alternativas</label>
 
-<div class="alt-box">
-  <input type="radio" name="c" value="A">
-  <span>A)</span>
-  <input id="a">
+<div class="alt-box"><input type="radio" name="c" value="A">A <input id="a"></div>
+<div class="alt-box"><input type="radio" name="c" value="B">B <input id="b"></div>
+<div class="alt-box"><input type="radio" name="c" value="C">C <input id="c"></div>
+<div class="alt-box"><input type="radio" name="c" value="D">D <input id="d"></div>
+
+<div id="alertaImg" class="alerta" style="display:none;">
+⚠️ Esta questão possui imagem. Visualize antes de salvar.
 </div>
 
-<div class="alt-box">
-  <input type="radio" name="c" value="B">
-  <span>B)</span>
-  <input id="b">
-</div>
-
-<div class="alt-box">
-  <input type="radio" name="c" value="C">
-  <span>C)</span>
-  <input id="c">
-</div>
-
-<div class="alt-box">
-  <input type="radio" name="c" value="D">
-  <span>D)</span>
-  <input id="d">
-</div>
+<button onclick="visualizar()">Visualizar</button>
+<button id="btnSalvar" onclick="salvar()">Salvar</button>
 
 </div>
 
-<button class="btn-primary" onclick="abrirPreview()">Preview</button>
+<div id="areaPreview" style="display:none;">
+<h3>Visualização</h3>
 
-</div>
-
-<div id="modal" class="modal">
-<div class="modal-box">
-
-<label>Ajustar largura da imagem</label>
 <input type="range" id="rangeImg" min="150" max="370" value="370">
 
 <div class="preview-area">
 <div id="previewQuestao" class="preview-questao"></div>
 </div>
-
-<br>
-<button class="btn-primary" onclick="salvar()">Salvar</button>
-<button onclick="fecharModal()">Fechar</button>
-
 </div>
-</div>
-
-<div class="table-wrapper">
-<table class="tabela" id="tabela">
-<thead>
-<tr>
-<th>ID</th>
-<th>Professor</th>
-<th>Enunciado</th>
-<th>Imagem</th>
-</tr>
-</thead>
-<tbody></tbody>
-</table>
-</div>
-
-`;
-
-</script>
 
 <script>
 
-// ===== CONFIG =====
-const LARGURA_PADRAO = 370;
-
+let imgBase64 = "";
 let larguraAtual = 370;
-let imgOriginal = "";
-
-document.addEventListener("input", function(e){
-
-  if(e.target.id === "rangeImg"){
-
-    larguraAtual = parseInt(e.target.value);
-
-    desenharImagem(larguraAtual);
-    abrirPreview();
-
-  }
-
-});
-// ===== DESCRITORES =====
-const descritores = [
-{cod:"D14", txt:"Função 1º grau"},
-{cod:"D20", txt:"Crescimento"},
-{cod:"D16", txt:"Equações"}
-];
-
-const select = document.getElementById("descritor");
-
-descritores.forEach(d=>{
-  const op = document.createElement("option");
-  op.value = d.cod;
-  op.textContent = `${d.cod} - ${d.txt}`;
-  select.appendChild(op);
-});
-
-// ===== INICIAIS =====
-function gerarIniciais(nome){
-  const ignorar = ["da","de","do","das","dos"];
-  return nome.split(" ")
-    .filter(p => !ignorar.includes(p.toLowerCase()))
-    .map(p => p[0].toUpperCase())
-    .slice(0,2)
-    .join("");
-}
+let questaoAtual = null;
+let visualizou = false;
 
 // ===== IMAGEM =====
-let imgBase64 = "";
-
-document.addEventListener("change", function(e){
-  if(e.target.id !== "imgInput") return;
-
+document.getElementById("imgInput").addEventListener("change", e=>{
   const file = e.target.files[0];
+  if(!file) return;
+
   const reader = new FileReader();
 
   reader.onload = ev=>{
-    imgOriginal = ev.target.result;
-    desenharImagem(LARGURA_PADRAO);
     const img = new Image();
+
     img.onload = ()=>{
       const canvas = document.getElementById("canvasPreview");
       const ctx = canvas.getContext("2d");
 
-      const escala = LARGURA_PADRAO / img.width;
-
-      canvas.width = LARGURA_PADRAO;
+      const escala = 370 / img.width;
+      canvas.width = 370;
       canvas.height = img.height * escala;
 
       ctx.drawImage(img,0,0,canvas.width,canvas.height);
 
       imgBase64 = canvas.toDataURL("image/jpeg",0.8);
+
+      document.getElementById("alertaImg").style.display="block";
+      document.getElementById("btnSalvar").disabled = true;
+      visualizou = false;
     };
+
     img.src = ev.target.result;
   };
 
   reader.readAsDataURL(file);
 });
-//====================
-function desenharImagem(largura){
 
-  if(!imgOriginal) return;
+// ===== VALIDAR =====
+function validar(){
+  if(!enunciado.value.trim()) return "Enunciado obrigatório";
 
-  const img = new Image();
+  if([a,b,c,d].some(x=>!x.value.trim()))
+    return "Preencha alternativas";
 
-  img.onload = function(){
+  if(!document.querySelector('input[name="c"]:checked'))
+    return "Marque correta";
 
-    const canvas = document.getElementById("canvasPreview");
-    const ctx = canvas.getContext("2d");
-
-    const escala = largura / img.width;
-
-    canvas.width = largura;
-    canvas.height = img.height * escala;
-
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    ctx.drawImage(img,0,0,canvas.width,canvas.height);
-
-    imgBase64 = canvas.toDataURL("image/jpeg",0.8);
-  };
-
-  img.src = imgOriginal; // AGORA CORRETO
+  return null;
 }
 
-// ===== PREVIEW =====
-function abrirPreview(){
-
-  const enun = document.getElementById("enunciado").value.trim();
-  const alternativas = [a.value, b.value, c.value, d.value];
-  const marcada = document.querySelector('input[name="c"]:checked');
-
-  if(!enun){
-    alert("Digite o enunciado");
-    return;
-  }
-
-  if(alternativas.some(v => !v.trim())){
-    alert("Preencha todas as alternativas");
-    return;
-  }
-
-  if(!marcada){
-    alert("Marque a alternativa correta");
-    return;
-  }
-
-  const nomeUsuario = localStorage.getItem("NOME") || "Adivaldo Santos";
-  const prof = gerarIniciais(nomeUsuario);
-
-  const preview = document.getElementById("previewQuestao");
-
-  preview.innerHTML = `
-  <p><b>(${prof})</b> ${enun}</p>
-  ${imgBase64 ? `<img id="imgPreview" src="${imgBase64}" style="width:${larguraAtual}px; resize:horizontal; display:block;">` : ""}
-  <div class="alt-preview">A) ${a.value}</div>
-  <div class="alt-preview">B) ${b.value}</div>
-  <div class="alt-preview">C) ${c.value}</div>
-  <div class="alt-preview">D) ${d.value}</div>
-  `;
-
-  document.getElementById("modal").style.display="flex";
-}
-//====================================
-function fecharModal(){
-  document.getElementById("modal").style.display="none";
-}
-
-// ===== ID =====
-function gerarId(){
-
-  const disc = disciplina.value;
-  const niv = nivel.value;
-  const desc = descritor.value;
-
-  const banco = JSON.parse(localStorage.getItem("questoes")||"[]");
-
-  const prefixo = `${disc}_${niv}_${desc}_`;
-
-  let max=0;
-
-  banco.forEach(q=>{
-    if(q.id.startsWith(prefixo)){
-      const num = parseInt(q.id.split("_").pop());
-      if(num>max) max=num;
+// ===== MONTAR OBJETO =====
+function montar(){
+  return {
+    id: Date.now(),
+    enunciado: enunciado.value,
+    alternativas:{
+      A:a.value,B:b.value,C:c.value,D:d.value
+    },
+    correta: document.querySelector('input[name="c"]:checked').value,
+    imagem:{
+      base64: imgBase64,
+      largura: larguraAtual
     }
-  });
-
-  return prefixo + String(max+1).padStart(3,"0");
+  };
 }
+
+// ===== VISUALIZAR =====
+function visualizar(){
+
+  const erro = validar();
+  if(erro){ alert(erro); return; }
+
+  questaoAtual = montar();
+
+  renderPreview();
+
+  document.getElementById("areaPreview").style.display="block";
+
+  visualizou = true;
+
+  if(imgBase64){
+    document.getElementById("btnSalvar").disabled = false;
+  }
+}
+
+// ===== RENDER =====
+function renderPreview(){
+
+  const q = questaoAtual;
+
+  let html = `<p>${q.enunciado}</p>`;
+
+  if(q.imagem.base64){
+    html += `<img id="imgPrev" src="${q.imagem.base64}" style="width:${q.imagem.largura}px">`;
+  }
+
+  for(let k in q.alternativas){
+    html += `<div class="alt-preview">${k}) ${q.alternativas[k]}</div>`;
+  }
+
+  previewQuestao.innerHTML = html;
+}
+
+// ===== RANGE =====
+document.getElementById("rangeImg").addEventListener("input", e=>{
+  larguraAtual = e.target.value;
+  const img = document.getElementById("imgPrev");
+  if(img) img.style.width = larguraAtual+"px";
+});
 
 // ===== SALVAR =====
 function salvar(){
 
-  const nomeUsuario = localStorage.getItem("NOME") || "Adivaldo Santos";
-  const prof = gerarIniciais(nomeUsuario);
+  const erro = validar();
+  if(erro){ alert(erro); return; }
 
-  const id = gerarId();
-
-  const dados = {
-    id,
-    prof,
-    enunciado: enunciado.value,
-    img: imgBase64 ? id+".jpg" : "",
-    img_base64: imgBase64,
-    largura_img: imgBase64 ? larguraAtual : null
-  };
+  if(imgBase64 && !visualizou){
+    alert("Visualize antes de salvar");
+    return;
+  }
 
   const banco = JSON.parse(localStorage.getItem("questoes")||"[]");
 
-  banco.push(dados);
+  banco.push(montar());
 
   localStorage.setItem("questoes", JSON.stringify(banco));
 
-  renderTabela();
+  alert("Salvo com sucesso");
 
-  fecharModal();
+  location.reload();
 }
-///===========================
-document.addEventListener("mouseup", function(){
-
-  const img = document.getElementById("imgPreview");
-
-  if(img){
-    larguraAtual = img.clientWidth;
-  }
-
-});
-
-// ===== TABELA =====
-function renderTabela(){
-
-  const tbody = document.querySelector("#tabela tbody");
-  tbody.innerHTML="";
-
-  const banco = JSON.parse(localStorage.getItem("questoes")||"[]");
-
-  banco.forEach(q=>{
-    const tr = document.createElement("tr");
-
-    tr.innerHTML = `
-    <td>${q.id}</td>
-    <td>${q.prof}</td>
-    <td>${q.enunciado}</td>
-    <td>${q.img}</td>
-    `;
-
-    tbody.appendChild(tr);
-  });
-}
-
-renderTabela();
 
 </script>
 
 </body>
-
-
-
-
 </html>

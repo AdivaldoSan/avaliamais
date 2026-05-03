@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>LAB - Cadastro de Questões</title>
+<title>LAB - Cadastro de Questões...</title>
 
 <style>
 body{font-family:Arial;background:#f5f5f5;padding:20px;}
@@ -11,7 +11,7 @@ textarea{width:100%;padding:10px;border-radius:8px;border:1px solid #ccc;}
 .alt-box{display:flex;gap:8px;margin-bottom:8px;}
 .alt-box input[type="text"]{flex:1;}
 .preview-area{width:336px;margin:20px auto;}
-.preview-questao{background:#fff;padding:12px;border:1px solid #ddd;}
+.preview-questao{background:#fff;padding:0;border:1px solid #ddd;}
 .alt-preview{padding:6px;margin-bottom:5px;background:#f3f4f6;border-radius:6px;}
 .alerta{color:#b91c1c;font-weight:bold;margin-top:10px;}
 button{margin-top:10px;padding:10px 15px;cursor:pointer;}
@@ -185,7 +185,7 @@ function renderPreview(){
   let html = `<div class="inicio-questao">${q.enunciado}</div>`;
 
   if(q.imagem.base64){
-    html += `<img id="imgPrev" src="${q.imagem.base64}" style="width:${q.imagem.largura}px">`;
+    html += `<img id="imgPrev" src="${q.imagem.base64}" style="width:${q.imagem.largura}px; display:block; margin:10px auto;">`;
   }
 
   for(let k in q.alternativas){

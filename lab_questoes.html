@@ -89,8 +89,9 @@ button{margin-top:10px;padding:10px 15px;cursor:pointer;}
 
 <script>
 const LARGURA_PROVA = 336;
+const LARGURA_IMAGEM = 235;
 let imgBase64 = "";
-let larguraAtual = LARGURA_PROVA;
+let larguraAtual = LARGURA_IMAGEM;
 let questaoAtual = null;
 let visualizou = false;
 let temImagem = false;
@@ -108,8 +109,8 @@ document.getElementById("imgInput").addEventListener("change", e=>{
       const canvas = document.getElementById("canvasPreview");
       const ctx = canvas.getContext("2d");
 
-      const escala = LARGURA_PROVA / img.width;
-      canvas.width = LARGURA_PROVA;
+      const escala = LARGURA_IMAGEM / img.width;
+      canvas.width = LARGURA_IMAGEM;
       canvas.height = img.height * escala;
 
       ctx.drawImage(img,0,0,canvas.width,canvas.height);

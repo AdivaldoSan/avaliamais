@@ -58,6 +58,17 @@ button{margin-top:10px;padding:10px 15px;cursor:pointer;}
 
 </div>
 
+<div id="ultimasQuestoes" style="
+  margin-top:30px;
+  background:white;
+  padding:15px;
+  border-radius:10px;
+  max-width:900px;
+">
+  <h3>Últimas questões salvas</h3>
+  <div id="listaQuestoes"></div>
+</div>
+
 <div id="modalPreview" style="
   display:none;
   position:fixed;
@@ -214,13 +225,47 @@ function salvar(){
   localStorage.setItem("questoes", JSON.stringify(banco));
 
   alert("Salvo com sucesso");
-
+  
+  renderUltimas();
   location.reload();
 }
 
 function fecharModal(){
   document.getElementById("modalPreview").style.display="none";
 }
+
+function renderUltimas(){
+
+  const lista = document.getElementById("listaQuestoes");
+  lista.innerHTML = "";
+
+  const banco = JSON.parse(localStorage.getItem("questoes") || "[]");
+
+  const ultimas = banco.slice(-10).reverse();
+
+  ultimas.forEach(q => {
+
+    const div = document.createElement("div");
+
+    const texto = q.enunciado.length > 80
+      ? q.enunciado.substring(0,80) + "..."
+      : q.enunciado;
+
+    div.style.padding = "8px";
+    div.style.borderBottom = "1px solid #ddd";
+    div.style.fontSize = "14px";
+
+    div.innerHTML = `
+      <strong>${q.id}</strong> - ${texto}
+    `;
+
+    lista.appendChild(div);
+
+  });
+
+}
+
+renderUltimas();
 
 </script>
 

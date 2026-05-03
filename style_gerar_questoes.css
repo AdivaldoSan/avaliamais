@@ -125,4 +125,6 @@ button:hover{
 #enunciado{
   width:100%;
   max-width:600px;
+
+  min-height:150px;
 }

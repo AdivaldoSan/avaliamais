@@ -2,22 +2,12 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>LAB - Cadastro de Questões...</title>
+<title>LAB - Cadastro de Questões</title>
 
-<style>
-body{font-family:Arial;background:#f5f5f5;padding:20px;}
-.lab-card{background:white;padding:20px;border-radius:12px;max-width:900px;}
-textarea{width:100%;padding:10px;border-radius:8px;border:1px solid #ccc;}
-.alt-box{display:flex;gap:8px;margin-bottom:8px;}
-.alt-box input[type="text"]{flex:1;}
-.preview-area{width:336px;margin:20px auto;}
-.preview-questao{background:#fff;padding:0;border:1px solid #ddd;}
-.alt-preview{padding:6px;margin-bottom:5px;background:#f3f4f6;border-radius:6px;}
-.alerta{color:#b91c1c;font-weight:bold;margin-top:10px;}
-button{margin-top:10px;padding:10px 15px;cursor:pointer;}
-.inicio-questao{margin-bottom:10px;font-size:14px;}
-.alternativa{margin-bottom:5px;font-size:14px;}
-</style>
+
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="style_gerar_questoes.css">
+
 </head>
 
 <body>
@@ -53,8 +43,8 @@ button{margin-top:10px;padding:10px 15px;cursor:pointer;}
 ⚠️ Esta questão possui imagem. Visualize antes de salvar.
 </div>
 
-<button onclick="visualizar()">Visualizar</button>
-<button id="btnSalvar" onclick="salvar()">Salvar</button>
+<button class="btn-primary" onclick="visualizar()">Visualizar</button>
+<button class="btn-primary" id="btnSalvar" onclick="salvar()">Salvar</button>
 
 </div>
 
@@ -194,10 +184,16 @@ function renderPreview(){
 
   const q = questaoAtual;
 
-  let html = `<div class="inicio-questao">${q.enunciado}</div>`;
+  let html = `<div class="inicio-questao">
+    <strong>Q1</strong> - ${q.enunciado}
+  </div>`;
 
   if(q.imagem.base64){
-    html += `<img id="imgPrev" src="${q.imagem.base64}" style="width:${q.imagem.largura}px; display:block; margin:10px auto;">`;
+    html += `
+    <div class="img-container">
+      <img src="${q.imagem.base64}">
+    </div>
+  `;
   }
 
   for(let k in q.alternativas){

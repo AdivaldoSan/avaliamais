@@ -79,7 +79,7 @@ conteudo.innerHTML = `
     
 </div>
 
-<div class="card">
+<div class="card" id="cardLista" style="display:none;">
   <h3>Últimas questões salvas</h3>
   <div id="listaQuestoes"></div>
 </div>
@@ -118,12 +118,16 @@ let temImagem = false;
 
 // ================= EVENTOS =================
 function iniciarEventos(){
-  document.getElementById("disciplina").addEventListener("change", e=>{
-    const valor = e.target.value;
-  
-    document.getElementById("camposExtras").style.display =
-      valor ? "block" : "none";
-  });
+ document.getElementById("disciplina").addEventListener("change", e=>{
+  const valor = e.target.value;
+
+  const mostrar = valor ? "block" : "none";
+
+  document.getElementById("camposExtras").style.display = mostrar;
+  if(banco.length > 0){
+    document.getElementById("cardLista").style.display = "block";
+  }
+});
 
   document.getElementById("imgInput").addEventListener("change", e=>{
     const file = e.target.files[0];

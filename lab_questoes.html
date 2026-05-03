@@ -124,9 +124,7 @@ function iniciarEventos(){
   const mostrar = valor ? "block" : "none";
 
   document.getElementById("camposExtras").style.display = mostrar;
-  if(banco.length > 0){
-    document.getElementById("cardLista").style.display = "block";
-  }
+  document.getElementById("cardLista").style.display = mostrar;
 });
 
   document.getElementById("imgInput").addEventListener("change", e=>{
@@ -253,6 +251,16 @@ function renderUltimas(){
   lista.innerHTML = "";
 
   const banco = JSON.parse(localStorage.getItem("questoes") || "[]");
+
+  const card = document.getElementById("cardLista");
+
+  if(banco.length === 0){
+    card.style.display = "none";
+  } else {
+    card.style.display = "block";
+  }
+
+  
   const ultimas = banco.slice(-10).reverse();
 
   ultimas.forEach(q=>{

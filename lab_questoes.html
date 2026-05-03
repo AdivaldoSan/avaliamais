@@ -8,53 +8,58 @@
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="style_gerar_questoes.css">
 
+
+
 </head>
 
 <body>
+  
+<script src="./js/layout.js"></script>
+<script>
 
-<div class="lab-card">
+document.addEventListener("DOMContentLoaded", () => {
+criarLayout();
 
-<h2>Cadastro de Questão</h2>
+const conteudo = document.getElementById("conteudo");
 
-<label>Disciplina</label>
-<select id="disciplina"><option>MAT</option></select>
+conteudo.innerHTML = `
 
-<label>Descritor</label>
-<select id="descritor">
-<option value="D14">D14</option>
-<option value="D20">D20</option>
-</select>
 
-<label>Enunciado</label>
-<textarea id="enunciado"></textarea>
+<div class="card form-card">
+  <h2>Cadastro de Questão</h2>
 
-<label>Imagem</label>
-<input type="file" id="imgInput">
-<canvas id="canvasPreview"></canvas>
+  <label>Disciplina</label>
+  <select id="disciplina"><option>MAT</option></select>
 
-<label>Alternativas</label>
+  <label>Descritor</label>
+  <select id="descritor">
+    <option value="D14">D14</option>
+    <option value="D20">D20</option>
+  </select>
 
-<div class="alt-box"><input type="radio" name="c" value="A">A <input id="a"></div>
-<div class="alt-box"><input type="radio" name="c" value="B">B <input id="b"></div>
-<div class="alt-box"><input type="radio" name="c" value="C">C <input id="c"></div>
-<div class="alt-box"><input type="radio" name="c" value="D">D <input id="d"></div>
+  <label>Enunciado</label>
+  <textarea id="enunciado"></textarea>
 
-<div id="alertaImg" class="alerta" style="display:none;">
-⚠️ Esta questão possui imagem. Visualize antes de salvar.
+  <label>Imagem</label>
+  <input type="file" id="imgInput">
+  <canvas id="canvasPreview"></canvas>
+
+  <label>Alternativas</label>
+
+  <div class="alt-box"><input type="radio" name="c" value="A">A <input id="a"></div>
+  <div class="alt-box"><input type="radio" name="c" value="B">B <input id="b"></div>
+  <div class="alt-box"><input type="radio" name="c" value="C">C <input id="c"></div>
+  <div class="alt-box"><input type="radio" name="c" value="D">D <input id="d"></div>
+
+  <div id="alertaImg" class="alerta" style="display:none;">
+    ⚠️ Esta questão possui imagem. Visualize antes de salvar.
+  </div>
+
+  <button class="btn-primary" onclick="visualizar()">Visualizar</button>
+  <button class="btn-primary" id="btnSalvar" onclick="salvar()">Salvar</button>
 </div>
 
-<button class="btn-primary" onclick="visualizar()">Visualizar</button>
-<button class="btn-primary" id="btnSalvar" onclick="salvar()">Salvar</button>
-
-</div>
-
-<div id="ultimasQuestoes" style="
-  margin-top:30px;
-  background:white;
-  padding:15px;
-  border-radius:10px;
-  max-width:900px;
-">
+<div class="card">
   <h3>Últimas questões salvas</h3>
   <div id="listaQuestoes"></div>
 </div>
@@ -68,106 +73,92 @@
   justify-content:center;
   align-items:center;
 ">
-
-  <div style="
-    background:white;
-    padding:20px;
-    border-radius:10px;
-    max-width:400px;
-    width:95%;
-  ">
-
+  <div style="background:white;padding:20px;border-radius:10px;max-width:400px;width:95%;">
     <h3>Visualização</h3>
-
     <div class="preview-area">
       <div id="previewQuestao" class="preview-questao"></div>
     </div>
-
     <button onclick="fecharModal()">Fechar</button>
-
   </div>
 </div>
 
-<script>
+`;
+
+
+// ================= CONFIG =================
 const LARGURA_PROVA = 336;
 const LARGURA_IMAGEM = 235;
+
 let imgBase64 = "";
 let larguraAtual = LARGURA_IMAGEM;
 let questaoAtual = null;
 let visualizou = false;
 let temImagem = false;
-// ===== IMAGEM =====
-document.getElementById("imgInput").addEventListener("change", e=>{
-  const file = e.target.files[0];
-  if(!file) return;
 
-  const reader = new FileReader();
 
-  reader.onload = ev=>{
-    const img = new Image();
+// ================= EVENTOS =================
+function iniciarEventos(){
 
-    img.onload = ()=>{
-      const canvas = document.getElementById("canvasPreview");
-      const ctx = canvas.getContext("2d");
+  document.getElementById("imgInput").addEventListener("change", e=>{
+    const file = e.target.files[0];
+    if(!file) return;
 
-      const escala = LARGURA_IMAGEM / img.width;
-      canvas.width = LARGURA_IMAGEM;
-      canvas.height = img.height * escala;
+    const reader = new FileReader();
 
-      ctx.drawImage(img,0,0,canvas.width,canvas.height);
+    reader.onload = ev=>{
+      const img = new Image();
 
-      imgBase64 = canvas.toDataURL("image/jpeg",0.8);
+      img.onload = ()=>{
+        const canvas = document.getElementById("canvasPreview");
+        const ctx = canvas.getContext("2d");
 
-      document.getElementById("alertaImg").style.display="block";
-      document.getElementById("btnSalvar").disabled = true;
-      visualizou = false;
+        const escala = LARGURA_IMAGEM / img.width;
+        canvas.width = LARGURA_IMAGEM;
+        canvas.height = img.height * escala;
 
-      temImagem = true;
-      
+        ctx.drawImage(img,0,0,canvas.width,canvas.height);
+
+        imgBase64 = canvas.toDataURL("image/jpeg",0.8);
+
+        document.getElementById("alertaImg").style.display="block";
+        document.getElementById("btnSalvar").disabled = true;
+        visualizou = false;
+
+        temImagem = true;
+      };
+
+      img.src = ev.target.result;
     };
 
-    img.src = ev.target.result;
-  };
-  reader.readAsDataURL(file);
-});
+    reader.readAsDataURL(file);
+  });
 
-// ===== VALIDAR =====
+}
+
+
+// ================= FUNÇÕES =================
 function validar(){
   if(!enunciado.value.trim()) return "Enunciado obrigatório";
-
-  if([a,b,c,d].some(x=>!x.value.trim()))
-    return "Preencha alternativas";
-
-  if(!document.querySelector('input[name="c"]:checked'))
-    return "Marque correta";
-
+  if([a,b,c,d].some(x=>!x.value.trim())) return "Preencha alternativas";
+  if(!document.querySelector('input[name="c"]:checked')) return "Marque correta";
   return null;
 }
 
-// ===== MONTAR OBJETO =====
 function montar(){
   return {
     id: Date.now(),
     enunciado: enunciado.value,
-    alternativas:{
-      A:a.value,B:b.value,C:c.value,D:d.value
-    },
+    alternativas:{ A:a.value, B:b.value, C:c.value, D:d.value },
     correta: document.querySelector('input[name="c"]:checked').value,
-    imagem:{
-      base64: imgBase64,
-      largura: larguraAtual
-    }
+    imagem:{ base64: imgBase64, largura: larguraAtual }
   };
 }
 
-// ===== VISUALIZAR =====
 function visualizar(){
-
   const erro = validar();
   if(erro){ alert(erro); return; }
 
   questaoAtual = montar();
-
   renderPreview();
 
   document.getElementById("modalPreview").style.display="flex";
@@ -179,9 +170,7 @@ function visualizar(){
   }
 }
 
-// ===== RENDER =====
 function renderPreview(){
-
   const q = questaoAtual;
 
   let html = `<div class="inicio-questao">
@@ -190,10 +179,10 @@ function renderPreview(){
 
   if(q.imagem.base64){
     html += `
-    <div class="img-container">
-      <img src="${q.imagem.base64}">
-    </div>
-  `;
+      <div class="img-container">
+        <img src="${q.imagem.base64}">
+      </div>
+    `;
   }
 
   for(let k in q.alternativas){
@@ -203,9 +192,7 @@ function renderPreview(){
   previewQuestao.innerHTML = html;
 }
 
-// ===== SALVAR =====
 function salvar(){
-
   const erro = validar();
   if(erro){ alert(erro); return; }
 
@@ -215,15 +202,13 @@ function salvar(){
   }
 
   const banco = JSON.parse(localStorage.getItem("questoes")||"[]");
-
   banco.push(montar());
-
   localStorage.setItem("questoes", JSON.stringify(banco));
 
   alert("Salvo com sucesso");
-  
+
   renderUltimas();
-  location.reload();
+  limparFormulario();
 }
 
 function fecharModal(){
@@ -231,39 +216,58 @@ function fecharModal(){
 }
 
 function renderUltimas(){
-
   const lista = document.getElementById("listaQuestoes");
   lista.innerHTML = "";
 
   const banco = JSON.parse(localStorage.getItem("questoes") || "[]");
-
   const ultimas = banco.slice(-10).reverse();
 
-  ultimas.forEach(q => {
-
+  ultimas.forEach(q=>{
     const div = document.createElement("div");
 
     const texto = q.enunciado.length > 80
       ? q.enunciado.substring(0,80) + "..."
       : q.enunciado;
 
-    div.style.padding = "8px";
-    div.style.borderBottom = "1px solid #ddd";
-    div.style.fontSize = "14px";
-
     div.innerHTML = `
-      <strong>${q.id}</strong> - ${texto}
+      <strong>${texto}</strong>
     `;
-
     lista.appendChild(div);
-
   });
+}
+  
+function limparFormulario(){
+  enunciado.value = "";
+  a.value = "";
+  b.value = "";
+  c.value = "";
+  d.value = "";
 
+  document.querySelectorAll('input[name="c"]').forEach(r=>r.checked=false);
+
+  imgBase64 = "";
+  temImagem = false;
+  visualizou = false;
+
+  document.getElementById("btnSalvar").disabled = false;
+  document.getElementById("alertaImg").style.display = "none";
+
+  const canvas = document.getElementById("canvasPreview");
+  const ctx = canvas.getContext("2d");
+  ctx.clearRect(0,0,canvas.width,canvas.height);
 }
 
+// ================= INIT =================
+iniciarEventos();
 renderUltimas();
 
+});
+
 </script>
+  
+
+
+
 
 </body>
 </html>

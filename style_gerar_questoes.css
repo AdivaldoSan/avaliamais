@@ -121,4 +121,8 @@ button:hover{
   background:#f3f4f6;
 }
 
-
+/*================================*/
+#enunciado{
+  width:100%;
+  max-width:600px;
+}

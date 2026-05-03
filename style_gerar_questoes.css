@@ -24,7 +24,9 @@
   max-width:235px;
   border:1px solid var(--border);
   border-radius:6px;
+  display:none;
 }
+
 
 /* ===== ALERTA ===== */
 .alerta{

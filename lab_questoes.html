@@ -72,9 +72,11 @@ conteudo.innerHTML = `
   <div id="alertaImg" class="alerta" style="display:none;">
     ⚠️ Esta questão possui imagem. Visualize antes de salvar.
   </div>
-</div>
-  <button class="btn-primary" onclick="visualizar()">Visualizar</button>
-  <button class="btn-primary" id="btnSalvar" onclick="salvar()">Salvar</button>
+  
+ 
+    <button class="btn-primary" onclick="visualizar()">Visualizar</button>
+    <button class="btn-primary" id="btnSalvar" onclick="salvar()">Salvar</button>
+    
 </div>
 
 <div class="card">
@@ -175,7 +177,7 @@ function montar(){
     enunciado: enunciado.value,
     alternativas:{ A:a.value, B:b.value, C:c.value, D:d.value },
     correta: document.querySelector('input[name="c"]:checked').value,
-    imagem:{ base64: imgBase64, largura: larguraAtual }
+    imagem:{ base64: imgBase64, largura: larguraAtual },
     nivel: document.querySelector('input[name="nivel"]:checked')?.value || null,
     dificuldade: document.querySelector('input[name="dificuldade"]:checked')?.value || null,
   };

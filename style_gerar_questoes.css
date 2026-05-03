@@ -72,6 +72,11 @@ button:hover{
 }
 
 /* ===== IMAGEM (ajustada pra tela) ===== */
+.img-container{
+  display:flex;
+  justify-content:center;
+  margin:10px 0;
+}
 .preview-questao img{
   display:block;
   margin:10px auto;
@@ -113,3 +118,5 @@ button:hover{
 #listaQuestoes div:hover{
   background:#f3f4f6;
 }
+
+

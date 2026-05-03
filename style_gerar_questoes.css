@@ -1,0 +1,115 @@
+
+/* ===== FORM ===== */
+.lab-card textarea{
+  width:100%;
+  padding:10px;
+  border-radius:8px;
+  border:1px solid var(--border);
+}
+
+.alt-box{
+  display:flex;
+  gap:10px;
+  margin-bottom:10px;
+  align-items:center;
+}
+
+.alt-box input[type="text"]{
+  flex:1;
+}
+
+/* ===== CANVAS ===== */
+#canvasPreview{
+  margin-top:10px;
+  max-width:235px;
+  border:1px solid var(--border);
+  border-radius:6px;
+}
+
+/* ===== ALERTA ===== */
+.alerta{
+  margin-top:10px;
+  color:#b91c1c;
+  font-weight:600;
+}
+
+/* ===== BOTÕES ===== */
+button{
+  padding:10px 14px;
+  border:none;
+  border-radius:8px;
+  background: var(--primary);
+  color:white;
+  cursor:pointer;
+}
+
+button:hover{
+  background: var(--primary-dark);
+}
+
+/* ===== PREVIEW (BASE IMPRESSÃO ADAPTADA) ===== */
+.preview-area{
+  width:336px;
+  margin:0 auto;
+}
+
+.preview-questao{
+  background:white;
+  border:1px solid var(--border);
+  padding:10px;
+}
+
+/* ===== ESTRUTURA REAL DA PROVA ===== */
+.inicio-questao{
+  font-size:13px;
+  margin-bottom:6px;
+  text-align: justify;
+}
+
+.alternativa{
+  margin-left:10px;
+  font-size:13px;
+}
+
+/* ===== IMAGEM (ajustada pra tela) ===== */
+.preview-questao img{
+  display:block;
+  margin:10px auto;
+  max-width:235px;
+  height:auto;
+}
+
+/* ===== MODAL ===== */
+#modalPreview{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.7);
+  z-index:9999;
+  justify-content:center;
+  align-items:center;
+}
+
+#modalPreview > div{
+  background:white;
+  padding:20px;
+  border-radius:10px;
+  max-width:400px;
+  width:95%;
+}
+
+/* ===== ÚLTIMAS QUESTÕES ===== */
+#ultimasQuestoes{
+  margin-top:20px;
+}
+
+#listaQuestoes div{
+  padding:8px;
+  border-bottom:1px solid var(--border);
+  font-size:14px;
+  cursor:pointer;
+}
+
+#listaQuestoes div:hover{
+  background:#f3f4f6;
+}

@@ -30,9 +30,15 @@
   white-space: pre;
 }
 
-.questao-texto img {
-  width: 70% !important;
-  max-width: 70% !important;
+.img-wrapper {
+  width: 70%;
+  margin: 10px auto;
+}
+
+.img-wrapper img {
+  width: 100%;
+  height: auto;
+  display: block;
 }
 </style>
 </head>
@@ -256,10 +262,9 @@ function mostrarQuestao(){
 					    if(!img) return "";
 					
 					    return `
-					        <div style="margin-top:10px;">
-					            <img src="${img}"
-					                 style="max-width:60%; height:auto; border-radius:8px;">
-					        </div>
+					       <div class="img-wrapper">
+							    <img src="${img}">
+						   </div>
 					    `;
 					})()}
                 </div>
@@ -288,16 +293,7 @@ function mostrarQuestao(){
 
     </div>
 `;
- setTimeout(() => {
-  document.querySelectorAll('.questao-texto img').forEach(img => {
-	img.style.width = "1px"; 
-    img.style.width = "70%";
-    img.style.maxWidth = "70%";
-    img.style.display = "block";
-    img.style.margin = "10px auto";
-  });
-}, 0);	
-
+ 
     const respAnterior = respostas.find(r => r.questao === q.ID);
     if(respAnterior){
         const radio = document.querySelector(

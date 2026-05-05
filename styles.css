@@ -1096,7 +1096,7 @@ select {
   transition: width 0.3s ease;
 }
 
-.questao-card img {
+.questao-card > img {
   max-width: 70%;
   height: auto;
   margin: 15px 0;

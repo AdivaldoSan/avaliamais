@@ -288,6 +288,14 @@ function mostrarQuestao(){
 
     </div>
 `;
+ setTimeout(() => {
+  document.querySelectorAll('.questao-texto img').forEach(img => {
+    img.style.width = "70%";
+    img.style.maxWidth = "70%";
+    img.style.display = "block";
+    img.style.margin = "10px auto";
+  });
+}, 0);	
 
     const respAnterior = respostas.find(r => r.questao === q.ID);
     if(respAnterior){
@@ -717,7 +725,7 @@ function monitorarComportamento(){
 
     } else {
 
-        // 🔥 AQUI ESTÁ A CORREÇÃO
+        //  AQUI ESTÁ A CORREÇÃO
         setTimeout(() => {
             gerarQRFake();
         }, 300);

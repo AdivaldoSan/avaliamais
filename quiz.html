@@ -290,6 +290,7 @@ function mostrarQuestao(){
 `;
  setTimeout(() => {
   document.querySelectorAll('.questao-texto img').forEach(img => {
+	img.style.width = "1px"; 
     img.style.width = "70%";
     img.style.maxWidth = "70%";
     img.style.display = "block";

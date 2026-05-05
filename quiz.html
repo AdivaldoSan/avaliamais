@@ -29,20 +29,6 @@
 .questao-texto code {
   white-space: pre;
 }
-
-.img-wrapper {
-  width: 70%;
-  margin: 10px auto;
-}
-
-.img-wrapper img {
-  width: 100%;
-  height: auto;
-  display: block;
-}
-.questao-card > img {
-  max-width: 70%;
-}
 </style>
 </head>
 	
@@ -265,9 +251,10 @@ function mostrarQuestao(){
 					    if(!img) return "";
 					
 					    return `
-					       <div class="img-wrapper">
-							    <img src="${img}">
-						   </div>
+					        <div style="margin-top:10px;text-align:center;">
+					            <img src="${img}"
+					                 style="max-width:70%; height:auto; border-radius:8px;">
+					        </div>
 					    `;
 					})()}
                 </div>
@@ -296,7 +283,7 @@ function mostrarQuestao(){
 
     </div>
 `;
- 
+
     const respAnterior = respostas.find(r => r.questao === q.ID);
     if(respAnterior){
         const radio = document.querySelector(
@@ -584,7 +571,7 @@ async function confirmarAluno(){
         return;
     }
 
-			// 🔥 VALIDA NOME COMPLETO
+			//  VALIDA NOME COMPLETO
 		const partes = nome.split(" ").filter(p => p.length >= 3);
 		
 		if(partes.length < 2){
@@ -678,7 +665,7 @@ function gerarQRFake(){
 
     el.innerHTML = "";
 
-    // 🔥 ID ULTRA COMPACTO (GARANTIDO)
+    // ID ULTRA COMPACTO (GARANTIDO)
     const idCurto = `${quiz.alunoNumero}${quiz.id.slice(-3)}`;
 
     new QRCode(el, {
@@ -725,7 +712,7 @@ function monitorarComportamento(){
 
     } else {
 
-        //  AQUI ESTÁ A CORREÇÃO
+        // 🔥 AQUI ESTÁ A CORREÇÃO
         setTimeout(() => {
             gerarQRFake();
         }, 300);

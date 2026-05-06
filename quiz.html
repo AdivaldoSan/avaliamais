@@ -487,9 +487,14 @@ function iniciarIdentificacao(){
                 <div class="ident-campo metade">
 				
                     <select id="turmaAluno">
-					    <option value="" selected disabled>
-					        Selecione sua turma
-					    </option>
+
+					    ${
+					        turmasPermitidas.length > 1
+					        ? `<option value="" selected disabled>
+					              Selecione sua turma
+					           </option>`
+					        : ""
+					    }
 					
 					    ${
 					        turmasPermitidas.length === 0
@@ -498,6 +503,7 @@ function iniciarIdentificacao(){
 					            .map(t=>`<option value="${t}">${t}</option>`)
 					            .join("")
 					    }
+					
 					</select>
 				
                 </div>

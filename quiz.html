@@ -487,14 +487,18 @@ function iniciarIdentificacao(){
                 <div class="ident-campo metade">
 				
                     <select id="turmaAluno">
-                        ${
-                            turmasPermitidas.length === 0
-                            ? `<option value="">Turma não definida</option>`
-                            : turmasPermitidas
-                                .map(t=>`<option value="${t}">${t}</option>`)
-                                .join("")
-                        }
-                    </select>
+					    <option value="" selected disabled>
+					        Selecione sua turma
+					    </option>
+					
+					    ${
+					        turmasPermitidas.length === 0
+					        ? `<option value="">Turma não definida</option>`
+					        : turmasPermitidas
+					            .map(t=>`<option value="${t}">${t}</option>`)
+					            .join("")
+					    }
+					</select>
 				
                 </div>
 

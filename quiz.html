@@ -88,6 +88,30 @@ let contadorSaidas = 0;
 // ===========================
 // A INTERNO
 // ===========================
+let wakeLock = null;
+
+async function manterTelaAcesa(){
+
+    try{
+
+        if('wakeLock' in navigator){
+
+            wakeLock = await navigator.wakeLock.request('screen');
+
+            console.log("Wake Lock ativado");
+
+            wakeLock.addEventListener('release', () => {
+                console.log("Wake Lock liberado");
+            });
+        }
+
+    }catch(err){
+
+        console.log("Erro Wake Lock:", err);
+
+    }
+}
+//====================================================
 function mostrarAlerta(mensagem, tipo = "normal"){
 
     const box = document.getElementById("alertaQuiz");
@@ -444,6 +468,7 @@ function iniciarIdentificacao(){
 	document.body.className = "quiz-page ident-mode";
 
     if(quiz.alunoNome){
+	manterTelaAcesa();
     iniciarWatermark();
     
     monitorarComportamento();
@@ -646,7 +671,7 @@ async function confirmarAluno(){
 
         localStorage.setItem("quizAtual", JSON.stringify(quiz));
         location.reload();
-
+         
     }catch(e){
            btn.classList.remove("btn-loading");
             btn.disabled = false;
@@ -726,8 +751,8 @@ function monitorarComportamento(){
         );
 
     } else {
-
-        // 🔥 AQUI ESTÁ A CORREÇÃO
+        manterTelaAcesa();
+        // AQUI ESTÁ A CORREÇÃO
         setTimeout(() => {
             gerarQRFake();
         }, 300);
@@ -828,6 +853,7 @@ window.onload = function(){
 }	
 	
 window.addEventListener("focus", () => {
+	manterTelaAcesa();
     setTimeout(gerarQRFake, 300);
 });
 	

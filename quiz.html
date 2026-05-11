@@ -602,7 +602,7 @@ async function confirmarAluno(){
     let nome = document.getElementById("nomeAluno").value.trim();
 
     nome = nome
-        .replace(/[<>={}[\]$`\\/@]/g, "")
+        .replace(/[<>={}[\]$`\\/@()";:]/g, "")
         .replace(/\s+/g, " ")
         .slice(0, 80);
 

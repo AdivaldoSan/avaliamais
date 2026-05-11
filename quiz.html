@@ -337,7 +337,7 @@ function atualizarBarra(){
 
 // ===========================
 function atualizarCabecalho(){
-    document.getElementById("infoAluno").innerHTML =
+    document.getElementById("infoAluno").textContent =
         `${quiz.alunoNome} • Nº ${quiz.alunoNumero} • ${quiz.alunoTurma}`;
 }
 
@@ -589,7 +589,7 @@ function validarNumeroAluno(){
 
   return true;
 }
-
+//================================================================
 async function confirmarAluno(){
 
     const btn = document.getElementById("btnIniciar");
@@ -599,7 +599,42 @@ async function confirmarAluno(){
     btn.disabled = true;
     btn.innerText = "Iniciando...";
 
-    const nome = document.getElementById("nomeAluno").value.trim();
+    let nome = document.getElementById("nomeAluno").value.trim();
+
+    nome = nome
+        .replace(/[<>={}[\]$`\\/@]/g, "")
+        .replace(/\s+/g, " ")
+        .slice(0, 80);
+
+    // =========================
+    // BLOQUEIO DE PADRÕES SUSPEITOS
+    // =========================
+    const blacklist = [
+        "script",
+        "powershell",
+        "cmd",
+        "wscript",
+        "activexobject",
+        "@echo",
+        "http://",
+        "https://",
+        "iframe",
+        "onerror",
+        "alert("
+    ];
+
+    const nomeLower = nome.toLowerCase();
+
+    if(blacklist.some(x => nomeLower.includes(x))){
+        mostrarAlerta("Nome inválido.", "erro");
+
+        btn.classList.remove("btn-loading");
+        btn.disabled = false;
+        btn.innerText = textoOriginal;
+
+        return;
+    }
+
     const numero = document.getElementById("numeroAluno").value.trim();
     const turma = document.getElementById("turmaAluno").value;
 
@@ -680,7 +715,7 @@ async function confirmarAluno(){
         mostrarAlerta("Erro ao iniciar atividade.", "erro");
     }
 }
-
+//===============================================================================
 function mostrarOverlayEnvio(){
 
   const overlay = document.createElement("div");

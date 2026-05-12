@@ -376,13 +376,33 @@ async function enviarRespostasParcial(){
     if(enviando) return;
     enviando = true;
 
+	let ip = "";
+
+	try{
+	
+	    const ipData = await fetch("https://api.ipify.org?format=json")
+	        .then(r => r.json());
+	
+	    ip = ipData.ip;
+	
+	}catch(e){
+	
+	    console.log("IP não obtido");
+	
+	}
+
     const envio = {
         aplicacao: quiz.id,
         nomeQuiz: quiz.nome,
         aluno: quiz.alunoNome,
         numero: quiz.alunoNumero,
         turma: quiz.alunoTurma,
-        respostas: respostas
+        respostas: respostas,
+
+		ip: ip,
+	    userAgent: navigator.userAgent,
+	    larguraTela: screen.width,
+	    alturaTela: screen.height
     };
 
     try {
@@ -418,6 +438,21 @@ async function finalizar(){
     // ==============================
     // NOVO FORMATO DE ENVIO (1 registro)
     // ==============================
+    let ip = "";
+
+	try{
+	
+	    const ipData = await fetch("https://api.ipify.org?format=json")
+	        .then(r => r.json());
+	
+	    ip = ipData.ip;
+	
+	}catch(e){
+	
+	    console.log("IP não obtido");
+	
+	}
+	
 
     const envio = {
         aplicacao: quiz.id,
@@ -425,8 +460,13 @@ async function finalizar(){
         aluno: quiz.alunoNome,
         numero: quiz.alunoNumero,
         turma: quiz.alunoTurma,
-        respostas: respostas
-    };
+        respostas: respostas,
+
+		ip: ip,
+	    userAgent: navigator.userAgent,
+	    larguraTela: screen.width,
+	    alturaTela: screen.height
+	    };
 
     try {
 

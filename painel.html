@@ -84,7 +84,7 @@ async function carregarAplicacoes(){
     esconderLoading();
 }
 //==================================
-function gerarAcoesHTML(id, totalRespostas){
+function gerarAcoesHTML(id, totalRespostas, liberarGabarito=false){
 
     const ehImpressa = String(id).startsWith("PRV_");
 
@@ -94,26 +94,53 @@ function gerarAcoesHTML(id, totalRespostas){
 
     let html = `<div class="acoes">`;
 
-    // 🔹 PRV_ → só relatório
+    // =====================
+    // PROVAS IMPRESSAS
+    // =====================
     if(ehImpressa){
 
         if(totalRespostas > 0){
+
             html += `
                 <button class="btn-acao"
                     title="Relatório"
                     onclick="abrirResultados('${id}')">
                     📊
                 </button>
+
+                <button class="btn-acao"
+                    title="${
+                        liberarGabarito
+                        ? "Bloquear gabarito"
+                        : "Liberar gabarito"
+                    }"
+
+                    onclick="
+                        alterarStatusGabarito(
+                            '${id}',
+                            '${liberarGabarito ? "NAO":"SIM"}'
+                        )
+                    ">
+
+                    ${liberarGabarito ? "🔓" : "🔒"}
+
+                </button>
             `;
+
         }else{
+
             return "—";
+
         }
 
     }else{
 
-        // 🔹 APL_ → sempre tem ações base
+        // =====================
+        // APL_
+        // =====================
 
         if(totalRespostas > 0){
+
             html += `
                 <button class="btn-acao"
                     title="Relatório"
@@ -137,7 +164,7 @@ function gerarAcoesHTML(id, totalRespostas){
             </button>
 
             <button class="btn-acao"
-                title="Copiar link para os alunos"
+                title="Copiar link"
                 onclick="copiarLink('${linkAluno}')">
                 🔗
             </button>
@@ -204,6 +231,8 @@ function montarTabela(dados, contagem){
         const turmas = l[6] ? JSON.parse(l[6]) : [];
         const status = l[7];
         const linkRelatorio = l[8];
+        const liberarGabarito =
+        String(l[9] || "NAO").trim() === "SIM";
 
         const dataFormatada =
             new Date(l[3]).toLocaleDateString("pt-BR");
@@ -225,7 +254,7 @@ function montarTabela(dados, contagem){
                 <td class="text-center">${totalRespostas}</td>
 
               <td class="text-center">
-                ${gerarAcoesHTML(id, totalRespostas)}
+                ${gerarAcoesHTML(id, totalRespostas, liberarGabarito)}
               </td>
 
                 <td class="text-center">
@@ -700,6 +729,77 @@ async function alterarStatus(id, status){
     }
 
     carregarAplicacoes();
+}
+//==========================================================================
+async function alterarStatusGabarito(
+id,
+novoStatus
+){
+
+const token =
+localStorage
+.getItem(
+"TOKEN"
+);
+
+const retorno =
+await fetchProtegido(
+
+API,
+
+{
+
+method:
+"POST",
+
+body:
+JSON.stringify({
+
+tipo:
+"alterarStatusGabarito",
+
+token,
+
+id,
+
+status:
+novoStatus
+
+})
+
+}
+
+);
+
+if(!retorno)
+return;
+
+if(retorno.erro){
+
+mostrarToast(
+retorno.erro
+);
+
+return;
+
+}
+
+mostrarToast(
+
+novoStatus==="SIM"
+
+?
+
+"Gabarito liberado"
+
+:
+
+"Gabarito bloqueado"
+
+);
+
+carregarAplicacoes();
+
 }
 //==========================================================================
 function abrirQRCode(id){

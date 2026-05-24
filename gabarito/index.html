@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Avalia+ | Consultar Gabarito</title>
+
+<link rel="stylesheet" href="../styles.css">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="alternate icon" href="../favicon.ico">
+
+<style>
+#codigo{
+width:100%;
+padding:12px;
+font-size:22px;
+text-align:center;
+border-radius:8px;
+margin-top:15px;
+letter-spacing:2px;
+}
+
+#gabaritoFinal{
+margin-top:20px;
+font-size:28px;
+font-weight:700;
+letter-spacing:8px;
+}
+
+.grade{
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:10px;
+margin-top:20px;
+}
+
+.questao{
+background:#1b2430;
+padding:12px;
+border-radius:10px;
+text-align:center;
+}
+
+.questao b{
+display:block;
+font-size:24px;
+margin-top:6px;
+}
+
+.erro{
+margin-top:20px;
+color:#ff6b6b;
+}
+</style>
+
+</head>
+
+<body class="aluno-page">
+
+<div class="aluno-header">
+<div class="aluno-header-left">
+Avalia+ | Plataforma de Avaliação Digital
+</div>
+
+<img src="../favicon.svg"
+class="aluno-logo-direita"
+alt="Avalia+">
+</div>
+
+
+<div class="aluno-container">
+
+<div class="aluno-card">
+
+<h2>Consultar Gabarito</h2>
+
+<p>
+Digite o código impresso no rodapé da prova.
+</p>
+
+<input
+id="codigo"
+placeholder="223227.6"
+autocomplete="off"
+inputmode="numeric">
+
+<button
+id="btnConsultar"
+onclick="consultar()"
+class="btn-azul"
+style="margin-top:15px;width:100%;">
+
+Ver Gabarito
+
+</button>
+
+<div id="resultado"></div>
+
+</div>
+
+</div>
+
+
+<script src="../js/config.js"></script>
+<script src="../js/conexao.js"></script>
+
+<script>
+
+const codigo=document.getElementById("codigo");
+const resultado=document.getElementById("resultado");
+const btn=document.getElementById("btnConsultar");
+
+codigo.addEventListener("keyup",e=>{
+if(e.key==="Enter")consultar();
+});
+
+async function consultar(){
+
+const valor=codigo.value.trim();
+
+resultado.innerHTML="";
+
+if(!/^\d+\.\d+$/.test(valor)){
+resultado.innerHTML='<div class="erro">Código inválido.<br>Ex: 223227.6</div>';
+return;
+}
+
+btn.disabled=true;
+
+resultado.innerHTML=`
+<div class="loader-grande"></div>
+<p>Consultando gabarito...</p>
+`;
+
+try{
+
+const resp=
+await fetch(
+API+
+"?tipo=obterGabaritoPublico&codigo="+
+encodeURIComponent(valor)
+);
+
+const dados=
+await resp.json();
+
+btn.disabled=false;
+
+if(dados.erro){
+
+const mensagens={
+
+gabarito_bloqueado:
+"🔒 Gabarito ainda não foi liberado.",
+
+aluno_nao_encontrado:
+"Código não encontrado.",
+
+nao_encontrado:
+"Aplicação não encontrada."
+
+};
+
+resultado.innerHTML=
+`<div class="erro">
+${mensagens[dados.erro]||"Erro ao consultar."}
+</div>`;
+
+return;
+
+}
+
+resultado.innerHTML=`
+
+<h3>
+Aluno Nº ${dados.numero}
+</h3>
+
+<div class="grade">
+
+${dados.questoes.map(q=>`
+
+<div class="questao">
+
+Q${q.numero}
+
+<b>${q.gabarito}</b>
+
+</div>
+
+`).join("")}
+
+</div>
+
+<div id="gabaritoFinal">
+
+${dados.gabarito}
+
+</div>
+
+`;
+
+}catch(e){
+
+btn.disabled=false;
+
+resultado.innerHTML=
+'<div class="erro">Erro ao conectar.</div>';
+
+}
+
+}
+
+</script>
+
+</body>
+
+</html>

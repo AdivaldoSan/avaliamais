@@ -35,7 +35,7 @@ margin-top:20px;
 }
 
 .questao{
-background:#1b2430;
+background:#dadee6;
 padding:12px;
 border-radius:10px;
 text-align:center;
@@ -80,7 +80,7 @@ Digite o código impresso no rodapé da prova.
 
 <input
 id="codigo"
-placeholder="223227.6"
+placeholder=" Ex: 223227.6"
 autocomplete="off"
 inputmode="numeric">
 
@@ -109,12 +109,22 @@ Ver Gabarito
 const codigo=document.getElementById("codigo");
 const resultado=document.getElementById("resultado");
 const btn=document.getElementById("btnConsultar");
+let carregado=false;
 
 codigo.addEventListener("keyup",e=>{
 if(e.key==="Enter")consultar();
 });
 
 async function consultar(){
+  
+if(carregado){
+codigo.value="";
+resultado.innerHTML="";
+btn.innerText="Ver Gabarito";
+codigo.focus();
+carregado=false;
+return;
+}
 
 const valor=codigo.value.trim();
 
@@ -151,7 +161,7 @@ if(dados.erro){
 const mensagens={
 
 gabarito_bloqueado:
-"🔒 Gabarito ainda não foi liberado.",
+"Gabarito ainda não foi liberado.",
 
 aluno_nao_encontrado:
 "Código não encontrado.",
@@ -170,6 +180,9 @@ return;
 
 }
 
+btn.innerText="Nova Consulta";
+carregado=true;
+  
 resultado.innerHTML=`
 
 <h3>
@@ -192,11 +205,6 @@ Q${q.numero}
 
 </div>
 
-<div id="gabaritoFinal">
-
-${dados.gabarito}
-
-</div>
 
 `;
 

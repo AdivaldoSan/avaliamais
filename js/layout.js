@@ -59,6 +59,11 @@ function criarLayout(){
        Corrigir Prova
     </a>
 
+    <a href="gabarito_professor.html"
+        class="${paginaAtual==='gabarito_professor.html'?'active':''}">
+        Consultar Gabarito
+    </a>
+
     <a href="provas.html"
        onclick="return acessarProvas(event)"
        class="${paginaAtual==='provas.html'?'active':''}">

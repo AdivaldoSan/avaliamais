@@ -223,6 +223,7 @@ if(!quiz.embaralhado){
 let enviando = false;
 let atual = quiz.atual || 0;
 let respostas = quiz.respostas || [];
+let timerQuestao = null;
 
 document.getElementById("tituloQuiz").innerText = quiz.nome;
 
@@ -241,7 +242,56 @@ function mostrarQuestao(){
     document.getElementById("contador").innerHTML =
         `Questão <b>${atual+1}</b> de <b>${quiz.questoes.length}</b>`;
 
-    document.getElementById("btnAvancar").style.display = "inline-block";
+    const btn = document.getElementById("btnAvancar");
+
+	btn.style.display = "inline-block";
+
+	const tempoMinimo = Number(quiz.tempoMinimo || 0);
+
+if(timerQuestao){
+    clearInterval(timerQuestao);
+}
+
+if(tempoMinimo > 0){
+
+    let restante = tempoMinimo;
+
+    btn.disabled = true;
+    btn.innerText = `Aguardar ${restante}s`;
+
+    timerQuestao = setInterval(()=>{
+
+        restante--;
+
+        if(restante <= 0){
+
+            clearInterval(timerQuestao);
+
+            btn.disabled = false;
+
+            if(atual === quiz.questoes.length - 1){
+                btn.innerText = "Finalizar";
+            }else{
+                btn.innerText = "Avançar";
+            }
+
+            return;
+        }
+
+        btn.innerText = `Aguardar ${restante}s`;
+
+    },1000);
+
+}else{
+
+    btn.disabled = false;
+
+    if(atual === quiz.questoes.length - 1){
+        btn.innerText = "Finalizar";
+    }else{
+        btn.innerText = "Avançar";
+    }
+}
 
     atualizarBarra();
 

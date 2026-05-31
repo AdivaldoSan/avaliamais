@@ -230,9 +230,6 @@ document.getElementById("tituloQuiz").innerText = quiz.nome;
 //iniciarIdentificacao();
 
 
-// ===========================
-// MOSTRAR QUESTÃO
-// ===========================
 function mostrarQuestao(){
 
     atualizarCabecalho();
@@ -244,28 +241,48 @@ function mostrarQuestao(){
 
     const btn = document.getElementById("btnAvancar");
 
-	btn.style.display = "inline-block";
+    btn.style.display = "inline-block";
 
-	const tempoMinimo = Number(quiz.tempoMinimo || 0);
+    const chaveTimer =
+        `timer_${quiz.id}_${atual}`;
 
-if(timerQuestao){
-    clearInterval(timerQuestao);
-}
+    const tempoMinimo =
+        Number(quiz.tempoMinimo || 0);
 
-if(tempoMinimo > 0){
+    if(timerQuestao){
+        clearInterval(timerQuestao);
+        timerQuestao = null;
+    }
 
-    let restante = tempoMinimo;
+    if(tempoMinimo > 0){
 
-    btn.disabled = true;
-    btn.innerText = `Aguardar ${restante}s`;
+        let inicio = localStorage.getItem(chaveTimer);
 
-    timerQuestao = setInterval(()=>{
+        if(!inicio){
 
-        restante--;
+            inicio = Date.now();
+
+            localStorage.setItem(
+                chaveTimer,
+                inicio
+            );
+
+        }
+
+        const tempoPassado =
+            Math.floor(
+                (Date.now() - Number(inicio))
+                / 1000
+            );
+
+        let restante =
+            tempoMinimo - tempoPassado;
+
+        if(restante < 0){
+            restante = 0;
+        }
 
         if(restante <= 0){
-
-            clearInterval(timerQuestao);
 
             btn.disabled = false;
 
@@ -275,23 +292,48 @@ if(tempoMinimo > 0){
                 btn.innerText = "Avançar";
             }
 
-            return;
+        }else{
+
+            btn.disabled = true;
+            btn.innerText = `Aguardar ${restante}s`;
+
+            timerQuestao = setInterval(()=>{
+
+                restante--;
+
+                if(restante <= 0){
+
+                    clearInterval(timerQuestao);
+                    timerQuestao = null;
+
+                    btn.disabled = false;
+
+                    if(atual === quiz.questoes.length - 1){
+                        btn.innerText = "Finalizar";
+                    }else{
+                        btn.innerText = "Avançar";
+                    }
+
+                    return;
+                }
+
+                btn.innerText = `Aguardar ${restante}s`;
+
+            },1000);
+
         }
 
-        btn.innerText = `Aguardar ${restante}s`;
-
-    },1000);
-
-}else{
-
-    btn.disabled = false;
-
-    if(atual === quiz.questoes.length - 1){
-        btn.innerText = "Finalizar";
     }else{
-        btn.innerText = "Avançar";
+
+        btn.disabled = false;
+
+        if(atual === quiz.questoes.length - 1){
+            btn.innerText = "Finalizar";
+        }else{
+            btn.innerText = "Avançar";
+        }
+
     }
-}
 
     atualizarBarra();
 
@@ -307,76 +349,122 @@ if(tempoMinimo > 0){
         ];
 
         alternativas = embaralharArray(alternativas);
+
         q.ordemExibida = alternativas;
-        localStorage.setItem("quizAtual", JSON.stringify(quiz));
+
+        localStorage.setItem(
+            "quizAtual",
+            JSON.stringify(quiz)
+        );
 
     }else{
+
         alternativas = q.ordemExibida;
+
     }
 
     document.getElementById("areaQuestao").innerHTML = `
     <div class="questao-layout">
 
         <div class="questao-conteudo">
+
             <div class="enunciado">
+
                 <div class="questao-numero">
                     Questão ${atual+1}
                 </div>
+
                 <div class="questao-texto">
+
                     ${q.ENUNCIADO}
 
-					${(() => {
-					    const img = normalizarImagem(q.IMAGEM || q.IMG);
-					    if(!img) return "";
-					
-					    return `
-					        <div style="margin-top:10px;text-align:center;">
-					            <img src="${img}"
-					                 style="max-width:70%; height:auto; border-radius:8px;">
-					        </div>
-					    `;
-					})()}
+                    ${(() => {
+
+                        const img =
+                            normalizarImagem(
+                                q.IMAGEM || q.IMG
+                            );
+
+                        if(!img) return "";
+
+                        return `
+                            <div style="
+                                margin-top:10px;
+                                text-align:center;
+                            ">
+                                <img
+                                    src="${img}"
+                                    style="
+                                    max-width:70%;
+                                    height:auto;
+                                    border-radius:8px;
+                                    ">
+                            </div>
+                        `;
+
+                    })()}
+
                 </div>
+
             </div>
 
             <div class="alternativas">
+
                 ${alternativas.map((alt,i)=>`
+
                     <label class="alt-item">
-                        <input type="radio" name="resp" value="${alt.letra}">
-                        <span>${String.fromCharCode(97+i)}) ${alt.texto}</span>
+
+                        <input
+                            type="radio"
+                            name="resp"
+                            value="${alt.letra}">
+
+                        <span>
+                            ${String.fromCharCode(97+i)})
+                            ${alt.texto}
+                        </span>
+
                     </label>
+
                 `).join("")}
+
             </div>
+
         </div>
 
         <div class="qr-lateral">
 
-    <div class="qr-alerta">
-        ⚠ Monitorada<br>
-        Proibido print e foto
-   	 </div>
+            <div class="qr-alerta">
+                ⚠ Monitorada<br>
+                Proibido print e foto
+            </div>
 
-    <div id="qrFake"></div>
+            <div id="qrFake"></div>
 
-	</div>
+        </div>
 
     </div>
-`;
+    `;
 
-    const respAnterior = respostas.find(r => r.questao === q.ID);
-    if(respAnterior){
-        const radio = document.querySelector(
-            `input[name="resp"][value="${respAnterior.marcada}"]`
+    const respAnterior =
+        respostas.find(
+            r => r.questao === q.ID
         );
+
+    if(respAnterior){
+
+        const radio =
+            document.querySelector(
+                `input[name="resp"][value="${respAnterior.marcada}"]`
+            );
+
         if(radio) radio.checked = true;
+
     }
 
-    if(atual === quiz.questoes.length-1){
-        document.getElementById("btnAvancar").innerText = "Finalizar";
-    }
-	gerarQRFake();
+    gerarQRFake();
+
 }
-
 
 // ===========================
 function atualizarBarra(){
@@ -408,6 +496,10 @@ function avancar(){
         correta: quiz.questoes[atual].GABARITO
     });
 
+	localStorage.removeItem(
+	    `timer_${quiz.id}_${atual}`
+	);
+	
     atual++;
 
     quiz.atual = atual;

@@ -12,6 +12,24 @@
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="styles_impressao.css">
 
+<style>
+.pagina{
+    position: relative;
+}
+
+.aviso-gabarito{
+    position: absolute;
+    left: -120px;
+    top: 55%;
+    transform: rotate(-90deg);
+    transform-origin: center;
+    font-size: 11px;
+    color: #444;
+    font-weight: 600;
+    white-space: nowrap;
+}
+</style>
+	
 </head>
 
 <body>
@@ -480,8 +498,13 @@ function criarPaginaCompleta(escola, disciplina, turma, numero, instrucoesHTML){
     <div class="linha-divisoria"></div>
 
     ${instrucoesHTML}
-
-    <div class="questoes">
+	
+    <div class="aviso-gabarito">
+	  Confira o resultado em
+	  <strong>avaliamaisedu.com.br/gabarito</strong>
+	</div>
+	
+	    <div class="questoes">
       <div class="coluna col-esq"></div>
       <div class="coluna col-dir"></div>
     </div>

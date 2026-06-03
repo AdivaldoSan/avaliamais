@@ -148,10 +148,7 @@ function abrirScanner(){
 //=================================================================
 function abrirModalScanner(){
 
-    const path = window.location.pathname.split("/")[1];
-    const base = path ? `/${path}` : "";
-    
-    const link = window.location.origin + base + "/corrigir";
+    const link = window.location.origin + "/corrigir";
     const linkDisplay = link
       .replace(/^https?:\/\//, "")
       .replace(/^www\./, "");

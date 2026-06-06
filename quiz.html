@@ -83,6 +83,7 @@
 <script>
 let ultimoEvento = 0;
 let contadorSaidas = 0;
+let inicioOculto = null;
 	
 
 // ===========================
@@ -947,46 +948,63 @@ function gerarQRFake(){
 
     el.appendChild(info);
 }
+//========================================
 function monitorarComportamento(){
 
-    // troca de aba
- document.addEventListener("visibilitychange", () => {
+    let inicioOculto = null;
 
-    if(document.hidden){
+    document.addEventListener("visibilitychange", () => {
 
-        contadorSaidas++;
-        registrarEvento("aba_oculta");
+        if(document.hidden){
 
-        if(contadorSaidas >= 3){
-            bloquearPorSuspeita();
-            return;
+            inicioOculto = Date.now();
+
+        }else{
+
+            if(inicioOculto){
+
+                const segundos =
+                    (Date.now() - inicioOculto) / 1000;
+
+                if(segundos >= 20){
+
+                    contadorSaidas++;
+
+                    registrarEvento("aba_oculta");
+
+                    if(contadorSaidas >= 3){
+                        bloquearPorSuspeita();
+                        return;
+                    }
+
+                    mostrarAlerta(
+                        `⚠️ Saída da atividade (${contadorSaidas}/3)`,
+                        "erro"
+                    );
+
+                    esconderAlertaDepois(4000);
+                }
+
+                inicioOculto = null;
+            }
+
+            manterTelaAcesa();
+
+            setTimeout(() => {
+                gerarQRFake();
+            }, 300);
         }
 
-        mostrarAlerta(
-            `⚠️ Saída da atividade (${contadorSaidas}/3)`,
-            "erro"
-        );
-
-    } else {
-        manterTelaAcesa();
-        // AQUI ESTÁ A CORREÇÃO
-        setTimeout(() => {
-            gerarQRFake();
-        }, 300);
-
-        mostrarAlerta("⚠️ Retorno detectado.", "erro");
-        esconderAlertaDepois(4000);
-    }
-
-});
-
+    });
+	
+    /*
     // perda de foco
     window.addEventListener("blur", () => {
         mostrarAlerta("⚠️ Saída da tela detectada");
         registrarEvento("blur");
-    });
+    });*/
 
-    // tentativa de print (limitado)
+    // tentativa de print
     document.addEventListener("keydown", (e)=>{
         if(e.key === "PrintScreen"){
             mostrarAlerta("⚠️ Captura de tela detectada");
@@ -994,7 +1012,7 @@ function monitorarComportamento(){
         }
     });
 }
-	
+//============================================================	
 
 function registrarEvento(tipo){
 

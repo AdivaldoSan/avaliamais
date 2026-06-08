@@ -76,6 +76,10 @@
 	<label>Extras:</label>
 	<input id="extras" type="number" value="0" min="0" max="5">
 
+	<label>Pular números:</label>
+       <input id="pularNumeros"
+       placeholder="Ex: 5,12,18">
+
 	<label>Instruções:</label>
     <textarea id="instrucoes" rows="4" placeholder="Ex: Resolva as questões com atenção..."></textarea>  
 
@@ -738,6 +742,53 @@ async function gerarPreview(){
 
   const total = qtd + extras
 
+  // =========================
+// VALIDAR NÚMEROS PULADOS
+// =========================
+const numerosPulados = document.getElementById("pularNumeros")
+  ?.value
+  .split(",")
+  .map(n => parseInt(n.trim()))
+  .filter(n => !isNaN(n)) || []
+
+const invalidos = numerosPulados.filter(
+  n => n < 1 || n > total
+)
+
+if(invalidos.length > 0){
+
+  msgBox.innerHTML =
+    `Número(s) inválido(s): ${invalidos.join(", ")}<br>
+     Limite permitido: 1 até ${total}`
+
+  msgBox.style.display = "block"
+  return
+}
+
+const repetidos = numerosPulados.filter(
+  (n, i, arr) => arr.indexOf(n) !== i
+)
+
+if(repetidos.length > 0){
+
+  msgBox.innerHTML =
+    `Número(s) repetido(s): ${[...new Set(repetidos)].join(", ")}`
+
+  msgBox.style.display = "block"
+  return
+}
+
+if(numerosPulados.length >= total){
+
+  msgBox.innerHTML =
+    "Não é possível pular todos os números da prova."
+
+  msgBox.style.display = "block"
+  return
+}
+const totalEfetivo = total - numerosPulados.length
+//=====Fim do Bloco de valiação do pular números======	 
+
   const folhas = document.getElementById("folhas")
   folhas.innerHTML = ""
   travarBotoes()
@@ -760,9 +811,18 @@ async function gerarPreview(){
     `
   }
 
-  // ================= LOOP DAS PROVAS =================
-  for(let i=1;i<=total;i++){
 
+ 	 
+  // ================= LOOP DAS PROVAS =================
+  let geradas = 0
+	 
+  for(let i=1;i<=total;i++){
+	  
+     if(numerosPulados.includes(i)){
+	    continue
+	  }
+    geradas++
+	
     const versaoAtual = prova.versoes[(i-1) % prova.versoes.length]
     const questoesVersao = versaoAtual.questoes
 
@@ -788,12 +848,14 @@ async function gerarPreview(){
     pagina.offsetHeight
     await renderizarFluxo(pagina, questoesVersao, folhas, i)
 
-	const perc = Math.round((i / total) * 100)
-
-		atualizarBarra(
-		  `Gerando ${i}/${total} (${perc}%)`,
-		  perc
-		)  
+	const perc = Math.round(
+	  (geradas / totalEfetivo) * 100
+	)
+	
+	atualizarBarra(
+	  `Gerando ${geradas}/${totalEfetivo} (${perc}%)`,
+	  perc
+	) 
 	  
     // largura real
     const larguraColuna = pagina.querySelector(".col-esq").clientWidth

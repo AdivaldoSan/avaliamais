@@ -995,7 +995,7 @@ async function carregarListaProvas(){
         provaSelecionada = p
 
         try{
-          window.TURMAS_PERMITIDAS = JSON.parse(p.turmas || "[]")
+          window.TURMAS_PERMITIDAS = JSON.parse(p.turmas || "[]").sort()
         }catch{
           window.TURMAS_PERMITIDAS = []
         }

@@ -504,7 +504,7 @@ function criarPaginaCompleta(escola, disciplina, turma, numero, instrucoesHTML){
     ${instrucoesHTML}
 	
     <div class="aviso-gabarito">
-	  Confira o resultado em
+	  Gabarito disponível em: 
 	  <strong>avaliamaisedu.com.br/gabarito</strong>
 	</div>
 	
@@ -747,7 +747,11 @@ async function gerarPreview(){
 // =========================
 const numerosPulados = document.getElementById("pularNumeros")
   ?.value
+  .replace(/\./g, ",")
+  .replace(/;/g, ",")
   .split(",")
+
+	
   .map(n => parseInt(n.trim()))
   .filter(n => !isNaN(n)) || []
 

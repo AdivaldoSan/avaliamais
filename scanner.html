@@ -242,6 +242,24 @@ TELA DO SCANNER
   </div>
 </div>
 
+<div id="areaManualEmergencia" style="
+  display:none;
+  width:90vw;
+  margin:10px auto;
+">
+
+  <button
+    id="btnManualEmergencia"
+    class="btn confirmar"
+    style="width:100%;"
+    onclick="abrirLancamentoManual()">
+
+    Lançamento Manual
+
+  </button>
+
+</div>
+
 <!-- BOTÃO VOLTAR (FORA DA CÂMERA) -->
 <div id="acoesScanner" style="
   width:90vw;
@@ -322,7 +340,7 @@ TELA DO SCANNER
 
   </div>
 
-<!-- 🔥 BOTÃO FORA DO PAINEL -->
+<!-- BOTÃO FORA DO PAINEL -->
 <div id="acoesResultado" style="
   display:none;
   width:90vw;
@@ -371,6 +389,7 @@ TELA DO SCANNER
     <div style="display:flex; gap:10px;">
       <button class="btn confirmar" onclick="fecharModal()">Sim</button>
       <button class="btn refazer" onclick="refazerLeitura()">Ler Novamente</button>
+      <button class="btn" onclick="abrirLancamentoManual()">Lançamento Manual</button>
     </div>
 
   </div>
@@ -414,7 +433,45 @@ TELA DO SCANNER
     </div>
 
   </div>
-</div>   
+</div>  
+
+<div id="modalManual"
+style="
+position:fixed;
+inset:0;
+background:rgba(0,0,0,.85);
+display:none;
+align-items:center;
+justify-content:center;
+z-index:1001;
+">
+
+  <div style="
+    background:#1a1a1a;
+    width:90%;
+    max-width:900px;
+    max-height:85vh;
+    overflow:auto;
+    padding:20px;
+    border-radius:12px;
+  ">
+
+    <div style="font-size:30px;margin-bottom:20px;">
+      Lançamento Manual
+    </div>
+
+    <div id="gradeManual"></div>
+
+    <div style="margin-top:20px;">
+      <button class="btn refazer"
+      onclick="fecharManual()">
+        Cancelar
+      </button>
+    </div>
+
+  </div>
+
+</div>
   
 
 <script src="https://docs.opencv.org/4.x/opencv.js"></script>
@@ -479,9 +536,33 @@ let qrFramesOK = 0
 let qrLido = false
 
 let pausado = false
+    
+let inicioLeitura = 0
+let botaoManualExibido = false
   
 let logBuffer = []
 //============================
+function abrirLancamentoManual(){
+
+  document.getElementById("modalConfirmacao").style.display="none"
+
+  document.getElementById("modalManual").style.display="flex"
+}
+//=================================================================
+function fecharManual(){
+
+  document.getElementById("modalManual").style.display="none"
+  pausado = false
+
+  capturado = false
+  framesOK = 0
+  respostasLidas = []
+
+  modo = "leitura"
+
+  atualizarUI()
+}
+//=============================
 function mapearTurma(numero){
 
   let n = parseInt(numero)
@@ -1225,8 +1306,19 @@ function loop(){
   canvas.height = video.videoHeight
 
   ctx.drawImage(video,0,0)
+  if(
+      modo === "leitura" &&
+      !capturado &&
+      !botaoManualExibido &&
+      (Date.now() - inicioLeitura) > 7000
+    ){
+    
+      document.getElementById("areaManualEmergencia").style.display = "block"
+    
+      botaoManualExibido = true
+    }
 
-  // 🔥 BLOQUEIO DO OPENCV
+  // BLOQUEIO DO OPENCV
   if(modo === "qr"){
     detectarQR()
     requestAnimationFrame(loop)
@@ -1245,7 +1337,12 @@ function loop(){
 
   if(!code){
     modo = "leitura"
+
+    inicioLeitura = Date.now()
+    botaoManualExibido = false
+      
     atualizarUI()
+      
     log("QR saiu → iniciando leitura")
   }
 
@@ -1309,6 +1406,8 @@ function loop(){
 
 // ==============================
 function capturarFrame(quadrados){
+  document.getElementById("areaManualEmergencia").style.display = "none"
+  botaoManualExibido = false
 
   capturado=true
   atualizarUI()

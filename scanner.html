@@ -446,30 +446,72 @@ justify-content:center;
 z-index:1001;
 ">
 
+<div style="
+background:#fff;
+width:96vw;
+    
+height:78vh;
+    
+border-radius:18px;
+overflow:hidden;
+display:flex;
+flex-direction:column;
+">
+
   <div style="
-    background:#1a1a1a;
-    width:90%;
-    max-width:900px;
-    max-height:85vh;
-    overflow:auto;
-    padding:20px;
-    border-radius:12px;
+  background:#0066ff;
+  color:white;
+  padding:20px;
   ">
 
-    <div style="font-size:30px;margin-bottom:20px;">
+    <div style="
+    font-size:44px;
+    font-weight:700;
+    ">
       Lançamento Manual
     </div>
 
-    <div id="gradeManual"></div>
-
-    <div style="margin-top:20px;">
-      <button class="btn refazer"
-      onclick="fecharManual()">
-        Cancelar
-      </button>
+    <div style="
+    font-size:26px;
+    margin-top:5px;
+    ">
+      Marque a alternativa de cada questão
     </div>
 
   </div>
+
+  <div id="gradeManual"
+  style="
+  flex:1;
+  overflow:auto;
+  padding:15px;
+  ">
+  </div>
+
+  <div style="
+  padding:15px;
+  border-top:1px solid #ddd;
+  display:flex;
+  gap:10px;
+  ">
+
+    <button
+    class="btn refazer"
+    style="flex:1;"
+    onclick="fecharManual()">
+      Cancelar
+    </button>
+
+    <button
+    class="btn confirmar"
+    style="flex:1;"
+    onclick="confirmarManual()">
+      Confirmar
+    </button>
+
+  </div>
+
+</div>
 
 </div>
   
@@ -546,6 +588,8 @@ function abrirLancamentoManual(){
 
   document.getElementById("modalConfirmacao").style.display="none"
 
+  gerarGradeManual()
+
   document.getElementById("modalManual").style.display="flex"
 }
 //=================================================================
@@ -562,6 +606,149 @@ function fecharManual(){
 
   atualizarUI()
 }
+//=============================
+function confirmarManual(){
+
+  respostasLidas = []
+
+  for(let i=1;i<=TEMPLATE.questoes;i++){
+
+    const marcado = document.querySelector(
+      `input[name="q${i}"]:checked`
+    )
+
+    respostasLidas.push(
+      marcado ? marcado.value : "-"
+    )
+  }
+
+  document.getElementById("modalManual").style.display = "none"
+
+  confirmar()
+}
+//=============================
+function gerarGradeManual(){
+
+  let html = `
+    <div style="
+      display:grid;
+      grid-template-columns:70px repeat(4,1fr);
+      gap:10px;
+      align-items:center;
+      font-weight:bold;
+      margin-bottom:20px;
+      text-align:center;
+      font-size:40px;
+      color:#00aaff;
+    ">
+      <div></div>
+      <div>A</div>
+      <div>B</div>
+      <div>C</div>
+      <div>D</div>
+    </div>
+  `
+
+  for(let i=1;i<=TEMPLATE.questoes;i++){
+
+    html += `
+      <div style="
+        display:grid;
+        grid-template-columns:70px repeat(4,1fr);
+        gap:10px;
+        align-items:center;
+        margin-bottom:14px;
+        text-align:center;
+        min-height:42px;
+      ">
+
+        <div style="font-weight:700; font-size:40px;color:#0066ff;">
+          Q${String(i).padStart(2,"0")}
+        </div>
+
+<label style="
+display:flex;
+justify-content:center;
+align-items:center;
+height:48px;
+cursor:pointer;
+">
+  <input
+    type="radio"
+    name="q${i}"
+    value="A"
+    style="
+      width:40px;
+      height:40px;
+      accent-color:#0066ff;
+      margin:0;
+    ">
+</label>
+
+<label style="
+display:flex;
+justify-content:center;
+align-items:center;
+height:48px;
+cursor:pointer;
+">
+  <input
+    type="radio"
+    name="q${i}"
+    value="B"
+    style="
+      width:40px;
+      height:40px;
+      accent-color:#0066ff;
+      margin:0;
+    ">
+</label>
+        
+<label style="
+display:flex;
+justify-content:center;
+align-items:center;
+height:48px;
+cursor:pointer;
+">
+  <input
+    type="radio"
+    name="q${i}"
+    value="C"
+    style="
+      width:40px;
+      height:40px;
+      accent-color:#0066ff;
+      margin:0;
+    ">
+</label>
+        
+<label style="
+display:flex;
+justify-content:center;
+align-items:center;
+height:48px;
+cursor:pointer;
+">
+  <input
+    type="radio"
+    name="q${i}"
+    value="C"
+    style="
+      width:40px;
+      height:40px;
+      accent-color:#0066ff;
+      margin:0;
+    ">
+</label>
+
+      </div>
+    `
+  }
+
+  document.getElementById("gradeManual").innerHTML = html
+}
+
 //=============================
 function mapearTurma(numero){
 

@@ -586,8 +586,8 @@ let logBuffer = []
 //============================
 function abrirLancamentoManual(){
 
-  document.getElementById("modalConfirmacao").style.display="none"
-
+  //document.getElementById("modalConfirmacao").style.display="none"
+  fecharModal()
   gerarGradeManual()
 
   document.getElementById("modalManual").style.display="flex"
@@ -624,6 +624,9 @@ function confirmarManual(){
     
      
   document.getElementById("modalManual").style.display = "none"
+    
+  document.getElementById("areaManualEmergencia").style.display = "none"
+  botaoManualExibido = false
 
   confirmar()
 }
@@ -909,7 +912,7 @@ async function processarFila(){
 
   localStorage.setItem("FILA_ENVIO", JSON.stringify(novaFila))
 
-  console.log("📦 Restantes:", novaFila.length)
+  console.log("Restantes:", novaFila.length)
 
   processandoFila = false
 }
@@ -1579,7 +1582,7 @@ function loop(){
 
   if(quadrados.length===4){
     framesOK++
-    if(framesOK>6){
+    if(framesOK>10){
       capturarFrame(quadrados)
     }
   }else{
@@ -1627,7 +1630,7 @@ function capturarFrame(quadrados){
 
   cv.imshow(canvas,dst)
 
-  ultimaImagem = dst.clone()
+  //ultimaImagem = dst.clone()
 
   lerRespostas(dst)
   if(pausado) return
@@ -1667,8 +1670,8 @@ function lerRespostas(mat){
 
       let t=new cv.Mat()
       cv.threshold(gray,t,0,255,
-        cv.THRESH_BINARY_INV+cv.THRESH_OTSU)
-6
+      cv.THRESH_BINARY_INV+cv.THRESH_OTSU)
+
       valores.push(cv.countNonZero(t)/(30*30))
 
       gray.delete(); t.delete(); roi.delete()
@@ -1934,13 +1937,22 @@ function proximo(){
   respostasLidas = []
 
   modo = "qr"
+    
+  inicioLeitura = 0
+  botaoManualExibido = false
+
+  document.getElementById("areaManualEmergencia").style.display = "none"
+  document.getElementById("msgGabarito").style.display = "none"
+
+
   gabaritoQR = null
   qrLido = false
   qrFramesOK = 0
-
+    
+  limparMensagemQR()
   atualizarUI()
 
-  // 🔥 RESET VISUAL COMPLETO
+  // RESET VISUAL COMPLETO
   document.getElementById("painelResultado").style.display = "none"
   document.getElementById("acoesResultado").style.display = "none"
 
@@ -1950,6 +1962,8 @@ function proximo(){
 
   document.getElementById("botoes").style.display = "flex"
   canvas.style.display = "block"
+
+  ctx.clearRect(0,0,canvas.width,canvas.height)
 
   document.getElementById("status").innerText = "Aguardando QR..."
   document.getElementById("painelResultado").style.height = "auto"

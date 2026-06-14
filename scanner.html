@@ -585,9 +585,12 @@ let botaoManualExibido = false
 let logBuffer = []
 //============================
 function abrirLancamentoManual(){
-
+  document.getElementById("areaManualEmergencia").style.display = "none"
   //document.getElementById("modalConfirmacao").style.display="none"
+  
   fecharModal()
+
+  pausado = true
   gerarGradeManual()
 
   document.getElementById("modalManual").style.display="flex"
@@ -627,7 +630,7 @@ function confirmarManual(){
     
   document.getElementById("areaManualEmergencia").style.display = "none"
   botaoManualExibido = false
-
+  pausado = true
   confirmar()
 }
 //=============================
@@ -1751,7 +1754,10 @@ if(vazias.length > 0 && !pausado){
   }
 // ==============================
 function confirmar(){
-
+    
+  document.getElementById("areaManualEmergencia").style.display = "none"
+  botaoManualExibido = false
+    
   let gabarito = gabaritoQR.split("")
   const versao = window.PROVA_ATUAL.versoes.find(v => v.v == versaoQR)
 
@@ -1931,7 +1937,7 @@ function ordenar(q){
 
 // ==============================
 function proximo(){
-
+  pausado = false
   capturado = false
   framesOK = 0
   respostasLidas = []

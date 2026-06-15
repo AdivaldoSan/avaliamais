@@ -624,6 +624,21 @@ function confirmarManual(){
       marcado ? marcado.value : "-"
     )
   }
+
+  const vazias = respostasLidas.filter(r => r === "-").length
+
+    if(vazias > 0){
+    
+      const continuar = confirm(
+        "Existem " + vazias +
+        " questão(ões) sem marcação.\n\nDeseja continuar mesmo assim?"
+      )
+    
+      if(!continuar){
+        return
+      }
+    }
+
     
      
   document.getElementById("modalManual").style.display = "none"

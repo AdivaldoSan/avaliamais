@@ -1945,18 +1945,25 @@ label {
 
 /* ALINHAMENTOS */
 
-/* Nº */
+/* COLUNA EDITAR */
 #modalResultados th:nth-child(1),
 #modalResultados td:nth-child(1){
+  width:40px;
+  text-align:center;
+}
+
+/* Nº */
+#modalResultados th:nth-child(2),
+#modalResultados td:nth-child(2){
   width:50px;
   text-align:center;
 }
 
-/* NOME */
-#modalResultados th:nth-child(2),
-#modalResultados td:nth-child(2){
-  width: 250px;       
-  max-width: 250px;
+/* ALUNO */
+#modalResultados th:nth-child(3),
+#modalResultados td:nth-child(3){
+  width:200px;
+  min-width:200px;
   text-align:left;
   overflow:hidden;
   text-overflow:ellipsis;
@@ -1964,8 +1971,8 @@ label {
 }
 
 /* QUESTÕES */
-#modalResultados th:nth-child(n+3):nth-child(-n+22),
-#modalResultados td:nth-child(n+3):nth-child(-n+22){
+#modalResultados th:nth-child(n+4):nth-child(-n+23),
+#modalResultados td:nth-child(n+4):nth-child(-n+23){
   text-align:center;
   width:36px;
 }
@@ -2037,7 +2044,7 @@ label {
   text-align:center;
 }
 
-#modalResultados td:nth-child(2){
+#modalResultados td:nth-child(3){
   text-align:left;
 }
 

@@ -1068,10 +1068,8 @@ function montarAbasTurmas(dados){
 
     lista.forEach(a=>{
 
-        html += `
-        <tr>
-        
-            <td>
+        const botaoEditar = a.nome
+            ? `
                 <button
                     class="btn-acao"
                     onclick="editarAluno(
@@ -1081,8 +1079,14 @@ function montarAbasTurmas(dados){
                     )">
                     ✏️
                 </button>
-            </td>
+            `
+            : "";
+    
+        html += `
+        <tr>
         
+            <td>${botaoEditar}</td>
+    
             <td>${a.numero}</td>
             <td>${a.nome || "-"}</td>
         `;
@@ -1556,21 +1560,127 @@ function gerarResumo(lista){
 //=============================
 function editarAluno(turma, numero, nome){
 
+    const modal = document.createElement("div");
+
+    modal.id = "modalEditarAluno";
+
+    modal.style.cssText = `
+        position:fixed;
+        inset:0;
+        z-index:100000;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+    `;
+
+    modal.innerHTML = `
+        <div class="modal-bg"></div>
+
+        <div class="modal-box" style="
+            max-width:500px;
+            width:95%;
+        ">
+
+            <h3>Editar aluno</h3>
+
+            <div style="margin-top:15px;">
+
+                <label>Nome</label>
+
+                <input
+                    id="editNomeAluno"
+                    type="text"
+                    value="${nome || ""}"
+                    style="width:100%;margin-top:5px;"
+                >
+
+            </div>
+
+            <div style="margin-top:15px;">
+
+                <label>Número</label>
+
+                <input
+                    id="editNumeroAluno"
+                    type="number"
+                    value="${numero}"
+                    style="width:100%;margin-top:5px;"
+                >
+
+            </div>
+
+            <div style="
+                margin-top:20px;
+                display:flex;
+                gap:10px;
+                justify-content:flex-end;
+            ">
+
+                <button
+                    onclick="fecharModalEditarAluno()">
+                    Cancelar
+                </button>
+
+                <button
+                    class="btn-primary"
+                    onclick="confirmarEdicaoAluno(
+                        '${turma}',
+                        ${numero}
+                    )">
+                    Continuar
+                </button>
+
+            </div>
+
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+}
+//=========================
+function fecharModalEditarAluno(){
+
+    const modal =
+        document.getElementById("modalEditarAluno");
+
+    if(modal) modal.remove();
+}
+//=========================
+function confirmarEdicaoAluno(
+    turma,
+    numeroOriginal
+){
+
+    const novoNome =
+        document.getElementById("editNomeAluno")
+        .value
+        .trim();
+
+    const novoNumero =
+        Number(
+            document.getElementById("editNumeroAluno")
+            .value
+        );
+
     console.log({
         idAplicacao:idAplicacaoAtual,
         turma,
-        numero,
-        nome
+        numeroOriginal,
+        novoNumero,
+        novoNome
     });
 
     alert(
-        "Turma: " + turma +
-        "\nNúmero: " + numero +
-        "\nNome: " + nome
+        "VALIDAÇÃO\n\n" +
+
+        "Turma: " + turma + "\n" +
+        "Número atual: " + numeroOriginal + "\n" +
+        "Novo número: " + novoNumero + "\n" +
+        "Novo nome: " + novoNome
     );
 
-}
-    
+    fecharModalEditarAluno();
+}    
 </script>
 
 </body>

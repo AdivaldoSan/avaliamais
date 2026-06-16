@@ -1042,11 +1042,13 @@ function montarAbasTurmas(dados){
 
     // DETECTA SE TEM NOTA
    const temNota = idAplicacaoAtual.startsWith("PRV_");
+      
     let html = `
     <div class="tabela-scroll">
     <table class="tabela">
     <thead>
         <tr>
+            <th></th>
             <th>Nº</th>
             <th>Aluno</th>
     `;
@@ -1068,6 +1070,19 @@ function montarAbasTurmas(dados){
 
         html += `
         <tr>
+        
+            <td>
+                <button
+                    class="btn-acao"
+                    onclick="editarAluno(
+                        '${turma}',
+                        ${a.numero},
+                        '${(a.nome || "").replace(/'/g,"\\'")}'
+                    )">
+                    ✏️
+                </button>
+            </td>
+        
             <td>${a.numero}</td>
             <td>${a.nome || "-"}</td>
         `;
@@ -1153,7 +1168,7 @@ function atualizarApenasValores(listaAlunos) {
 
     listaAlunos.forEach(aluno => {
         // Busca a linha desse aluno específico pelo número (primeira coluna)
-        const linha = Array.from(tabela.rows).find(r => r.cells[0].innerText == aluno.numero);
+        const linha = Array.from(tabela.rows).find(r => r.cells[1].innerText == aluno.numero);
         
         if (linha) {
             // Atualiza cada questão
@@ -1196,7 +1211,7 @@ function atualizarDadosSemRecriar(listaAlunos) {
         // 2. Lógica para preencher os "buracos" (ex: do 19 ao 25)
         // Pega o número da última linha que está aparecendo na tela agora
         let ultimoNumeroNaTela = linhasExistentes.length > 0 
-            ? parseInt(linhasExistentes[linhasExistentes.length - 1].cells[0].innerText) 
+            ? parseInt(linhasExistentes[linhasExistentes.length - 1].cells[1].innerText) 
             : 0;
 
         // Se o aluno que chegou tem um número maior que o próximo da sequência,
@@ -1207,7 +1222,7 @@ function atualizarDadosSemRecriar(listaAlunos) {
         }
 
         // 3. Busca a linha do aluno atual
-        let linha = Array.from(linhasExistentes).find(r => r.cells[0].innerText == aluno.numero);
+        let linha = Array.from(linhasExistentes).find(r => r.cells[1].innerText == aluno.numero);
 
         // 4. Se a linha não existe (é o fim da lista), cria ela
         if (!linha) {
@@ -1215,8 +1230,8 @@ function atualizarDadosSemRecriar(listaAlunos) {
         }
 
         // 5. INJETA OS DADOS REAIS NA LINHA (Nome e Notas)
-        if (linha.cells[1].innerText !== (aluno.nome || "-")) {
-            linha.cells[1].innerText = aluno.nome || "-";
+        if (linha.cells[2].innerText !== (aluno.nome || "-")) {
+            linha.cells[2].innerText = aluno.nome || "-";
         }
 
         aluno.questoes.forEach((q, i) => {
@@ -1258,8 +1273,9 @@ function atualizarDadosSemRecriar(listaAlunos) {
 function criarLinhaVazia(corpoTabela, numero, listaReferencia) {
     const novaLinha = corpoTabela.insertRow();
     
-    novaLinha.insertCell(0).innerText = numero; // Nº
-    novaLinha.insertCell(1).innerText = "-";    // Nome
+    novaLinha.insertCell(0).innerHTML = "";
+    novaLinha.insertCell(1).innerText = numero; // Nº
+    novaLinha.insertCell(2).innerText = "-";    // Nome
 
     // Cria as colunas de questões baseadas no primeiro aluno da lista
     const qtdQuestoes = listaReferencia[0].questoes.length;
@@ -1517,7 +1533,7 @@ function gerarResumo(lista){
 
     });
 
-    // 👇 evita divisão por zero
+    // evita divisão por zero
     const media = respondentes > 0
         ? Math.round(soma / respondentes)
         : 0;
@@ -1536,6 +1552,23 @@ function gerarResumo(lista){
         questaoMaisAcerto,
         respondentes 
     };
+}
+//=============================
+function editarAluno(turma, numero, nome){
+
+    console.log({
+        idAplicacao:idAplicacaoAtual,
+        turma,
+        numero,
+        nome
+    });
+
+    alert(
+        "Turma: " + turma +
+        "\nNúmero: " + numero +
+        "\nNome: " + nome
+    );
+
 }
     
 </script>

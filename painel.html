@@ -1818,6 +1818,7 @@ function abrirConfirmacaoEdicao(
                 </button>
 
                 <button
+                    id="btnConfirmarEdicao"
                     class="btn-primary"
                     onclick="confirmarEdicaoFinal(
                         '${turmaOriginal}',
@@ -1847,8 +1848,13 @@ async function confirmarEdicaoFinal(
 
     const token = localStorage.getItem("TOKEN");
 
-    mostrarLoading("Salvando alteração...");
+   const btn = document.getElementById("btnConfirmarEdicao");
+    
+    btn.disabled = true;
+    btn.classList.add("btn-loading");
+    btn.innerText = "Salvando...";
 
+    
     const retorno = await fetchProtegido(API,{
         method:"POST",
         body:JSON.stringify({
@@ -1866,25 +1872,29 @@ async function confirmarEdicaoFinal(
         })
     });
 
-    esconderLoading();
+
 
     if(!retorno) return;
 
     if(retorno.erro){
 
-        if(retorno.erro==="numero_ja_existe"){
-            alert("Já existe um aluno com esse número na turma selecionada.");
-            return;
-        }
+    btn.disabled = false;
+    btn.classList.remove("btn-loading");
+    btn.innerText = "Confirmar alteração";
 
-        if(retorno.erro==="registro_nao_encontrado"){
-            alert("Registro não encontrado.");
-            return;
-        }
-
-        alert(retorno.erro);
+    if(retorno.erro==="numero_ja_existe"){
+        alert("Já existe um aluno com esse número na turma selecionada.");
         return;
     }
+
+    if(retorno.erro==="registro_nao_encontrado"){
+        alert("Registro não encontrado.");
+        return;
+    }
+
+    alert(retorno.erro);
+    return;
+}
     fecharConfirmacaoEdicao();
     mostrarToast("Aluno atualizado com sucesso.");
 

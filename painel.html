@@ -21,7 +21,8 @@
 <script>
 let pollingResultados = null;
 let idAplicacaoAtual = null;
-
+let recriarTabela = false;
+    
 function iniciarPagina(){
 
     criarLayout();
@@ -358,8 +359,18 @@ async function atualizarResultadosTempoReal() {
         const alunos = dados.turmas[nomeDaTurmaAtiva] || [];
         
         // Atualiza linhas (Nomes, Notas, Círculos) sem mexer no scroll
-        atualizarDadosSemRecriar(alunos);
+        if(recriarTabela){
         
+            mostrarTurma(nomeDaTurmaAtiva);
+        
+            recriarTabela = false;
+        
+        }else{
+        
+            atualizarDadosSemRecriar(alunos);
+        
+        }
+                        
         // Atualiza o resumo do rodapé
         const resumo = gerarResumo(alunos);
         if (resumo) {
@@ -1177,7 +1188,7 @@ function atualizarApenasValores(listaAlunos) {
         if (linha) {
             // Atualiza cada questão
             aluno.questoes.forEach((q, i) => {
-                const celula = linha.cells[i + 2]; // +2 porque pula Nº e Nome
+                const celula = linha.cells[i + 3]; // +2 porque pula Nº e Nome
                 if (!celula || !q) return;
 
                 const circulo = celula.querySelector(".resposta-circulo");
@@ -1238,8 +1249,22 @@ function atualizarDadosSemRecriar(listaAlunos) {
             linha.cells[2].innerText = aluno.nome || "-";
         }
 
+        linha.cells[0].innerHTML = aluno.nome
+        ? `
+        <button
+            class="btn-acao"
+            onclick="editarAluno(
+                '${document.querySelector('.abaTurma[style*="background"]').dataset.turma}',
+                ${aluno.numero},
+                '${(aluno.nome || "").replace(/'/g,"\\'")}'
+            )">
+            ✏️
+        </button>
+        `
+        : "";
+
         aluno.questoes.forEach((q, i) => {
-            const celula = linha.cells[i + 2];
+            const celula = linha.cells[i + 3];
             if (celula && q) {
                 let circulo = celula.querySelector(".resposta-circulo");
                 const textoMarcado = q.marcada || "-";
@@ -1812,7 +1837,7 @@ function abrirConfirmacaoEdicao(
     document.body.appendChild(modal);
 }
 //=============================================
-function confirmarEdicaoFinal(
+async function confirmarEdicaoFinal(
     turmaOriginal,
     novaTurma,
     numeroOriginal,
@@ -1820,19 +1845,55 @@ function confirmarEdicaoFinal(
     novoNome
 ){
 
-    console.log({
-        idAplicacao:idAplicacaoAtual,
-        turmaOriginal,
-        novaTurma,
-        numeroOriginal,
-        novoNumero,
-        novoNome
+    const token = localStorage.getItem("TOKEN");
+
+    mostrarLoading("Salvando alteração...");
+
+    const retorno = await fetchProtegido(API,{
+        method:"POST",
+        body:JSON.stringify({
+            tipo:"editarAlunoResposta",
+            token,
+
+            idAplicacao:idAplicacaoAtual,
+
+            turmaOriginal,
+            numeroOriginal,
+
+            novaTurma,
+            novoNumero,
+            novoNome
+        })
     });
 
-    alert("PRONTO PARA CHAMAR A API");
+    esconderLoading();
 
+    if(!retorno) return;
+
+    if(retorno.erro){
+
+        if(retorno.erro==="numero_ja_existe"){
+            alert("Já existe um aluno com esse número na turma selecionada.");
+            return;
+        }
+
+        if(retorno.erro==="registro_nao_encontrado"){
+            alert("Registro não encontrado.");
+            return;
+        }
+
+        alert(retorno.erro);
+        return;
+    }
     fecharConfirmacaoEdicao();
+    mostrarToast("Aluno atualizado com sucesso.");
+
+    recriarTabela = true;
+
+    await atualizarResultadosTempoReal();
+
 }
+
 
 </script>
 

@@ -228,12 +228,14 @@ function montarTabela(dados, contagem){
             disciplina = "-";
         }
         
-        const totalRespostas = contagem[id] || 0;
-        const turmas = l[6] ? JSON.parse(l[6]) : [];
-        const status = l[7];
-        const linkRelatorio = l[8];
-        const liberarGabarito =
-        String(l[9] || "NAO").trim() === "SIM";
+const totalRespostas = contagem[id] || 0;
+const turmas = l[6] ? JSON.parse(l[6]) : [];
+const status = l[7];
+
+const liberarGabarito =
+    String(l[8] || "NAO").trim() === "SIM";
+
+const tempoMinimo = l[9];
 
         const dataFormatada =
             new Date(l[3]).toLocaleDateString("pt-BR");
@@ -295,14 +297,24 @@ async function atualizarTabelaTempoReal(){
         // coluna RESPOSTAS (coluna 6 → index 5)
         tr.children[5].innerText = total;
 
+        // Se acabou de receber a primeira resposta,
+        // recria a tabela uma única vez para exibir os botões.
+        if (
+            total > 0 &&
+            tr.children[6].innerText.trim() === "—"
+        ){
+            carregarAplicacoes();
+            return;
+        }
+
          if(total > 0 && tr.dataset.iniciado !== "1"){
             tr.style.background = "#ededed";
             tr.dataset.iniciado = "1";
         }
 
         // coluna AÇÕES (coluna 7 → index 6)
-        const tdAcoes = tr.children[6];
-        tdAcoes.innerHTML = gerarAcoesHTML(id, total);
+        //const tdAcoes = tr.children[6];
+        //tdAcoes.innerHTML = gerarAcoesHTML(id, total);
 
     });
 }
@@ -742,75 +754,44 @@ async function alterarStatus(id, status){
     carregarAplicacoes();
 }
 //==========================================================================
-async function alterarStatusGabarito(
-id,
-novoStatus
-){
+async function alterarStatusGabarito(id, novoStatus){
 
-const token =
-localStorage
-.getItem(
-"TOKEN"
-);
+    const token = localStorage.getItem("TOKEN");
 
-const retorno =
-await fetchProtegido(
+    mostrarLoading(
+        novoStatus === "SIM"
+            ? "Liberando gabarito..."
+            : "Bloqueando gabarito..."
+    );
 
-API,
+    const retorno = await fetchProtegido(API,{
+        method:"POST",
+        body:JSON.stringify({
+            tipo:"alterarStatusGabarito",
+            token:token,
+            id:id,
+            status:novoStatus
+        })
+    });
 
-{
+    if(!retorno){
+        esconderLoading();
+        return;
+    }
 
-method:
-"POST",
+    if(retorno.erro){
+        esconderLoading();
+        mostrarToast(retorno.erro);
+        return;
+    }
 
-body:
-JSON.stringify({
+    await carregarAplicacoes(); // já esconde o loading ao terminar
 
-tipo:
-"alterarStatusGabarito",
-
-token,
-
-id,
-
-status:
-novoStatus
-
-})
-
-}
-
-);
-
-if(!retorno)
-return;
-
-if(retorno.erro){
-
-mostrarToast(
-retorno.erro
-);
-
-return;
-
-}
-
-mostrarToast(
-
-novoStatus==="SIM"
-
-?
-
-"Gabarito liberado"
-
-:
-
-"Gabarito bloqueado"
-
-);
-
-carregarAplicacoes();
-
+    mostrarToast(
+        novoStatus === "SIM"
+            ? "Gabarito liberado."
+            : "Gabarito bloqueado."
+    );
 }
 //==========================================================================
 function abrirQRCode(id){

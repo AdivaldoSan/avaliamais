@@ -1511,12 +1511,12 @@ function gerarResumo(lista){
 
     lista.forEach(a=>{
 
-        // 👇 IGNORA QUEM NÃO RESPONDEU
+        // IGNORA QUEM NÃO RESPONDEU
         const respondeu = a.questoes.some(q => q !== null);
 
         if(!respondeu) return;
 
-        respondentes++; // 👈 conta só quem respondeu
+        respondentes++; // conta só quem respondeu
 
         soma += a.percentual;
 
@@ -1598,6 +1598,30 @@ function editarAluno(turma, numero, nome){
 
             <div style="margin-top:15px;">
 
+                <label>Turma</label>
+            
+                <select
+                    id="editTurmaAluno"
+                    style="width:100%;margin-top:5px;"
+                >
+                    ${
+                        Object.keys(window.resultadosCache)
+                        .map(t=>`
+                            <option
+                                value="${t}"
+                                ${t===turma ? "selected" : ""}
+                            >
+                                ${t}
+                            </option>
+                        `)
+                        .join("")
+                    }
+                </select>
+            
+            </div>
+
+            <div style="margin-top:15px;">
+
                 <label>Número</label>
 
                 <input
@@ -1646,10 +1670,15 @@ function fecharModalEditarAluno(){
     if(modal) modal.remove();
 }
 //=========================
-function confirmarEdicaoAluno(
-    turma,
-    numeroOriginal
-){
+function confirmarEdicaoAluno(turma, numeroOriginal){
+
+    const novaTurma =
+        document.getElementById("editTurmaAluno")
+        .value;
+
+    const nomeOriginal =
+        document.getElementById("editNomeAluno")
+        .defaultValue;
 
     const novoNome =
         document.getElementById("editNomeAluno")
@@ -1662,25 +1691,149 @@ function confirmarEdicaoAluno(
             .value
         );
 
+    if(
+        turma === novaTurma &&
+        numeroOriginal === novoNumero &&
+        nomeOriginal === novoNome
+    ){
+        alert("Nenhuma alteração foi realizada.");
+        return;
+    }
+
+    abrirConfirmacaoEdicao(
+        turma,
+        novaTurma,
+        numeroOriginal,
+        novoNumero,
+        nomeOriginal,
+        novoNome
+    );
+} 
+//=================================================
+function fecharConfirmacaoEdicao(){
+
+    const modal =
+        document.getElementById("modalConfirmarEdicao");
+
+    if(modal) modal.remove();
+}
+//=========================================
+function abrirConfirmacaoEdicao(
+    turmaOriginal,
+    novaTurma,
+    numeroOriginal,
+    novoNumero,
+    nomeOriginal,
+    novoNome
+){
+
+    fecharModalEditarAluno();
+
+    const modal = document.createElement("div");
+
+    modal.id = "modalConfirmarEdicao";
+
+    modal.style.cssText = `
+        position:fixed;
+        inset:0;
+        z-index:100001;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+    `;
+
+    modal.innerHTML = `
+        <div class="modal-bg"></div>
+
+        <div class="modal-box" style="
+            max-width:550px;
+            width:95%;
+        ">
+
+            <h3>Confirmar alteração</h3>
+            
+
+            <div style="
+                margin-top:15px;
+                line-height:1.8;
+                text-align:left;
+            ">
+            
+                ${
+                    turmaOriginal !== novaTurma
+                    ? `<div><b>Turma:</b> ${turmaOriginal} ➜ ${novaTurma}</div>`
+                    : ""
+                }
+            
+                ${
+                    numeroOriginal !== novoNumero
+                    ? `<div><b>Número:</b> ${numeroOriginal} ➜ ${novoNumero}</div>`
+                    : ""
+                }
+            
+                ${
+                    nomeOriginal !== novoNome
+                    ? `<div><b>Nome:</b> ${nomeOriginal} ➜ ${novoNome}</div>`
+                    : ""
+                }
+            
+            </div>
+                        
+
+            <div style="
+                margin-top:20px;
+                display:flex;
+                gap:10px;
+                justify-content:flex-end;
+            ">
+
+                <button
+                    onclick="fecharConfirmacaoEdicao()">
+                    Voltar
+                </button>
+
+                <button
+                    class="btn-primary"
+                    onclick="confirmarEdicaoFinal(
+                        '${turmaOriginal}',
+                        '${novaTurma}',
+                        ${numeroOriginal},
+                        ${novoNumero},
+                        '${novoNome.replace(/'/g,"\\'")}'
+                    )">
+                    Confirmar alteração
+                </button>
+
+            </div>
+
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+}
+//=============================================
+function confirmarEdicaoFinal(
+    turmaOriginal,
+    novaTurma,
+    numeroOriginal,
+    novoNumero,
+    novoNome
+){
+
     console.log({
         idAplicacao:idAplicacaoAtual,
-        turma,
+        turmaOriginal,
+        novaTurma,
         numeroOriginal,
         novoNumero,
         novoNome
     });
 
-    alert(
-        "VALIDAÇÃO\n\n" +
+    alert("PRONTO PARA CHAMAR A API");
 
-        "Turma: " + turma + "\n" +
-        "Número atual: " + numeroOriginal + "\n" +
-        "Novo número: " + novoNumero + "\n" +
-        "Novo nome: " + novoNome
-    );
+    fecharConfirmacaoEdicao();
+}
 
-    fecharModalEditarAluno();
-}    
 </script>
 
 </body>

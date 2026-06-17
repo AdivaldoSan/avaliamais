@@ -246,7 +246,8 @@ function montarTabela(dados, contagem){
             );
 
         html += `
-            <tr data-id="${id}">
+            <tr data-id="${id}"
+                data-gabarito="${liberarGabarito ? "SIM" : "NAO"}">
                 <td>${l[1]} ${ehImpressa ? "🖨️" : "🌐"}</td>
                 <td>${disciplina}</td>
                 <td>${dataFormatada}</td>
@@ -302,7 +303,13 @@ async function atualizarTabelaTempoReal(){
 
         // coluna AÇÕES (coluna 7 → index 6)
         const tdAcoes = tr.children[6];
-        tdAcoes.innerHTML = gerarAcoesHTML(id, total);
+        
+        // Descobre o estado atual do cadeado
+        const liberarGabarito = tr.dataset.gabarito === "SIM";
+        
+        // Recria mantendo o estado
+        tdAcoes.innerHTML =
+            gerarAcoesHTML(id, total, liberarGabarito);
 
     });
 }
@@ -742,74 +749,47 @@ async function alterarStatus(id, status){
     carregarAplicacoes();
 }
 //==========================================================================
-async function alterarStatusGabarito(
-id,
-novoStatus
-){
+async function alterarStatusGabarito(id,novoStatus){
 
-const token =
-localStorage
-.getItem(
-"TOKEN"
+const token = localStorage.getItem("TOKEN");
+mostrarLoading( novoStatus === "SIM"
+        ? "Liberando gabarito..."
+        : "Bloqueando gabarito..."
 );
-
-const retorno =
-await fetchProtegido(
-
-API,
-
+const retorno = await fetchProtegido(API,
 {
-
-method:
-"POST",
-
-body:
-JSON.stringify({
-
-tipo:
-"alterarStatusGabarito",
-
+method: "POST",
+body:JSON.stringify({
+tipo:"alterarStatusGabarito",
 token,
-
 id,
-
-status:
-novoStatus
-
+status: novoStatus
 })
-
-}
-
-);
+});
+esconderLoading();
 
 if(!retorno)
 return;
 
 if(retorno.erro){
-
-mostrarToast(
-retorno.erro
-);
-
+mostrarToast(retorno.erro);
 return;
-
 }
 
-mostrarToast(
+const tr = document.querySelector(`tr[data-id="${id}"]`);
 
-novoStatus==="SIM"
-
+if(tr){
+    tr.dataset.gabarito = novoStatus;
+}
+    
+mostrarToast(novoStatus==="SIM"
 ?
-
 "Gabarito liberado"
-
 :
-
 "Gabarito bloqueado"
-
 );
 
-carregarAplicacoes();
+await carregarAplicacoes();
 
 }
 //==========================================================================

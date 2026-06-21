@@ -6,7 +6,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Avalia+ | Acompanhamento</title>
+<title>Avalia+ | Acompanhamento...</title>
 
 <link rel="icon" href="favicon.svg">
 
@@ -69,50 +69,68 @@ function iniciarPagina(){
 
 </div>
 
+<div style="margin-bottom:25px;text-align:right;">
 
-<div class="cards-acomp">
-
-    <div class="card-acomp">
-        <h3>👥 Alunos</h3>
-        <span id="cardAlunos">0</span>
-    </div>
-
-    <div class="card-acomp">
-        <h3>📝 Atividades</h3>
-        <span id="cardAtividades">0</span>
-    </div>
-
-    <div class="card-acomp">
-        <h3>✅ Realizadas</h3>
-        <span id="cardRealizadas">0</span>
-    </div>
-
-    <div class="card-acomp">
-        <h3>❌ Pendentes</h3>
-        <span id="cardPendentes">0</span>
-    </div>
+    <button class="btn-primary" onclick="consultarAcompanhamento()">
+        🔎 Consultar
+    </button>
 
 </div>
 
 
-<div class="area-tabela">
+<div id="resultadoAcompanhamento" style="display:none;">
 
-    <div style="
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        height:300px;
-        color:#64748b;
-        font-size:16px;
-    ">
+    <div class="cards-acomp">
 
-        Selecione uma turma para iniciar o acompanhamento.
+        <div class="card-acomp">
+            <h3>👥 Alunos</h3>
+            <span id="cardAlunos">0</span>
+        </div>
+
+        <div class="card-acomp">
+            <h3>📝 Atividades</h3>
+            <span id="cardAtividades">0</span>
+        </div>
+
+        <div class="card-acomp">
+            <h3>✅ Realizadas</h3>
+            <span id="cardRealizadas">0</span>
+        </div>
+
+        <div class="card-acomp">
+            <h3>❌ Pendentes</h3>
+            <span id="cardPendentes">0</span>
+        </div>
+
+    </div>
+
+
+    <div class="area-tabela" id="areaTabela">
 
     </div>
 
 </div>
 
 `;
+
+}
+
+function consultarAcompanhamento(){
+
+    document.getElementById("resultadoAcompanhamento").style.display="block";
+
+    document.getElementById("areaTabela").innerHTML=`
+        <div style="
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            height:250px;
+            color:#64748b;
+            font-size:16px;
+        ">
+            Aqui será exibido o acompanhamento da turma.
+        </div>
+    `;
 
 }
 

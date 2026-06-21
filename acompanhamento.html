@@ -1,1 +1,122 @@
+<!DOCTYPE html>
+<html lang="pt-br">
 
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Avalia+ | Acompanhamento</title>
+
+<link rel="icon" href="favicon.svg">
+
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="styles_acompanhamento.css">
+
+</head>
+
+<body>
+
+<script src="./js/config.js"></script>
+<script src="./js/conexao.js"></script>
+<script src="./js/layout.js"></script>
+
+<script>
+
+window.addEventListener("DOMContentLoaded", iniciarPagina);
+
+function iniciarPagina(){
+
+    criarLayout();
+
+    document.getElementById("conteudo").innerHTML=`
+
+<h2 style="margin-bottom:25px;">
+📋 Acompanhamento Pedagógico
+</h2>
+
+<div class="filtros-acomp">
+
+    <div>
+        <label>Turma</label>
+        <select id="filtroTurma">
+            <option>Todas</option>
+        </select>
+    </div>
+
+    <div>
+        <label>Aluno</label>
+        <select id="filtroAluno">
+            <option>Todos</option>
+        </select>
+    </div>
+
+    <div>
+        <label>Aplicação</label>
+        <select id="filtroAplicacao">
+            <option>Todas</option>
+        </select>
+    </div>
+
+    <div>
+        <label>Situação</label>
+        <select id="filtroSituacao">
+            <option>Todas</option>
+            <option>Realizou</option>
+            <option>Não realizou</option>
+        </select>
+    </div>
+
+</div>
+
+
+<div class="cards-acomp">
+
+    <div class="card-acomp">
+        <h3>👥 Alunos</h3>
+        <span id="cardAlunos">0</span>
+    </div>
+
+    <div class="card-acomp">
+        <h3>📝 Atividades</h3>
+        <span id="cardAtividades">0</span>
+    </div>
+
+    <div class="card-acomp">
+        <h3>✅ Realizadas</h3>
+        <span id="cardRealizadas">0</span>
+    </div>
+
+    <div class="card-acomp">
+        <h3>❌ Pendentes</h3>
+        <span id="cardPendentes">0</span>
+    </div>
+
+</div>
+
+
+<div class="area-tabela">
+
+    <div style="
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        height:300px;
+        color:#64748b;
+        font-size:16px;
+    ">
+
+        Selecione uma turma para iniciar o acompanhamento.
+
+    </div>
+
+</div>
+
+`;
+
+}
+
+</script>
+
+</body>
+</html>

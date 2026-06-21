@@ -136,7 +136,7 @@ carregarDadosIniciais();
 //=========================================================
 async function carregarDadosIniciais(){
 
-    mostrarLoader();
+    mostrarLoading("Carregando turmas...");
 
     try{
 
@@ -181,8 +181,7 @@ async function carregarDadosIniciais(){
 
     }finally{
 
-        esconderLoader();
-
+        esconderLoading();
     }
 
 }
@@ -271,6 +270,32 @@ Aqui será criada automaticamente a matriz de acompanhamento.
 </center>
 
 `;
+
+}
+//=========================================================
+function mostrarLoading(msg="Carregando dados..."){
+
+    const antigo = document.getElementById("loadingOverlay");
+    if(antigo) antigo.remove();
+
+    const overlay = document.createElement("div");
+    overlay.id = "loadingOverlay";
+
+    overlay.innerHTML = `
+        <div class="spinner"></div>
+        <div class="loading-text">${msg}</div>
+    `;
+
+    document.body.appendChild(overlay);
+}
+//=========================================================
+function esconderLoading(){
+
+    const overlay = document.getElementById("loadingOverlay");
+
+    if(overlay){
+        overlay.remove();
+    }
 
 }
 

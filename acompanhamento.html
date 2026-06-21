@@ -109,20 +109,28 @@ width:300px;
 </div>
 
 
+<div id="legendaAplicacoes"></div>
+
 <div
-id="areaTabela"
+class="matriz-wrapper"
 style="
 overflow:auto;
 min-height:350px;
 ">
 
+<div id="areaTabela">
+
 <center style="padding:120px;color:#64748b;">
 
-A matriz de acompanhamento será exibida aqui.
+Selecione uma turma e clique em Consultar.
 
 </center>
 
 </div>
+
+</div>
+
+
 
 </div>
 
@@ -239,33 +247,87 @@ function atualizarAplicacoes(){
 
 }
 //=========================================================
-function consultarAcompanhamento(){
+//=========================================================
+async function consultarAcompanhamento(){
 
-    document.getElementById("resultado").style.display="block";
+    const turma=document.getElementById("filtroTurma").value;
+    const aplicacao=document.getElementById("filtroAplicacao").value;
 
-    document.getElementById("resumoConsulta").innerHTML=`
+    if(!turma){
 
-<div style="font-size:18px;font-weight:600;">
+        alert("Selecione uma turma.");
 
-Turma Selecionada • Todas as atividades
+        return;
+
+    }
+
+    mostrarLoading("Montando acompanhamento...");
+
+    try{
+
+        const token=localStorage.getItem("TOKEN");
+
+        const dados=await fetchProtegido(
+
+            API+
+            "?tipo=acompanhamentoDados"+
+            "&token="+token+
+            "&turma="+encodeURIComponent(turma)+
+            "&aplicacao="+encodeURIComponent(aplicacao)
+
+        );
+
+        if(!dados)
+            return;
+
+        document.getElementById("resultado").style.display="block";
+
+        montarLegenda(dados);
+
+        montarTabela(dados);
+
+    }
+    catch(e){
+
+        console.error(e);
+
+        alert("Erro ao consultar.");
+
+    }
+    finally{
+
+        esconderLoading();
+
+    }
+
+}
+
+//=========================================================
+function montarLegenda(dados){
+
+    document.getElementById("legendaAplicacoes").innerHTML=`
+
+<div class="legenda-acomp">
+
+▶ Aplicações (${dados.aplicacoes.length})
 
 </div>
 
-<input
-id="pesquisaAluno"
-type="text"
-placeholder="🔎 Pesquisar aluno..."
-style="
-width:300px;
-">
-
 `;
+
+}
+//=========================================================
+function montarTabela(dados){
 
     document.getElementById("areaTabela").innerHTML=`
 
-<center style="padding:120px;color:#64748b;">
+<center style="padding:100px;color:#64748b;">
 
-Aqui será criada automaticamente a matriz de acompanhamento.
+API carregada com sucesso.<br><br>
+
+${dados.alunos.length} alunos<br>
+
+${dados.aplicacoes.length} aplicações
 
 </center>
 
@@ -273,6 +335,7 @@ Aqui será criada automaticamente a matriz de acompanhamento.
 
 }
 //=========================================================
+    
 function mostrarLoading(msg="Carregando dados..."){
 
     const antigo = document.getElementById("loadingOverlay");

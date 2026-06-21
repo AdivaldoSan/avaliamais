@@ -31,6 +31,8 @@ function iniciarPagina(){
 
     document.getElementById("conteudo").innerHTML=`
 
+<div class="section">
+
 <h2 style="margin-bottom:25px;">
 📋 Acompanhamento Pedagógico
 </h2>
@@ -41,13 +43,6 @@ function iniciarPagina(){
         <label>Turma</label>
         <select id="filtroTurma">
             <option>Todas</option>
-        </select>
-    </div>
-
-    <div>
-        <label>Aluno</label>
-        <select id="filtroAluno">
-            <option>Todos</option>
         </select>
     </div>
 
@@ -69,45 +64,90 @@ function iniciarPagina(){
 
 </div>
 
-<div style="margin-bottom:25px;text-align:right;">
+<div style="text-align:center;margin-top:25px;">
 
-    <button class="btn-primary" onclick="consultarAcompanhamento()">
+    <button
+        class="btn-primary"
+        style="min-width:220px;"
+        onclick="consultarAcompanhamento()">
+
         🔎 Consultar
+
     </button>
+
+</div>
 
 </div>
 
 
 <div id="resultadoAcompanhamento" style="display:none;">
 
-    <div class="cards-acomp">
+<div class="cards-acomp">
 
-        <div class="card-acomp">
-            <h3>👥 Alunos</h3>
-            <span id="cardAlunos">0</span>
-        </div>
-
-        <div class="card-acomp">
-            <h3>📝 Atividades</h3>
-            <span id="cardAtividades">0</span>
-        </div>
-
-        <div class="card-acomp">
-            <h3>✅ Realizadas</h3>
-            <span id="cardRealizadas">0</span>
-        </div>
-
-        <div class="card-acomp">
-            <h3>❌ Pendentes</h3>
-            <span id="cardPendentes">0</span>
-        </div>
-
+    <div class="card-acomp">
+        <h3>👥 Alunos</h3>
+        <span id="cardAlunos">0</span>
     </div>
 
-
-    <div class="area-tabela" id="areaTabela">
-
+    <div class="card-acomp">
+        <h3>📝 Atividades</h3>
+        <span id="cardAtividades">0</span>
     </div>
+
+    <div class="card-acomp">
+        <h3>✅ Realizadas</h3>
+        <span id="cardRealizadas">0</span>
+    </div>
+
+    <div class="card-acomp">
+        <h3>❌ Pendentes</h3>
+        <span id="cardPendentes">0</span>
+    </div>
+
+</div>
+
+
+<div class="section">
+
+<div style="
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin-bottom:20px;
+flex-wrap:wrap;
+gap:10px;
+">
+
+<h3 id="tituloResultado" style="margin:0;">
+Resultados
+</h3>
+
+<input
+id="pesquisaAluno"
+type="text"
+placeholder="🔎 Pesquisar aluno..."
+style="
+display:none;
+width:280px;
+">
+
+</div>
+
+<div
+id="areaTabela"
+style="
+min-height:300px;
+display:flex;
+justify-content:center;
+align-items:center;
+color:#64748b;
+">
+
+Nenhuma consulta realizada.
+
+</div>
+
+</div>
 
 </div>
 
@@ -115,21 +155,29 @@ function iniciarPagina(){
 
 }
 
+
 function consultarAcompanhamento(){
 
     document.getElementById("resultadoAcompanhamento").style.display="block";
 
-    document.getElementById("areaTabela").innerHTML=`
+    document.getElementById("pesquisaAluno").style.display="block";
+
+    document.getElementById("tituloResultado").innerHTML =
+        "Resultados da Consulta";
+
+    document.getElementById("areaTabela").innerHTML = `
+
         <div style="
-            display:flex;
-            justify-content:center;
-            align-items:center;
-            height:250px;
-            color:#64748b;
-            font-size:16px;
+        width:100%;
+        text-align:center;
+        padding:30px;
+        color:#64748b;
         ">
-            Aqui será exibido o acompanhamento da turma.
+
+            A tabela do acompanhamento será exibida aqui.
+
         </div>
+
     `;
 
 }

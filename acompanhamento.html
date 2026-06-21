@@ -30,6 +30,7 @@ function iniciarPagina(){
     criarLayout();
 
     document.getElementById("conteudo").innerHTML=`
+    
 
 <div class="section">
 
@@ -127,11 +128,60 @@ A matriz de acompanhamento será exibida aqui.
 </div>
 
 `;
+carregarDadosIniciais();
+}
+//=========================================================
+async function carregarDadosIniciais(){
+
+    const token = localStorage.getItem("TOKEN");
+
+    const dados = await fetchProtegido(
+        API + "?tipo=acompanhamentoInicial&token=" + token
+    );
+
+    if(!dados) return;
+
+    //================ TURMAS ================
+
+    const cmbTurma = document.getElementById("filtroTurma");
+
+    cmbTurma.innerHTML = `<option value="">Selecione...</option>`;
+
+    dados.turmas.forEach(turma=>{
+
+        cmbTurma.innerHTML += `
+            <option value="${turma}">
+                ${turma}
+            </option>
+        `;
+
+    });
+
+    //================ APLICAÇÕES ================
+
+    const cmbAplicacao = document.getElementById("filtroAplicacao");
+
+    cmbAplicacao.innerHTML = `
+        <option value="">Todas</option>
+    `;
+
+    dados.aplicacoes.forEach(a=>{
+
+        const icone =
+            a.id.startsWith("APL_")
+            ? "🌐"
+            : "🖨️";
+
+        cmbAplicacao.innerHTML += `
+            <option value="${a.id}">
+                ${icone} ${a.nome}
+            </option>
+        `;
+
+    });
 
 }
-
-
-
+//=========================================================
 function consultarAcompanhamento(){
 
     document.getElementById("resultado").style.display="block";

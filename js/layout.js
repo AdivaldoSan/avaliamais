@@ -53,6 +53,11 @@ function criarLayout(){
        Dashboard
     </a>
 
+    <a href="acompanhamento.html"
+       class="${paginaAtual==='acompanhamento.html'?'active':''}">
+       Acompanhamento
+    </a>
+
     <a href="#"
        onclick="abrirScanner()"
        class="${paginaAtual==='scanner.html'?'active':''}">

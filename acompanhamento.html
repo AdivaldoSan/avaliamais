@@ -132,47 +132,74 @@ A matriz de acompanhamento será exibida aqui.
 carregarDadosIniciais();
 }
 //=========================================================
+
 //=========================================================
 async function carregarDadosIniciais(){
 
-    const token = localStorage.getItem("TOKEN");
+    mostrarLoader();
 
-    dadosIniciais = await fetchProtegido(
-        API + "?tipo=acompanhamentoInicial&token=" + token
-    );
+    try{
 
-    if(!dadosIniciais) return;
+        const token = localStorage.getItem("TOKEN");
 
-    const cmbTurma = document.getElementById("filtroTurma");
+        dadosIniciais = await fetchProtegido(
+            API + "?tipo=acompanhamentoInicial&token=" + token
+        );
 
-    cmbTurma.innerHTML = `<option value="">Selecione...</option>`;
+        if(!dadosIniciais) return;
 
-    dadosIniciais.turmas.forEach(turma=>{
+        const cmbTurma = document.getElementById("filtroTurma");
+        const cmbAplicacao = document.getElementById("filtroAplicacao");
 
-        cmbTurma.innerHTML += `
-            <option value="${turma}">
-                ${turma}
-            </option>
+        // Turmas
+        cmbTurma.innerHTML = `
+            <option value="">Selecione...</option>
         `;
 
-    });
+        dadosIniciais.turmas.forEach(turma=>{
 
-    
+            cmbTurma.innerHTML += `
+                <option value="${turma}">
+                    ${turma}
+                </option>
+            `;
+
+        });
+
+        // Aplicações (aguarda seleção da turma)
+        cmbAplicacao.innerHTML = `
+            <option value="">Selecione uma turma...</option>
+        `;
+
+        cmbAplicacao.disabled = true;
+
+    }catch(e){
+
+        console.error(e);
+
+        alert("Erro ao carregar dados.");
+
+    }finally{
+
+        esconderLoader();
+
+    }
+
 }
-//=========================================================
 //=========================================================
 function atualizarAplicacoes(){
 
     const turma = document.getElementById("filtroTurma").value;
 
     const cmbAplicacao = document.getElementById("filtroAplicacao");
+    cmbAplicacao.disabled = false;
 
     if(!turma){
     
         cmbAplicacao.innerHTML = `
             <option value="">Selecione uma turma...</option>
         `;
-    
+        cmbAplicacao.disabled = true;
         return;
     
     }

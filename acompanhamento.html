@@ -22,6 +22,7 @@
 <script src="./js/layout.js"></script>
 
 <script>
+let dadosIniciais = null;
 
 window.addEventListener("DOMContentLoaded", iniciarPagina);
 
@@ -46,7 +47,7 @@ Consulte rapidamente a participação dos alunos nas atividades aplicadas.
 
     <div>
         <label>Turma</label>
-        <select id="filtroTurma">
+        <select id="filtroTurma" onchange="atualizarAplicacoes()">
             <option>Selecione...</option>
         </select>
     </div>
@@ -131,23 +132,22 @@ A matriz de acompanhamento será exibida aqui.
 carregarDadosIniciais();
 }
 //=========================================================
+//=========================================================
 async function carregarDadosIniciais(){
 
     const token = localStorage.getItem("TOKEN");
 
-    const dados = await fetchProtegido(
+    dadosIniciais = await fetchProtegido(
         API + "?tipo=acompanhamentoInicial&token=" + token
     );
 
-    if(!dados) return;
-
-    //================ TURMAS ================
+    if(!dadosIniciais) return;
 
     const cmbTurma = document.getElementById("filtroTurma");
 
     cmbTurma.innerHTML = `<option value="">Selecione...</option>`;
 
-    dados.turmas.forEach(turma=>{
+    dadosIniciais.turmas.forEach(turma=>{
 
         cmbTurma.innerHTML += `
             <option value="${turma}">
@@ -157,15 +157,46 @@ async function carregarDadosIniciais(){
 
     });
 
-    //================ APLICAÇÕES ================
+    
+}
+//=========================================================
+//=========================================================
+function atualizarAplicacoes(){
+
+    const turma = document.getElementById("filtroTurma").value;
 
     const cmbAplicacao = document.getElementById("filtroAplicacao");
 
-    cmbAplicacao.innerHTML = `
-        <option value="">Todas</option>
-    `;
+    if(!turma){
+    
+        cmbAplicacao.innerHTML = `
+            <option value="">Selecione uma turma...</option>
+        `;
+    
+        return;
+    
+    }
 
-    dados.aplicacoes.forEach(a=>{
+    cmbAplicacao.innerHTML = `<option value="">Todas</option>`;
+
+    if(!dadosIniciais) return;
+
+    dadosIniciais.aplicacoes.forEach(a=>{
+
+        let turmas=[];
+
+        try{
+
+            turmas = JSON.parse(a.turmas || "[]");
+
+        }catch(e){
+
+            turmas=[];
+
+        }
+
+        if(turma && !turmas.includes(turma))
+            return;
 
         const icone =
             a.id.startsWith("APL_")

@@ -87,170 +87,15 @@ min-height:450px;
 
 }
 
-.tabela-acomp{
-
-width:100%;
-border-collapse:collapse;
-
-}
-
-.tabela-acomp th{
-
-background:#2563eb;
-color:#fff;
-
-padding:10px;
-
-font-size:13px;
-font-weight:600;
-
-position:sticky;
-top:0;
-
-white-space:nowrap;
-
-}
-
-.tabela-acomp td{
-
-padding:9px;
-
-border-bottom:1px solid #ececec;
-
-text-align:center;
-
-white-space:nowrap;
-
-}
-
-.tabela-acomp td:first-child,
-.tabela-acomp th:first-child{
-
-position:sticky;
-left:0;
-background:#fff;
-z-index:2;
-
-}
-
-.tabela-acomp td:nth-child(2),
-.tabela-acomp th:nth-child(2){
-
-position:sticky;
-left:55px;
-background:#fff;
-z-index:2;
-text-align:left;
-
-}
-
-.tabela-acomp tr:hover{
-
-background:#f8fafc;
-
-}
-
-.status-ok{
-
-color:#16a34a;
-font-weight:bold;
-
-}
-
-.status-nao{
-
-color:#dc2626;
-font-weight:bold;
-
-}
-
-@media(max-width:900px){
-
-.filtros-acomp{
-
-flex-direction:column;
-align-items:stretch;
-
-}
-
-.filtros-acomp select{
-
-width:100%;
-max-width:none;
-
-}
-
-.btn-consultar{
-
-width:100%;
-
-}
-
-.resumo-consulta{
-
-flex-direction:column;
-align-items:flex-start;
-
-}
-
-#pesquisaAluno{
-
-width:100%;
-
-}
-
-}
-
 /*==========================
-LEGENDA
+TABELA
 ==========================*/
 
-.legenda-acomp{
-
-background:#fff;
-border:1px solid #dbe3ef;
-border-radius:10px;
-margin-bottom:18px;
-
-}
-
-.legenda-acomp summary{
-
-padding:12px 16px;
-font-weight:600;
-cursor:pointer;
-user-select:none;
-
-}
-
-.legenda-lista{
-
-padding:0 16px 16px;
-
-}
-
-.item-legenda{
-
-display:flex;
-align-items:center;
-gap:12px;
-padding:6px 0;
-
-}
-
-.cod-aplicacao{
-
-display:inline-block;
-min-width:55px;
-font-weight:bold;
-color:#2563eb;
-
-}
 .tbl-acomp{
 
 border-collapse:collapse;
+table-layout:fixed;
 width:max-content;
-min-width:100%;
 
 }
 
@@ -268,7 +113,14 @@ white-space:nowrap;
 background:#f8fafc;
 position:sticky;
 top:0;
-z-index:3;
+z-index:4;
+text-align:center;
+
+}
+
+.tbl-acomp td{
+
+text-align:center;
 
 }
 
@@ -276,10 +128,13 @@ z-index:3;
 
 position:sticky;
 left:0;
-background:#fff;
-z-index:2;
+
+width:55px;
 min-width:55px;
-text-align:center;
+max-width:55px;
+
+background:#fff;
+z-index:3;
 
 }
 
@@ -287,24 +142,44 @@ text-align:center;
 
 position:sticky;
 left:55px;
+
+width:200px;
+min-width:200px;
+max-width:200px;
+
+padding-left:10px;
+text-align:left;
+
+overflow:hidden;
+text-overflow:ellipsis;
+white-space:nowrap;
+
 background:#fff;
-z-index:2;
-min-width:260px;
+z-index:3;
 
 }
 
 thead .fixo.numero,
 thead .fixo.aluno{
 
-z-index:5;
 background:#f8fafc;
+z-index:5;
 
 }
 
 .col-aplicacao{
 
-min-width:60px;
+width:58px;
+min-width:58px;
+max-width:58px;
+
 text-align:center;
 cursor:help;
+
+}
+
+.tbl-acomp tbody tr:hover{
+
+background:#f8fafc;
 
 }

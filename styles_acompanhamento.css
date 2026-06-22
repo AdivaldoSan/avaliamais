@@ -200,3 +200,49 @@ width:100%;
 }
 
 }
+
+/*==========================
+LEGENDA
+==========================*/
+
+.legenda-acomp{
+
+background:#fff;
+border:1px solid #dbe3ef;
+border-radius:10px;
+margin-bottom:18px;
+
+}
+
+.legenda-acomp summary{
+
+padding:12px 16px;
+font-weight:600;
+cursor:pointer;
+user-select:none;
+
+}
+
+.legenda-lista{
+
+padding:0 16px 16px;
+
+}
+
+.item-legenda{
+
+display:flex;
+align-items:center;
+gap:12px;
+padding:6px 0;
+
+}
+
+.cod-aplicacao{
+
+display:inline-block;
+min-width:55px;
+font-weight:bold;
+color:#2563eb;
+
+}

@@ -143,19 +143,11 @@ z-index:3;
 position:sticky;
 left:55px;
 
-width:200px;
-min-width:200px;
-max-width:200px;
+background:#fff;
+z-index:3;
 
 padding-left:10px;
 text-align:left;
-
-overflow:hidden;
-text-overflow:ellipsis;
-white-space:nowrap;
-
-background:#fff;
-z-index:3;
 
 }
 
@@ -168,10 +160,6 @@ z-index:5;
 }
 
 .col-aplicacao{
-
-width:58px;
-min-width:58px;
-max-width:58px;
 
 text-align:center;
 cursor:help;

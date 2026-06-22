@@ -246,3 +246,65 @@ font-weight:bold;
 color:#2563eb;
 
 }
+.tbl-acomp{
+
+border-collapse:collapse;
+width:max-content;
+min-width:100%;
+
+}
+
+.tbl-acomp th,
+.tbl-acomp td{
+
+border:1px solid #dbe3ec;
+padding:8px;
+white-space:nowrap;
+
+}
+
+.tbl-acomp th{
+
+background:#f8fafc;
+position:sticky;
+top:0;
+z-index:3;
+
+}
+
+.fixo.numero{
+
+position:sticky;
+left:0;
+background:#fff;
+z-index:2;
+min-width:55px;
+text-align:center;
+
+}
+
+.fixo.aluno{
+
+position:sticky;
+left:55px;
+background:#fff;
+z-index:2;
+min-width:260px;
+
+}
+
+thead .fixo.numero,
+thead .fixo.aluno{
+
+z-index:5;
+background:#f8fafc;
+
+}
+
+.col-aplicacao{
+
+min-width:60px;
+text-align:center;
+cursor:help;
+
+}

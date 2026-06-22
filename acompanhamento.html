@@ -36,7 +36,7 @@ function iniciarPagina(){
 <div class="section">
 
 <h2 style="margin-bottom:25px;">
-📋 Acompanhamento Pedagógico...
+📋 Acompanhamento Pedagógico..
 </h2>
 
 <p style="margin-top:-10px;margin-bottom:25px;color:#64748b;">
@@ -358,6 +358,67 @@ ${a.nome}
     document.getElementById("legendaAplicacoes").innerHTML=html;
 
 }
+  //=========================================================
+function montarTabela(dados){
+
+    let html=`<table class="tbl-acomp"><thead><tr>
+
+    <th class="fixo numero">Nº</th>
+    <th class="fixo aluno">Aluno</th>`;
+
+    dados.aplicacoes.forEach((a,i)=>{
+
+        const codigo=String(i+1).padStart(2,"0");
+        const icone=a.tipo==="ONLINE" ? "🌐" : "🖨️";
+
+        html+=`
+        <th
+            class="col-aplicacao"
+            title="${a.nome}">
+            ${icone}${codigo}
+        </th>`;
+
+    });
+
+    html+=`</tr></thead><tbody>`;
+
+    dados.alunos.forEach(aluno=>{
+
+        html+=`
+        <tr>
+
+            <td class="fixo numero">
+                ${aluno.numero}
+            </td>
+
+            <td
+                class="fixo aluno"
+                title="${aluno.nome}">
+                ${aluno.nome}
+            </td>`;
+
+        dados.aplicacoes.forEach(ap=>{
+
+            const respondeu=dados.participacoes[
+                aluno.numero+"_"+ap.id
+            ];
+
+            html+=`
+            <td>
+                ${respondeu?"🟢":"⚪"}
+            </td>`;
+
+        });
+
+        html+=`</tr>`;
+
+    });
+
+    html+=`</tbody></table>`;
+
+    document.getElementById("areaTabela").innerHTML=html;
+
+}  
 
 //=========================================================
     

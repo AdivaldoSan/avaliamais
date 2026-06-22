@@ -303,17 +303,59 @@ async function consultarAcompanhamento(){
 }
 
 //=========================================================
+//=========================================================
 function montarLegenda(dados){
 
-    document.getElementById("legendaAplicacoes").innerHTML=`
+    let html=`
 
-<div class="legenda-acomp">
+<details class="legenda-acomp">
 
-▶ Aplicações (${dados.aplicacoes.length})
+<summary>
+
+Aplicações (${dados.aplicacoes.length})
+
+</summary>
+
+<div class="legenda-lista">
+
+`;
+
+    dados.aplicacoes.forEach((a,i)=>{
+
+        const codigo=String(i+1).padStart(2,"0");
+        const icone=a.tipo==="ONLINE" ? "🌐" : "🖨️";
+
+        html+=`
+
+<div class="item-legenda">
+
+<span class="cod-aplicacao">
+
+${icone}${codigo}
+
+</span>
+
+<span>
+
+${a.nome}
+
+</span>
 
 </div>
 
 `;
+
+    });
+
+    html+=`
+
+</div>
+
+</details>
+
+`;
+
+    document.getElementById("legendaAplicacoes").innerHTML=html;
 
 }
 //=========================================================

@@ -111,6 +111,22 @@ const resultado=document.getElementById("resultado");
 const btn=document.getElementById("btnConsultar");
 let carregado=false;
 
+codigo.addEventListener("input", () => {
+
+    // Remove tudo que não for número
+    let v = codigo.value.replace(/\D/g, "");
+
+    // Com apenas 0 ou 1 dígito, não coloca ponto
+    if (v.length <= 1) {
+        codigo.value = v;
+        return;
+    }
+
+    // Insere o ponto antes do último dígito
+    codigo.value = v.slice(0, -1) + "." + v.slice(-1);
+
+});
+
 codigo.addEventListener("keyup",e=>{
 if(e.key==="Enter")consultar();
 });

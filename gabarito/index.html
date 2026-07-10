@@ -113,17 +113,17 @@ let carregado=false;
 
 codigo.addEventListener("input", () => {
 
-    // Remove tudo que não for número
+    // Mantém apenas os números
     let v = codigo.value.replace(/\D/g, "");
 
-    // Com apenas 0 ou 1 dígito, não coloca ponto
-    if (v.length <= 1) {
+    // Até 6 dígitos não coloca ponto
+    if (v.length <= 6) {
         codigo.value = v;
         return;
     }
 
-    // Insere o ponto antes do último dígito
-    codigo.value = v.slice(0, -1) + "." + v.slice(-1);
+    // Após os 6 primeiros, coloca o ponto
+    codigo.value = v.slice(0, 6) + "." + v.slice(6);
 
 });
 
